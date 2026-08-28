@@ -33,35 +33,35 @@ static const std::unordered_map<TileID, Interaction>& interactTable() {
         Closed opens forward through all 4 frames; open closes back
         through them in reverse.
         */
-        { makeTile(13, 16), { { makeTile(13,16), makeTile(13,17), makeTile(13,18), makeTile(13,19) }, " You open the chest." } },
-        { makeTile(13, 19), { { makeTile(13,19), makeTile(13,18), makeTile(13,17), makeTile(13,16) }, " You close the chest." } },
-        { makeTile(14, 16), { { makeTile(14,16), makeTile(14,17), makeTile(14,18), makeTile(14,19) }, " You open the chest." } },
-        { makeTile(14, 19), { { makeTile(14,19), makeTile(14,18), makeTile(14,17), makeTile(14,16) }, " You close the chest." } },
-        { makeTile(15, 16), { { makeTile(15,16), makeTile(15,17), makeTile(15,18), makeTile(15,19) }, " You open the chest." } },
-        { makeTile(15, 19), { { makeTile(15,19), makeTile(15,18), makeTile(15,17), makeTile(15,16) }, " You close the chest." } },
-        { makeTile(16, 16), { { makeTile(16,16), makeTile(16,17), makeTile(16,18), makeTile(16,19) }, " You open the chest." } },
-        { makeTile(16, 19), { { makeTile(16,19), makeTile(16,18), makeTile(16,17), makeTile(16,16) }, " You close the chest." } },
-        { makeTile(17, 16), { { makeTile(17,16), makeTile(17,17), makeTile(17,18), makeTile(17,19) }, " You open the chest." } },
-        { makeTile(17, 19), { { makeTile(17,19), makeTile(17,18), makeTile(17,17), makeTile(17,16) }, " You close the chest." } },
-        { makeTile(18, 16), { { makeTile(18,16), makeTile(18,17), makeTile(18,18), makeTile(18,19) }, " You open the chest." } },
-        { makeTile(18, 19), { { makeTile(18,19), makeTile(18,18), makeTile(18,17), makeTile(18,16) }, " You close the chest." } },
-        { makeTile(19, 16), { { makeTile(19,16), makeTile(19,17), makeTile(19,18), makeTile(19,19) }, " You open the chest." } },
-        { makeTile(19, 19), { { makeTile(19,19), makeTile(19,18), makeTile(19,17), makeTile(19,16) }, " You close the chest." } },
+        { makeTile(13, 16), { { makeTile(13,16), makeTile(13,17), makeTile(13,18), makeTile(13,19) }, "You open the chest." } },
+        { makeTile(13, 19), { { makeTile(13,19), makeTile(13,18), makeTile(13,17), makeTile(13,16) }, "You close the chest." } },
+        { makeTile(14, 16), { { makeTile(14,16), makeTile(14,17), makeTile(14,18), makeTile(14,19) }, "You open the chest." } },
+        { makeTile(14, 19), { { makeTile(14,19), makeTile(14,18), makeTile(14,17), makeTile(14,16) }, "You close the chest." } },
+        { makeTile(15, 16), { { makeTile(15,16), makeTile(15,17), makeTile(15,18), makeTile(15,19) }, "You open the chest." } },
+        { makeTile(15, 19), { { makeTile(15,19), makeTile(15,18), makeTile(15,17), makeTile(15,16) }, "You close the chest." } },
+        { makeTile(16, 16), { { makeTile(16,16), makeTile(16,17), makeTile(16,18), makeTile(16,19) }, "You open the chest." } },
+        { makeTile(16, 19), { { makeTile(16,19), makeTile(16,18), makeTile(16,17), makeTile(16,16) }, "You close the chest." } },
+        { makeTile(17, 16), { { makeTile(17,16), makeTile(17,17), makeTile(17,18), makeTile(17,19) }, "You open the chest." } },
+        { makeTile(17, 19), { { makeTile(17,19), makeTile(17,18), makeTile(17,17), makeTile(17,16) }, "You close the chest." } },
+        { makeTile(18, 16), { { makeTile(18,16), makeTile(18,17), makeTile(18,18), makeTile(18,19) }, "You open the chest." } },
+        { makeTile(18, 19), { { makeTile(18,19), makeTile(18,18), makeTile(18,17), makeTile(18,16) }, "You close the chest." } },
+        { makeTile(19, 16), { { makeTile(19,16), makeTile(19,17), makeTile(19,18), makeTile(19,19) }, "You open the chest." } },
+        { makeTile(19, 19), { { makeTile(19,19), makeTile(19,18), makeTile(19,17), makeTile(19,16) }, "You close the chest." } },
 
         // Cabinet / wall cabinet — single closed/open frame each.
-        { makeTile(8, 18),  { { makeTile(8,18),  makeTile(8,19)  }, " You open the cabinet." } },
-        { makeTile(8, 19),  { { makeTile(8,19),  makeTile(8,18)  }, " You close the cabinet." } },
-        { makeTile(9, 18),  { { makeTile(9,18),  makeTile(9,19)  }, " You open the cabinet." } },
-        { makeTile(9, 19),  { { makeTile(9,19),  makeTile(9,18)  }, " You close the cabinet." } },
+        { makeTile(8, 18),  { { makeTile(8,18),  makeTile(8,19)  }, "You open the cabinet." } },
+        { makeTile(8, 19),  { { makeTile(8,19),  makeTile(8,18)  }, "You close the cabinet." } },
+        { makeTile(9, 18),  { { makeTile(9,18),  makeTile(9,19)  }, "You open the cabinet." } },
+        { makeTile(9, 19),  { { makeTile(9,19),  makeTile(9,18)  }, "You close the cabinet." } },
 
         // Wardrobe — 1x2, single closed/open frame.
-        { makeTile(3, 20),  { { makeTile(3,20),  makeTile(4,20)  }, " You open the wardrobe." } },
-        { makeTile(4, 20),  { { makeTile(4,20),  makeTile(3,20)  }, " You close the wardrobe." } },
+        { makeTile(3, 20),  { { makeTile(3,20),  makeTile(4,20)  }, "You open the wardrobe." } },
+        { makeTile(4, 20),  { { makeTile(4,20),  makeTile(3,20)  }, "You close the wardrobe." } },
 
         // Barrel lid — closed <-> opened, freely reversible (unlike the
         // Attack table's break below, this never reaches the broken tile).
-        { makeTile(8, 17),  { { makeTile(8,17),  makeTile(9,17)  }, " You open the barrel." } },
-        { makeTile(9, 17),  { { makeTile(9,17),  makeTile(8,17)  }, " You close the barrel." } },
+        { makeTile(8, 17),  { { makeTile(8,17),  makeTile(9,17)  }, "You open the barrel." } },
+        { makeTile(9, 17),  { { makeTile(9,17),  makeTile(8,17)  }, "You close the barrel." } },
 
         /*
         Doors — 3 variants (columns 16/17/18), each a 1x2 sprite with a
@@ -72,12 +72,12 @@ static const std::unordered_map<TileID, Interaction>& interactTable() {
         collision consults directly by tile range instead of a table
         lookup, so a door never needs a COLLISION_MARKER painted under it.
         */
-        { makeTile(16, 20), { { makeTile(16,20), makeTile(16,22), makeTile(16,24), makeTile(16,26) }, " You open the door." } },
-        { makeTile(16, 26), { { makeTile(16,26), makeTile(16,24), makeTile(16,22), makeTile(16,20) }, " You close the door." } },
-        { makeTile(17, 20), { { makeTile(17,20), makeTile(17,22), makeTile(17,24), makeTile(17,26) }, " You open the door." } },
-        { makeTile(17, 26), { { makeTile(17,26), makeTile(17,24), makeTile(17,22), makeTile(17,20) }, " You close the door." } },
-        { makeTile(18, 20), { { makeTile(18,20), makeTile(18,22), makeTile(18,24), makeTile(18,26) }, " You open the door." } },
-        { makeTile(18, 26), { { makeTile(18,26), makeTile(18,24), makeTile(18,22), makeTile(18,20) }, " You close the door." } },
+        { makeTile(16, 20), { { makeTile(16,20), makeTile(16,22), makeTile(16,24), makeTile(16,26) }, "You open the door." } },
+        { makeTile(16, 26), { { makeTile(16,26), makeTile(16,24), makeTile(16,22), makeTile(16,20) }, "You close the door." } },
+        { makeTile(17, 20), { { makeTile(17,20), makeTile(17,22), makeTile(17,24), makeTile(17,26) }, "You open the door." } },
+        { makeTile(17, 26), { { makeTile(17,26), makeTile(17,24), makeTile(17,22), makeTile(17,20) }, "You close the door." } },
+        { makeTile(18, 20), { { makeTile(18,20), makeTile(18,22), makeTile(18,24), makeTile(18,26) }, "You open the door." } },
+        { makeTile(18, 26), { { makeTile(18,26), makeTile(18,24), makeTile(18,22), makeTile(18,20) }, "You close the door." } },
     };
     return t;
 }
@@ -96,12 +96,12 @@ static const std::unordered_map<TileID, Interaction>& attackTable() {
         way to broken for a meatier animation; smashed from already-open
         skips straight to broken.
         */
-        { makeTile(8, 17),  { { makeTile(8,17), makeTile(9,17), makeTile(10,17) }, " You smash the barrel to splinters." } },
-        { makeTile(9, 17),  { { makeTile(9,17), makeTile(10,17) }, " You smash the barrel to splinters." } },
+        { makeTile(8, 17),  { { makeTile(8,17), makeTile(9,17), makeTile(10,17) }, "You smash the barrel to splinters." } },
+        { makeTile(9, 17),  { { makeTile(9,17), makeTile(10,17) }, "You smash the barrel to splinters." } },
 
         // Vases — whole -> broken (terminal, one-way).
-        { makeTile(10, 18), { { makeTile(10,18), makeTile(10,19) }, " You shatter the vase." } },
-        { makeTile(11, 18), { { makeTile(11,18), makeTile(11,19) }, " You shatter the vase." } },
+        { makeTile(10, 18), { { makeTile(10,18), makeTile(10,19) }, "You shatter the vase." } },
+        { makeTile(11, 18), { { makeTile(11,18), makeTile(11,19) }, "You shatter the vase." } },
     };
     return t;
 }
