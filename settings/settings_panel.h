@@ -12,7 +12,6 @@ are just "where things go" rather than a hard row budget.
 namespace SettingsPanel {
 
     constexpr int ROW_TITLE       = 1;
-    constexpr int ROW_HINT        = 2;
     constexpr int ROW_HEADERS     = 4;
     constexpr int ROW_LIST_START  = 5;
 
@@ -20,7 +19,11 @@ namespace SettingsPanel {
     constexpr int COL_RIGHT = 20; // "OPTION" column (that category's values)
 
     extern const std::string TITLE;
+
+    // Drawn by HelpMode's Settings category (help/help_panel.cpp), not by
+    // this mode itself — see settings_mode.cpp's onRender() comment.
     extern const std::string HINT;
+
     extern const std::string HEADER_SETTING;
     extern const std::string HEADER_OPTION;
     extern const std::string VOLUME_PLACEHOLDER;

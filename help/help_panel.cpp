@@ -3,6 +3,7 @@
 #include "../editor/editor_panel.h"
 #include "../game/game_panel.h"
 #include "../generator/fragment_editor_panel.h"
+#include "../settings/settings_panel.h"
 
 namespace HelpPanel {
 
@@ -38,18 +39,15 @@ std::vector<std::string> controlsForCategory(int category) {
                      FragmentEditorPanel::HELP_QUIT, HELP_KEY };
 
         /*
-        Generator (test mode) and Settings never drew their own inline
-        control legend even before HelpMode existed — GeneratorMode has
-        no text at all (see generator/generator_mode.cpp), and
-        SettingsMode's controls were only ever implied by its own on-
-        screen prompts — so their wording lives here and only here.
+        Generator (test mode) never drew its own inline control legend —
+        it has no text at all (see generator/generator_mode.cpp) — so
+        its wording lives here and only here.
         */
         case CATEGORY_GENERATOR:
             return { "Regenerate: [R]", "Quit: [Q]", HELP_KEY };
 
         case CATEGORY_SETTINGS:
-            return { "Category: [W/S] / [\u2191\u2193]", "Option: [A/D] / [\u2190\u2192]",
-                     "Select: [SPACE]", "Back: [ESC]", "Quit: [Q]", HELP_KEY };
+            return { SettingsPanel::HINT, HELP_KEY };
 
         default:
             return {};

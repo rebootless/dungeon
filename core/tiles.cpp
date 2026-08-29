@@ -17,7 +17,7 @@ static const std::unordered_map<TileID, TileMetadata> s_meta = {
     { makeTile(2, 33),  { LayerType::Objects,  1, 1, false } }, // VERTICAL_BORDER
     { makeTile(3, 33),  { LayerType::Objects,  1, 1, false } }, // CORNER_BORDER
 
-    { COLLISION_MARKER,   { LayerType::Collision,1, 1, false } }, // placed via the editor's TAB tool, not the palette
+    { COLLISION_MARKER,   { LayerType::Collision,1, 1, false } }, // placed via the editor's [1] tool
     { STAIRS_UP_MARKER,   { LayerType::Collision,1, 1, false } }, // placed via the editor's [5] tool
     { STAIRS_DOWN_MARKER, { LayerType::Collision,1, 1, false } }, // placed via the editor's [6] tool
 
@@ -147,9 +147,7 @@ static const std::unordered_map<TileID, TileMetadata> s_meta = {
     { makeTile(3, 5), { LayerType::Ground, 1, 1 } },
     { makeTile(1, 6), { LayerType::Ground, 1, 1 } },
     { makeTile(2, 6), { LayerType::Ground, 1, 1 } },
-    // { makeTile(3, 6), { LayerType::Ground, 1, 1 } }, // Duplicate
     { makeTile(1, 7), { LayerType::Ground, 1, 1 } },
-    // { makeTile(2, 7), { LayerType::Ground, 1, 1 } }, // Duplicate
     { makeTile(3, 7), { LayerType::Ground, 1, 1 } },
     // 3x3
     { makeTile(4, 5), { LayerType::Ground, 1, 1 } },
@@ -177,9 +175,7 @@ static const std::unordered_map<TileID, TileMetadata> s_meta = {
     { makeTile(12, 5), { LayerType::Ground, 1, 1 } },
     { makeTile(10, 6), { LayerType::Ground, 1, 1 } },
     { makeTile(11, 6), { LayerType::Ground, 1, 1 } },
-    // { makeTile(12, 6), { LayerType::Ground, 1, 1 } }, // Duplicate
     { makeTile(10, 7), { LayerType::Ground, 1, 1 } },
-    // { makeTile(11, 7), { LayerType::Ground, 1, 1 } }, // Duplicate
     { makeTile(12, 7), { LayerType::Ground, 1, 1 } },
     // 3x3
     { makeTile(13, 5), { LayerType::Ground, 1, 1 } },

@@ -219,10 +219,14 @@ void SettingsMode::onRender() {
         fb.draw();
     }
 
+    /*
+    HINT used to be drawn here — that control legend now lives in
+    HelpMode's Settings category (help/help_panel.cpp), reachable with
+    [H], reusing this same SettingsPanel::HINT string rather than
+    duplicating it.
+    */
     drawStringPx(SettingsPanel::TITLE, SettingsPanel::COL_LEFT * CELL_SIZE,
                  SettingsPanel::ROW_TITLE * CELL_SIZE);
-    drawStringPx(SettingsPanel::HINT, SettingsPanel::COL_LEFT * CELL_SIZE,
-                 SettingsPanel::ROW_HINT * CELL_SIZE);
 
     drawStringPx(SettingsPanel::HEADER_SETTING, SettingsPanel::COL_LEFT * CELL_SIZE,
                  SettingsPanel::ROW_HEADERS * CELL_SIZE);

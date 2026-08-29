@@ -144,11 +144,17 @@ static void handlePointerAction(int mx, int my, int panelContentW, int mapOrigin
             }
         }
     }
-    else if (mx >= mapOriginX && mx < mapRightEdgeX) {
+    else if (mx >= mapOriginX && mx < mapRightEdgeX && my >= FRAGMENT_ROW_OFFSET) {
         int gx = (mx - mapOriginX) / CELL_SIZE;
-        int gy = my / CELL_SIZE;
+        int gy = (my - FRAGMENT_ROW_OFFSET) / CELL_SIZE;
 
-        if (gx >= 0 && gx < MAX_WIDTH && gy >= 0 && gy < MAX_HEIGHT) {
+        /*
+        gy's upper bound is MAX_FRAGMENT_HEIGHT, not MAX_HEIGHT — rows at
+        or past it render clipped out of the map viewport entirely (see
+        fragment_editor_mode.cpp's onRender()), so a click reaching them
+        would place a tile the user can't actually see land.
+        */
+        if (gx >= 0 && gx < MAX_WIDTH && gy >= 0 && gy < MAX_FRAGMENT_HEIGHT) {
             if (frRightMouseDown) frEraseTile(gx, gy);
             else                  frPlaceTile(gx, gy);
         }
@@ -243,7 +249,7 @@ void FragmentEditorMode::onEvent(const SDL_Event& e) {
                 break;
 
             case SDL_SCANCODE_DOWN:
-                fragmentHeight = std::min(MAX_HEIGHT, fragmentHeight + 1);
+                fragmentHeight = std::min(MAX_FRAGMENT_HEIGHT, fragmentHeight + 1);
                 break;
 
             /*

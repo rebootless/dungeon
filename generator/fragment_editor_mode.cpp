@@ -198,7 +198,7 @@ void loadFragmentIntoEditor(int id) {
         }
     }
     fragmentWidth  = fragment->width;
-    fragmentHeight = fragment->height;
+    fragmentHeight = std::min(fragment->height, MAX_FRAGMENT_HEIGHT);
     rebuildFragmentMultiTileOccupancy();
 
     frEditorStatus    = std::string("Loaded \"") + fragment->name + "\"";
@@ -328,6 +328,16 @@ void FragmentEditorMode::onRender() {
     }
 
     /*
+    Everything drawn on the map itself — checkerboard through the
+    connector overlay — is clipped to the map viewport. Without this,
+    content painted past MAX_FRAGMENT_HEIGHT (still reachable — see
+    fragment_editor_controls.cpp's frPlaceTile, which never restricted
+    painting to width x height) would bleed FRAGMENT_ROW_OFFSET pixels
+    into the info box below once shifted.
+    */
+    setClipRect(mapOriginX, 0, MAP_PIXEL_W, MAP_PIXEL_H);
+
+    /*
     Checkerboard background
     Drawn only under the fragment's current width x height footprint (not
     the full MAX_WIDTH x MAX_HEIGHT map area) — the boundary between
@@ -337,7 +347,7 @@ void FragmentEditorMode::onRender() {
     for (int y = 0; y < fragmentHeight && y < MAX_HEIGHT; ++y) {
         for (int x = 0; x < fragmentWidth && x < MAX_WIDTH; ++x) {
             int px = mapOriginX + x * CELL_SIZE;
-            int py = y * CELL_SIZE;
+            int py = FRAGMENT_ROW_OFFSET + y * CELL_SIZE;
             drawCanvasTile(SDL_Rect{px, py, CELL_SIZE, CELL_SIZE});
         }
     }
@@ -346,7 +356,7 @@ void FragmentEditorMode::onRender() {
     for (int y = 0; y < MAX_HEIGHT; ++y) {
         for (int x = 0; x < MAX_WIDTH; ++x) {
             int px = mapOriginX + x * CELL_SIZE;
-            int py = y * CELL_SIZE;
+            int py = FRAGMENT_ROW_OFFSET + y * CELL_SIZE;
 
             drawTileRect(frGroundMap[y][x], SDL_Rect{px, py, CELL_SIZE, CELL_SIZE});
             drawTileRect(frObjectMap[y][x], SDL_Rect{px, py, CELL_SIZE, CELL_SIZE});
@@ -366,7 +376,7 @@ void FragmentEditorMode::onRender() {
             else if (marker == STAIRS_DOWN_MARKER) color = SDL_Color{230, 90, 255, 200};
             else continue;
 
-            drawRectOutline(mapOriginX + x * CELL_SIZE, y * CELL_SIZE,
+            drawRectOutline(mapOriginX + x * CELL_SIZE, FRAGMENT_ROW_OFFSET + y * CELL_SIZE,
                              CELL_SIZE, CELL_SIZE, color);
         }
     }
@@ -375,7 +385,7 @@ void FragmentEditorMode::onRender() {
     for (int y = 0; y < MAX_HEIGHT; ++y) {
         for (int x = 0; x < MAX_WIDTH; ++x) {
             if (frOcclusionMap[y][x] != OCCLUSION_MARKER) continue;
-            drawRectOutline(mapOriginX + x * CELL_SIZE, y * CELL_SIZE,
+            drawRectOutline(mapOriginX + x * CELL_SIZE, FRAGMENT_ROW_OFFSET + y * CELL_SIZE,
                              CELL_SIZE, CELL_SIZE, SDL_Color{170, 100, 255, 200});
         }
     }
@@ -390,15 +400,15 @@ void FragmentEditorMode::onRender() {
     along this edge, never overlap inside it.
     */
     for (int x = 0; x < fragmentWidth && x < MAX_WIDTH; ++x) {
-        drawRectOutline(mapOriginX + x * CELL_SIZE, 0,
+        drawRectOutline(mapOriginX + x * CELL_SIZE, FRAGMENT_ROW_OFFSET,
                          CELL_SIZE, CELL_SIZE, SDL_Color{255, 60, 60, 200});
-        drawRectOutline(mapOriginX + x * CELL_SIZE, (fragmentHeight - 1) * CELL_SIZE,
+        drawRectOutline(mapOriginX + x * CELL_SIZE, FRAGMENT_ROW_OFFSET + (fragmentHeight - 1) * CELL_SIZE,
                          CELL_SIZE, CELL_SIZE, SDL_Color{255, 60, 60, 200});
     }
     for (int y = 0; y < fragmentHeight && y < MAX_HEIGHT; ++y) {
-        drawRectOutline(mapOriginX, y * CELL_SIZE,
+        drawRectOutline(mapOriginX, FRAGMENT_ROW_OFFSET + y * CELL_SIZE,
                          CELL_SIZE, CELL_SIZE, SDL_Color{255, 60, 60, 200});
-        drawRectOutline(mapOriginX + (fragmentWidth - 1) * CELL_SIZE, y * CELL_SIZE,
+        drawRectOutline(mapOriginX + (fragmentWidth - 1) * CELL_SIZE, FRAGMENT_ROW_OFFSET + y * CELL_SIZE,
                          CELL_SIZE, CELL_SIZE, SDL_Color{255, 60, 60, 200});
     }
 
@@ -411,10 +421,12 @@ void FragmentEditorMode::onRender() {
     for (int y = 0; y < MAX_HEIGHT; ++y) {
         for (int x = 0; x < MAX_WIDTH; ++x) {
             if (frConnectorMap[y][x] != CONNECTOR_MARKER) continue;
-            drawRectOutline(mapOriginX + x * CELL_SIZE, y * CELL_SIZE,
+            drawRectOutline(mapOriginX + x * CELL_SIZE, FRAGMENT_ROW_OFFSET + y * CELL_SIZE,
                              CELL_SIZE, CELL_SIZE, SDL_Color{60, 255, 120, 200});
         }
     }
+
+    clearClipRect();
 
     // Frame — identical geometry to EditorMode's.
     {
