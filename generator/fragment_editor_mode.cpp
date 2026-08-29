@@ -381,10 +381,32 @@ void FragmentEditorMode::onRender() {
     }
 
     /*
+    Border overlay
+    Automatically derived from width/height every frame — not a stored
+    marker, so resizing the fragment (arrow keys) never leaves stale
+    border cells behind. This rectangle is exactly what
+    generator/dungeon_generator.cpp checks for overlap when placing
+    fragments on the shared canvas: two fragments may only ever touch
+    along this edge, never overlap inside it.
+    */
+    for (int x = 0; x < fragmentWidth && x < MAX_WIDTH; ++x) {
+        drawRectOutline(mapOriginX + x * CELL_SIZE, 0,
+                         CELL_SIZE, CELL_SIZE, SDL_Color{255, 60, 60, 200});
+        drawRectOutline(mapOriginX + x * CELL_SIZE, (fragmentHeight - 1) * CELL_SIZE,
+                         CELL_SIZE, CELL_SIZE, SDL_Color{255, 60, 60, 200});
+    }
+    for (int y = 0; y < fragmentHeight && y < MAX_HEIGHT; ++y) {
+        drawRectOutline(mapOriginX, y * CELL_SIZE,
+                         CELL_SIZE, CELL_SIZE, SDL_Color{255, 60, 60, 200});
+        drawRectOutline(mapOriginX + (fragmentWidth - 1) * CELL_SIZE, y * CELL_SIZE,
+                         CELL_SIZE, CELL_SIZE, SDL_Color{255, 60, 60, 200});
+    }
+
+    /*
     Connector overlay
     Candidate stitching points for the procedural generator — a distinct
-    green outline, not used by any other marker layer (see
-    core/tiles.h's CONNECTOR_MARKER).
+    green outline, drawn after (so it wins over) the red border above,
+    since a connector cell normally sits exactly on that border.
     */
     for (int y = 0; y < MAX_HEIGHT; ++y) {
         for (int x = 0; x < MAX_WIDTH; ++x) {
@@ -407,18 +429,18 @@ void FragmentEditorMode::onRender() {
         fb.draw();
     }
 
-    // Info box text
+    /*
+    Info box text
+    Just the transient save/load status now — the control legend that used
+    to fill the rest of this box lives in HelpMode (see help/help_mode.cpp,
+    reachable with [H]), reusing these same FragmentEditorPanel::HELP_*
+    strings rather than duplicating them.
+    */
     const int boxStartY = MAX_HEIGHT + 2;
     {
         if (frEditorStatusTTL > 0) {
             drawInfoStr(frEditorStatus, 1, boxStartY + FragmentEditorPanel::ROW_STATUS, mapOriginX);
             --frEditorStatusTTL;
         }
-
-        drawInfoStr(FragmentEditorPanel::HELP_PLACE,     1, boxStartY + FragmentEditorPanel::ROW_HELP_PLACE,     mapOriginX);
-        drawInfoStr(FragmentEditorPanel::HELP_COLLISION, 1, boxStartY + FragmentEditorPanel::ROW_HELP_COLLISION, mapOriginX);
-        drawInfoStr(FragmentEditorPanel::HELP_SIZE,      1, boxStartY + FragmentEditorPanel::ROW_HELP_SIZE,      mapOriginX);
-        drawInfoStr(FragmentEditorPanel::HELP_SAVE,      1, boxStartY + FragmentEditorPanel::ROW_HELP_SAVE,      mapOriginX);
-        drawInfoStr(FragmentEditorPanel::HELP_QUIT,      1, boxStartY + FragmentEditorPanel::ROW_HELP_QUIT,      mapOriginX);
     }
 }

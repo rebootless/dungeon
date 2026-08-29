@@ -4,6 +4,7 @@
 #include "../core/level.h"
 #include "../core/renderer.h"
 #include "../core/tiles.h"
+#include "../help/help_mode.h"
 #include "../settings/settings_mode.h"
 #include "editor_state.h"
 
@@ -206,6 +207,11 @@ void EditorMode::onEvent(const SDL_Event& e) {
 
             case SDL_SCANCODE_Q:
                 context_.requestQuit();
+                return;
+
+            case SDL_SCANCODE_H:
+                HelpMode::setReturnMode(HelpMode::ReturnMode::EditorWorld);
+                context_.switchMode(std::make_unique<HelpMode>());
                 return;
 
             /*

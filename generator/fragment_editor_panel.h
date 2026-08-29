@@ -12,19 +12,15 @@ within [0, 11].
 namespace FragmentEditorPanel {
 
     // Info box rows
-    constexpr int ROW_STATUS          = 2; // transient F5/F9 save-load status
-    constexpr int ROW_HELP_PLACE      = 4;
-    constexpr int ROW_HELP_COLLISION  = 5;
-    constexpr int ROW_HELP_SIZE       = 6;
-    constexpr int ROW_HELP_SAVE       = 7;
-    constexpr int ROW_HELP_QUIT       = 8;
+    constexpr int ROW_STATUS = 2; // transient F5/F9 save-load status
 
     // Right panel (fragment list) rows
     constexpr int ROW_FRAGMENT_HEADER = 1; // " Fragment N (WxH) [new]"
     constexpr int ROW_FRAGMENT_LEGEND = 2; // PageUp/PageDown legend
     constexpr int FRAGMENT_LIST_START_ROW = 2;
 
-    // Static label text
+    // Static label text — HELP_* are drawn by HelpMode (help/help_mode.cpp),
+    // not in this info box; kept here since it's where the text belongs.
     extern const std::string FRAGMENT_LEGEND;
     extern const std::string HELP_PLACE;
     extern const std::string HELP_COLLISION;

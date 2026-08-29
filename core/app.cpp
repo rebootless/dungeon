@@ -14,6 +14,7 @@
 #include "../game/game_mode.h"
 #include "../generator/fragment.h"
 #include "../generator/fragment_editor_mode.h"
+#include "../generator/generator_mode.h"
 #include "../settings/settings_mode.h"
 
 namespace {
@@ -40,6 +41,7 @@ void App::registerConsoleCommands() {
                 { "world",     {}, nullptr },
                 { "generator", {}, nullptr },
               }, nullptr },
+            { "generator", {}, nullptr },
             { "settings", {}, nullptr },
           }, nullptr },
         { "zoom", {
@@ -84,7 +86,7 @@ void App::dispatchCommand(const std::string& line) {
 
     if (tokens[0] == "/mode") {
         if (tokens.size() < 2) {
-            console_.setStatusLine(" Usage: /mode game|editor|settings", kErr);
+            console_.setStatusLine(" Usage: /mode game|editor|generator|settings", kErr);
             return;
         }
 
@@ -104,6 +106,12 @@ void App::dispatchCommand(const std::string& line) {
             else { console_.setStatusLine(" Unknown editor target: " + tokens[2], kErr); return; }
 
             console_.setStatusLine(" Switched to editor " + tokens[2], kOk);
+            return;
+        }
+
+        if (tokens[1] == "generator") {
+            switchMode(std::make_unique<GeneratorMode>());
+            console_.setStatusLine(" Switched to generator", kOk);
             return;
         }
 

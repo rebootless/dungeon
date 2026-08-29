@@ -2,6 +2,11 @@
 
 namespace GamePanel {
 
+/*
+Reused by HelpMode's Game category (see help/help_panel.cpp) rather than
+duplicated there — no longer drawn in this info box itself (see
+buildInfoBoxLines below).
+*/
 const std::string CONTROLS_MOVE =
     "Move: [W/A/S/D] / [\u2190\u2191\u2193\u2192] \u2503 Interact: [E] \u2503 Attack: [SPACE]";
 
@@ -13,22 +18,10 @@ const std::string ZOOM_LABEL_SUFFIX = "x";
 
 const std::string LOCATION_LABEL_PREFIX = "Location: ";
 
-// Rows 0, 2-4, 7-10 are plain placeholder text; rows 5/6 reuse
-// CONTROLS_MOVE/CONTROLS_MISC above rather than repeating that text inline.
+// Only the interaction message remains — the control legend that used to
+// fill rows 8/9 lives in HelpMode now (reachable with [H]).
 std::vector<std::string> buildInfoBoxLines(const std::string& message) {
-    return {
-        message,        // 0
-        "",             // 1
-        "",             // 2
-        "",             // 3
-        "",             // 4
-        "",             // 5
-        "",             // 6
-        "",             // 7
-        CONTROLS_MOVE,  // 8
-        CONTROLS_MISC,  // 9
-        "",             // 10
-    };
+    return { message };
 }
 
 std::vector<std::string> buildLeftPanelLines(const std::string& location,

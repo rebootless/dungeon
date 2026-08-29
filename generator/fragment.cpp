@@ -136,6 +136,32 @@ for every FRAGMENT-<id>.json file and loads it — nothing more. No
 fallback placeholder: if fragments/ is empty, `fragments` ends up empty
 too, and callers are expected to handle "nothing loaded yet" themselves.
 */
+bool connectorSideAt(int x, int y, int width, int height, ConnectorSide& side) {
+    bool onLeft   = (x == 0);
+    bool onRight  = (x == width - 1);
+    bool onTop    = (y == 0);
+    bool onBottom = (y == height - 1);
+
+    int edgeCount = (int)onLeft + (int)onRight + (int)onTop + (int)onBottom;
+    if (edgeCount != 1) return false; // corner, interior, or degenerate axis — ambiguous
+
+    if      (onLeft)   side = ConnectorSide::Left;
+    else if (onRight)  side = ConnectorSide::Right;
+    else if (onTop)    side = ConnectorSide::Top;
+    else               side = ConnectorSide::Bottom;
+    return true;
+}
+
+ConnectorSide oppositeSide(ConnectorSide side) {
+    switch (side) {
+        case ConnectorSide::Left:   return ConnectorSide::Right;
+        case ConnectorSide::Right:  return ConnectorSide::Left;
+        case ConnectorSide::Top:    return ConnectorSide::Bottom;
+        case ConnectorSide::Bottom: return ConnectorSide::Top;
+    }
+    return ConnectorSide::Left;
+}
+
 void initFragments() {
     fragments.clear();
 

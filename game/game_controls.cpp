@@ -3,6 +3,7 @@
 #include "../core/level.h"
 #include "../core/renderer.h"
 #include "../core/tiles.h"
+#include "../help/help_mode.h"
 #include "../settings/settings_mode.h"
 #include "game_state.h"
 #include "interactions.h"
@@ -111,6 +112,11 @@ void GameMode::onEvent(const SDL_Event& e) {
 
         case SDL_SCANCODE_Q:
             context_.requestQuit();
+            return;
+
+        case SDL_SCANCODE_H:
+            HelpMode::setReturnMode(HelpMode::ReturnMode::Game);
+            context_.switchMode(std::make_unique<HelpMode>());
             return;
 
         case SDL_SCANCODE_EQUALS:

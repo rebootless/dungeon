@@ -9,6 +9,7 @@
 #include "../editor/editor_mode.h"
 #include "../game/game_mode.h"
 #include "../generator/fragment_editor_mode.h"
+#include "../help/help_mode.h"
 #include "settings_panel.h"
 
 namespace {
@@ -127,6 +128,11 @@ void SettingsMode::onEvent(const SDL_Event& e) {
 
         case SDL_SCANCODE_Q:
             context_.requestQuit();
+            return;
+
+        case SDL_SCANCODE_H:
+            HelpMode::setReturnMode(HelpMode::ReturnMode::Settings);
+            context_.switchMode(std::make_unique<HelpMode>());
             return;
 
         case SDL_SCANCODE_A:

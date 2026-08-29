@@ -445,8 +445,10 @@ void EditorMode::onRender() {
 
     /*
     Info box text
-    Row indices come from editor_panel.h — see that file for the panel's
-    row budget (max 12, rows 0..11).
+    Just the transient save/load status now — the control legend that used
+    to fill the rest of this box lives in HelpMode (see help/help_mode.cpp,
+    reachable with [H]), reusing these same EditorPanel::HELP_* strings
+    rather than duplicating them.
     */
     const int boxStartY = MAX_HEIGHT + 2;
     {
@@ -454,11 +456,5 @@ void EditorMode::onRender() {
             drawInfoStr(editorStatus, 1, boxStartY + EditorPanel::ROW_STATUS, mapOriginX);
             --editorStatusTTL;
         }
-
-        drawInfoStr(EditorPanel::HELP_PLACE,     1, boxStartY + EditorPanel::ROW_HELP_PLACE,     mapOriginX);
-        drawInfoStr(EditorPanel::HELP_COLLISION, 1, boxStartY + EditorPanel::ROW_HELP_COLLISION, mapOriginX);
-        drawInfoStr(EditorPanel::HELP_LOCATION,  1, boxStartY + EditorPanel::ROW_HELP_LOCATION,  mapOriginX);
-        drawInfoStr(EditorPanel::HELP_SAVE,      1, boxStartY + EditorPanel::ROW_HELP_SAVE,      mapOriginX);
-        drawInfoStr(EditorPanel::HELP_QUIT,      1, boxStartY + EditorPanel::ROW_HELP_QUIT,      mapOriginX);
     }
 }

@@ -19,12 +19,7 @@ and supplies the wording that never changes at runtime.
 namespace EditorPanel {
 
     // Info box rows
-    constexpr int ROW_STATUS          = 2; // transient F5/F6 save-load status
-    constexpr int ROW_HELP_PLACE      = 4;
-    constexpr int ROW_HELP_COLLISION  = 5;
-    constexpr int ROW_HELP_LOCATION   = 6;
-    constexpr int ROW_HELP_SAVE       = 7;
-    constexpr int ROW_HELP_QUIT       = 8;
+    constexpr int ROW_STATUS = 2; // transient F5/F6 save-load status
 
     // Right panel (world location list) rows
     constexpr int ROW_WORLD_HEADER = 1; // " Floor N (x, y) [new]"
@@ -37,7 +32,8 @@ namespace EditorPanel {
     */
     constexpr int WORLD_LIST_START_ROW = 2;
 
-    // Static label text
+    // Static label text — HELP_* are drawn by HelpMode (help/help_mode.cpp),
+    // not in this info box; kept here since it's where the text belongs.
     extern const std::string WORLD_LEGEND;
     extern const std::string HELP_PLACE;
     extern const std::string HELP_COLLISION;

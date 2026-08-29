@@ -6,6 +6,7 @@
 #include "../core/level.h"
 #include "../core/renderer.h"
 #include "../core/tiles.h"
+#include "../help/help_mode.h"
 #include "../settings/settings_mode.h"
 #include "fragment_editor_state.h"
 
@@ -185,6 +186,11 @@ void FragmentEditorMode::onEvent(const SDL_Event& e) {
 
             case SDL_SCANCODE_Q:
                 context_.requestQuit();
+                return;
+
+            case SDL_SCANCODE_H:
+                HelpMode::setReturnMode(HelpMode::ReturnMode::FragmentEditor);
+                context_.switchMode(std::make_unique<HelpMode>());
                 return;
 
             case SDL_SCANCODE_1:

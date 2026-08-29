@@ -23,11 +23,15 @@ add_executable(dungeon
     generator/fragment_editor_mode.cpp
     generator/fragment_editor_controls.cpp
     generator/fragment_editor_panel.cpp
+    generator/dungeon_generator.cpp
+    generator/generator_mode.cpp
     settings/settings_mode.cpp
     settings/settings_panel.cpp
+    help/help_mode.cpp
+    help/help_panel.cpp
 )
 
-target_include_directories(dungeon PRIVATE core game editor generator settings)
+target_include_directories(dungeon PRIVATE core game editor generator settings help)
 
 if(WIN32)
 

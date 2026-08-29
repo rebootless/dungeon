@@ -81,3 +81,26 @@ bool loadFragmentFromFile(Fragment& fragment, const char* path);
 // Write `fragment` out as JSON to `path` (creating parent directories as
 // needed). Returns true on success.
 bool saveFragmentToFile(const Fragment& fragment, const char* path);
+
+/*
+Connector geometry
+Used by generator/dungeon_generator.cpp to work out which direction a
+fragment extends away from one of its own connector cells, so it can
+place the next fragment touching that cell rather than overlapping it.
+*/
+enum class ConnectorSide { Left, Right, Top, Bottom };
+
+/*
+Determines which single border edge of a `width` x `height` fragment the
+cell (x, y) sits on. A corner cell sits on two edges at once — there is
+no unambiguous direction to extend a fragment from it — so this returns
+false there, same as for any interior cell that isn't on the border at
+all. A degenerate 1-wide or 1-tall fragment is a corner everywhere along
+that axis, and is therefore never usable for stitching on it either.
+*/
+bool connectorSideAt(int x, int y, int width, int height, ConnectorSide& side);
+
+// The side a fragment must offer to plug into `side` — e.g. a fragment
+// extending from a Right-side connector must itself connect on its Left.
+ConnectorSide oppositeSide(ConnectorSide side);
+
