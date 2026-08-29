@@ -7,7 +7,7 @@
 
 namespace HelpPanel {
 
-const std::string TITLE           = "CONTROLS";
+const std::string TITLE           = "HELP MENU";
 const std::string HEADER_CATEGORY = "MODE";
 const std::string HEADER_CONTROLS = "CONTROLS";
 
