@@ -8,6 +8,7 @@
 #include "../core/renderer.h"
 #include "../editor/editor_mode.h"
 #include "../game/game_mode.h"
+#include "../generator/fragment_editor_mode.h"
 #include "settings_panel.h"
 
 namespace {
@@ -118,6 +119,8 @@ void SettingsMode::onEvent(const SDL_Event& e) {
         case SDL_SCANCODE_ESCAPE:
             if (returnMode_ == ReturnMode::Editor)
                 context_.switchMode(std::make_unique<EditorMode>());
+            else if (returnMode_ == ReturnMode::FragmentEditor)
+                context_.switchMode(std::make_unique<FragmentEditorMode>());
             else
                 context_.switchMode(std::make_unique<GameMode>());
             return;

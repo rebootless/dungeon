@@ -15,10 +15,12 @@ if [[ ! -f "dungeon" ]]; then
     exit 1
 fi
 
-rm -f assets world
+rm -f assets world fragments
 
 cp -r ../assets .
 cp -r ../world .
+mkdir -p ../fragments
+cp -r ../fragments .
 
 rm -rf CMakeFiles CMakeCache.txt cmake_install.cmake Makefile
 

@@ -12,6 +12,8 @@
 
 #include "../editor/editor_mode.h"
 #include "../game/game_mode.h"
+#include "../generator/fragment.h"
+#include "../generator/fragment_editor_mode.h"
 #include "../settings/settings_mode.h"
 
 namespace {
@@ -33,8 +35,11 @@ App::App() {
 void App::registerConsoleCommands() {
     console_.root().children = {
         { "mode", {
-            { "game",     {}, nullptr },
-            { "editor",   {}, nullptr },
+            { "game", {}, nullptr },
+            { "editor", {
+                { "world",     {}, nullptr },
+                { "generator", {}, nullptr },
+              }, nullptr },
             { "settings", {}, nullptr },
           }, nullptr },
         { "zoom", {
@@ -82,12 +87,33 @@ void App::dispatchCommand(const std::string& line) {
             console_.setStatusLine(" Usage: /mode game|editor|settings", kErr);
             return;
         }
-        if (tokens[1] == "game")             switchMode(std::make_unique<GameMode>());
-        else if (tokens[1] == "editor")      switchMode(std::make_unique<EditorMode>());
-        else if (tokens[1] == "settings")    switchMode(std::make_unique<SettingsMode>());
-        else { console_.setStatusLine(" Unknown mode: " + tokens[1], kErr); return; }
 
-        console_.setStatusLine(" Switched to " + tokens[1], kOk);
+        if (tokens[1] == "game") {
+            switchMode(std::make_unique<GameMode>());
+            console_.setStatusLine(" Switched to game", kOk);
+            return;
+        }
+
+        if (tokens[1] == "editor") {
+            if (tokens.size() < 3) {
+                console_.setStatusLine(" Usage: /mode editor world|generator", kErr);
+                return;
+            }
+            if (tokens[2] == "world")               switchMode(std::make_unique<EditorMode>());
+            else if (tokens[2] == "generator")      switchMode(std::make_unique<FragmentEditorMode>());
+            else { console_.setStatusLine(" Unknown editor target: " + tokens[2], kErr); return; }
+
+            console_.setStatusLine(" Switched to editor " + tokens[2], kOk);
+            return;
+        }
+
+        if (tokens[1] == "settings") {
+            switchMode(std::make_unique<SettingsMode>());
+            console_.setStatusLine(" Switched to settings", kOk);
+            return;
+        }
+
+        console_.setStatusLine(" Unknown mode: " + tokens[1], kErr);
         return;
     }
 
@@ -166,6 +192,7 @@ void App::run() {
     initSDL();
     srand(static_cast<unsigned>(time(nullptr)));
     initLevels();
+    initFragments();
 
     /*
     A fresh launch starts on the settings screen at the smallest named

@@ -48,6 +48,15 @@ void endFrame();
 void drawChar(TileID c, int x, int y);
 
 /*
+Tiles assets/canvas.png (a checkerboard swatch, signalling "transparent"
+the way image editors do) into an arbitrary pixel-space rect — used by
+FragmentEditorMode to show which cells sit within the fragment's current
+width x height footprint before any tiles are painted over them. A no-op
+if the asset failed to load.
+*/
+void drawCanvasTile(SDL_Rect dst);
+
+/*
 Like drawChar, but with an arbitrary pixel-space destination rect instead
 of a CELL_SIZE grid cell. Used by EditorMode for UI that isn't cell-aligned
 (the palette preview scales sprites to fit, category tab labels are offset

@@ -44,6 +44,16 @@ game_mode.cpp's render().
 constexpr TileID OCCLUSION_MARKER = 0xFFFB;
 
 /*
+Sentinel stored in a fragment's connector layer (generator/fragment.h).
+Marks a cell where the fragment may be stitched to another fragment by
+the procedural generator — no direction or type encoded, just a
+candidate point, exactly like OCCLUSION_MARKER's one-marker-per-click
+placement. Never rendered as a sprite; drawn as a green outline in
+FragmentEditorMode. Unused outside the fragment editor/generator.
+*/
+constexpr TileID CONNECTOR_MARKER = 0xFFFA;
+
+/*
 Interactive Logic Tiles
 ONLY tiles that have hardcoded behavior in main.cpp are defined here.
 All decorative tiles (floors, water, rocks, walls) are entirely handled

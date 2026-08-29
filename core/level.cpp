@@ -7,6 +7,8 @@
 #include <system_error>
 #include <vector>
 
+#include "json_min.h"
+
 /*
 Map authoring notes
 Locations are stored one-per-file in world/LEVEL-<floor>-<x>-<y>.json
@@ -32,112 +34,6 @@ static void fillEmpty(Level& level) {
             level.objectMap[y][x]    = EMPTY_ID;
             level.occlusionMap[y][x] = EMPTY_ID;
         }
-}
-
-/*
-Minimal JSON parser
-Handles only the level JSON format produced by the editor:
-a single object whose values are strings, integers, booleans, or
-arrays-of-arrays-of-unsigned-integers.  No external dependencies.
-*/
-
-static const char* jSkip(const char* p) {
-    if (!p) return p;
-    while (*p == ' ' || *p == '\t' || *p == '\n' || *p == '\r') ++p;
-    return p;
-}
-
-// Advance past one expected character (skipping leading whitespace).
-static const char* jChar(const char* p, char c) {
-    p = jSkip(p);
-    return (p && *p == c) ? p + 1 : p;
-}
-
-// Parse a JSON string literal into out[0..maxLen-1]; returns p past closing ".
-static const char* jString(const char* p, char* out, int maxLen) {
-    p = jChar(p, '"');
-    int i = 0;
-    while (p && *p && *p != '"' && i < maxLen - 1) out[i++] = *p++;
-    out[i] = '\0';
-    if (p && *p == '"') ++p;
-    return p;
-}
-
-// Parse a JSON integer (optionally negative) into *v.
-static const char* jInt(const char* p, long long* v) {
-    p = jSkip(p);
-    bool neg = (p && *p == '-');
-    if (neg) ++p;
-    *v = 0;
-    while (p && *p >= '0' && *p <= '9') *v = *v * 10 + (*p++ - '0');
-    if (neg) *v = -*v;
-    return p;
-}
-
-// Parse a JSON bool (true / false) into *v.
-static const char* jBool(const char* p, bool* v) {
-    p = jSkip(p);
-    if (p && strncmp(p, "true",  4) == 0) { *v = true;  return p + 4; }
-    if (p && strncmp(p, "false", 5) == 0) { *v = false; return p + 5; }
-    return p;
-}
-
-// Skip one complete JSON value (used to ignore unknown keys).
-static const char* jSkipValue(const char* p) {
-    p = jSkip(p);
-    if (!p || !*p) return p;
-
-    if (*p == '"') {
-        // String
-        ++p;
-        while (*p && *p != '"') { if (*p == '\\') ++p; if (*p) ++p; }
-        if (*p == '"') ++p;
-    } else if (*p == '[' || *p == '{') {
-        // Array or object — track bracket depth
-        char open = *p, close = (open == '[') ? ']' : '}';
-        ++p;
-        int depth = 1;
-        while (*p && depth > 0) {
-            if (*p == '"') {
-                ++p;
-                while (*p && *p != '"') { if (*p == '\\') ++p; if (*p) ++p; }
-                if (*p == '"') ++p;
-            } else if (*p == open)  { ++depth; ++p; }
-            else if (*p == close) { --depth; ++p; }
-            else                  { ++p; }
-        }
-    } else if (*p == 't') { p += 4; }  // true
-    else if (*p == 'f')   { p += 5; }  // false
-    else if (*p == 'n')   { p += 4; }  // null
-    else {
-        // Number: skip all numeric characters
-        while (*p && *p != ',' && *p != ']' && *p != '}') ++p;
-    }
-    return p;
-}
-
-/*
-Parse a JSON 2D array [[uint,...], ...] into map[MAX_HEIGHT][MAX_WIDTH].
-Always reads exactly MAX_HEIGHT rows and MAX_WIDTH columns to match what the
-editor writes, regardless of the level's declared width/height.
-*/
-static const char* j2DArray(const char* p, TileID map[][MAX_WIDTH]) {
-    p = jChar(p, '[');
-    for (int y = 0; y < MAX_HEIGHT; ++y) {
-        p = jChar(p, '[');
-        for (int x = 0; x < MAX_WIDTH; ++x) {
-            long long v = 0;
-            p = jInt(p, &v);
-            map[y][x] = (TileID)(unsigned short)v;
-            p = jSkip(p);
-            if (p && *p == ',') ++p; // skip value separator
-        }
-        p = jChar(p, ']');
-        p = jSkip(p);
-        if (p && *p == ',') ++p; // skip row separator
-    }
-    p = jChar(p, ']');
-    return p;
 }
 
 // loadLevelFromFile
@@ -181,32 +77,6 @@ bool loadLevelFromFile(Level& level, const char* path) {
     }
 
     return true;
-}
-
-// JSON writer
-static void jWrite2DArray(FILE* f, const TileID map[MAX_HEIGHT][MAX_WIDTH]) {
-    fprintf(f, "[\n");
-    for (int y = 0; y < MAX_HEIGHT; ++y) {
-        fprintf(f, "    [");
-        for (int x = 0; x < MAX_WIDTH; ++x)
-            fprintf(f, "%u%s", (unsigned)map[y][x], (x + 1 < MAX_WIDTH) ? "," : "");
-        fprintf(f, "]%s\n", (y + 1 < MAX_HEIGHT) ? "," : "");
-    }
-    fprintf(f, "  ]");
-}
-
-/*
-Escapes '"' and '\\' so a name typed with either doesn't corrupt the JSON.
-Not full JSON string escaping (no control-character handling) — the name
-field is short, editor-typed text, not arbitrary content.
-*/
-static std::string jEscape(const char* s) {
-    std::string out;
-    for (const char* p = s; *p; ++p) {
-        if (*p == '"' || *p == '\\') out += '\\';
-        out += *p;
-    }
-    return out;
 }
 
 bool saveLevelToFile(const Level& level, const char* path) {

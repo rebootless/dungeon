@@ -14,6 +14,7 @@
 static SDL_Window*   window        = nullptr;
 static SDL_Renderer* renderer      = nullptr;
 static SDL_Texture*  atlas         = nullptr;
+static SDL_Texture*  canvasBgTex   = nullptr; // checkerboard swatch for FragmentEditorMode's "transparent" background
 static TTF_Font*     font          = nullptr;
 static SDL_Texture*  logicalTarget = nullptr; // pixel-perfect canvas; blitted to the real window in endFrame()
 static int           canvasW_      = 0;       // size logicalTarget is currently allocated at
@@ -79,6 +80,13 @@ void initSDL() {
     atlas = IMG_LoadTexture(renderer, "assets/spritesheet.png");
     if (!atlas) exit(1);
 
+    /*
+    Optional — FragmentEditorMode's checkerboard background degrades to a
+    no-op (drawCanvasTile) if this asset isn't present yet, rather than
+    aborting startup over a swatch nothing else depends on.
+    */
+    canvasBgTex = IMG_LoadTexture(renderer, "assets/canvas.png");
+
     font = TTF_OpenFont("assets/BigBlueTermPlusNerdFontMono-Regular.ttf", 16);
 
     /*
@@ -92,6 +100,7 @@ void cleanupSDL() {
     if (logicalTarget) { SDL_DestroyTexture(logicalTarget); logicalTarget = nullptr; }
     if (font)     { TTF_CloseFont(font);            font     = nullptr; }
     if (atlas)    { SDL_DestroyTexture(atlas);      atlas    = nullptr; }
+    if (canvasBgTex) { SDL_DestroyTexture(canvasBgTex); canvasBgTex = nullptr; }
     if (renderer) { SDL_DestroyRenderer(renderer);  renderer = nullptr; }
     if (window)   { SDL_DestroyWindow(window);      window   = nullptr; }
     TTF_Quit();
@@ -159,6 +168,11 @@ void drawTileRect(TileID c, SDL_Rect dst) {
         std::min(dst.h, meta.h * CELL_SIZE)
     };
     SDL_RenderCopy(renderer, atlas, &src, &dst);
+}
+
+void drawCanvasTile(SDL_Rect dst) {
+    if (!canvasBgTex) return;
+    SDL_RenderCopy(renderer, canvasBgTex, nullptr, &dst);
 }
 
 void drawString(const std::string& str, int x, int y) {

@@ -32,7 +32,7 @@ straight into Settings with nothing set) still has a sane ESC target.
 */
 class SettingsMode : public IMode {
 public:
-    enum class ReturnMode { Game, Editor };
+    enum class ReturnMode { Game, Editor, FragmentEditor };
 
     /*
     Called by GameMode/EditorMode's ESC handler right before switching

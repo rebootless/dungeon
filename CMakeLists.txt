@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 add_executable(dungeon
     main.cpp
     core/level.cpp
+    core/json_min.cpp
     core/renderer.cpp
     core/display.cpp
     core/console.cpp
@@ -18,11 +19,15 @@ add_executable(dungeon
     editor/editor_mode.cpp
     editor/editor_controls.cpp
     editor/editor_panel.cpp
+    generator/fragment.cpp
+    generator/fragment_editor_mode.cpp
+    generator/fragment_editor_controls.cpp
+    generator/fragment_editor_panel.cpp
     settings/settings_mode.cpp
     settings/settings_panel.cpp
 )
 
-target_include_directories(dungeon PRIVATE core game editor settings)
+target_include_directories(dungeon PRIVATE core game editor generator settings)
 
 if(WIN32)
 
@@ -65,4 +70,11 @@ add_custom_command(TARGET dungeon POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E create_symlink
         "${CMAKE_CURRENT_SOURCE_DIR}/world"
         "${CMAKE_CURRENT_BINARY_DIR}/world"
-    COMMENT "Linking assets/ and world/ into build directory")
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+        "${CMAKE_CURRENT_SOURCE_DIR}/fragments"
+    COMMAND ${CMAKE_COMMAND} -E rm -f
+        "${CMAKE_CURRENT_BINARY_DIR}/fragments"
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
+        "${CMAKE_CURRENT_SOURCE_DIR}/fragments"
+        "${CMAKE_CURRENT_BINARY_DIR}/fragments"
+    COMMENT "Linking assets/, world/, and fragments/ into build directory")
