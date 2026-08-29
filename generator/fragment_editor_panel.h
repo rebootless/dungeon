@@ -19,13 +19,7 @@ namespace FragmentEditorPanel {
     constexpr int ROW_FRAGMENT_LEGEND = 2; // PageUp/PageDown legend
     constexpr int FRAGMENT_LIST_START_ROW = 2;
 
-    // Static label text — HELP_* are drawn by HelpMode (help/help_mode.cpp),
-    // not in this info box; kept here since it's where the text belongs.
+    // Static label text
     extern const std::string FRAGMENT_LEGEND;
-    extern const std::string HELP_PLACE;
-    extern const std::string HELP_COLLISION;
-    extern const std::string HELP_SIZE;
-    extern const std::string HELP_SAVE;
-    extern const std::string HELP_QUIT;
 
 } // namespace FragmentEditorPanel

@@ -48,6 +48,14 @@ void HelpMode::onEvent(const SDL_Event& e) {
     if (e.type != SDL_KEYDOWN) return;
 
     switch (e.key.keysym.scancode) {
+        /*
+        [H] toggles: it's what opened HelpMode from every other mode (see
+        e.g. GameMode's SDL_SCANCODE_H handler), so pressing it again in
+        here closes HelpMode the same way ESCAPE does — same idea as
+        SettingsMode, where ESCAPE both opens (well, [ESC] specifically
+        for settings) and closes.
+        */
+        case SDL_SCANCODE_H:
         case SDL_SCANCODE_ESCAPE:
             switch (returnMode_) {
                 case ReturnMode::EditorWorld:    context_.switchMode(std::make_unique<EditorMode>());         return;

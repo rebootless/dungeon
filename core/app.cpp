@@ -15,6 +15,7 @@
 #include "../generator/fragment.h"
 #include "../generator/fragment_editor_mode.h"
 #include "../generator/generator_mode.h"
+#include "../help/help_mode.h"
 #include "../settings/settings_mode.h"
 
 namespace {
@@ -43,6 +44,7 @@ void App::registerConsoleCommands() {
               }, nullptr },
             { "generator", {}, nullptr },
             { "settings", {}, nullptr },
+            { "help", {}, nullptr },
           }, nullptr },
         { "zoom", {
             { "1", {}, nullptr }, { "2", {}, nullptr }, { "3", {}, nullptr }, { "4", {}, nullptr },
@@ -86,7 +88,7 @@ void App::dispatchCommand(const std::string& line) {
 
     if (tokens[0] == "/mode") {
         if (tokens.size() < 2) {
-            console_.setStatusLine(" Usage: /mode game|editor|generator|settings", kErr);
+            console_.setStatusLine(" Usage: /mode game|editor|generator|settings|help", kErr);
             return;
         }
 
@@ -118,6 +120,13 @@ void App::dispatchCommand(const std::string& line) {
         if (tokens[1] == "settings") {
             switchMode(std::make_unique<SettingsMode>());
             console_.setStatusLine(" Switched to settings", kOk);
+            return;
+        }
+
+        if (tokens[1] == "help") {
+            HelpMode::setReturnMode(HelpMode::ReturnMode::Game);
+            switchMode(std::make_unique<HelpMode>());
+            console_.setStatusLine(" Switched to help", kOk);
             return;
         }
 

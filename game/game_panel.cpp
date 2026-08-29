@@ -2,17 +2,6 @@
 
 namespace GamePanel {
 
-/*
-Reused by HelpMode's Game category (see help/help_panel.cpp) rather than
-duplicated there — no longer drawn in this info box itself (see
-buildInfoBoxLines below).
-*/
-const std::string CONTROLS_MOVE =
-    "Move: [W/A/S/D] / [\u2190\u2191\u2193\u2192] \u2503 Interact: [E] \u2503 Attack: [SPACE]";
-
-const std::string CONTROLS_MISC =
-    "Zoom In: [+] \u2503 Zoom Out: [-] \u2503 Settings: [ESC] \u2503 Quit: [Q]";
-
 const std::string ZOOM_LABEL_PREFIX = "Zoom: ";
 const std::string ZOOM_LABEL_SUFFIX = "x";
 

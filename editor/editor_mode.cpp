@@ -360,6 +360,23 @@ void EditorMode::onRender() {
         clearClipRect();
     }
 
+    /*
+    Checkerboard background
+    Same convention as FragmentEditorMode's canvas.png swatch (see
+    generator/fragment_editor_mode.cpp) — drawn under the whole map,
+    unconditionally, before any tiles; drawTileRect is a no-op for
+    EMPTY_ID, so the checkerboard only ever actually shows through where
+    a cell has no ground/object/entity tile at all, making "genuinely
+    empty" visually distinct from "filled with a dark tile" at a glance.
+    */
+    for (int y = 0; y < MAX_HEIGHT; ++y) {
+        for (int x = 0; x < MAX_WIDTH; ++x) {
+            int px = mapOriginX + x * CELL_SIZE;
+            int py = y * CELL_SIZE;
+            drawCanvasTile(SDL_Rect{px, py, CELL_SIZE, CELL_SIZE});
+        }
+    }
+
     // Map layers (Ground → Objects → Entities, matches game render order)
     for (int y = 0; y < MAX_HEIGHT; ++y) {
         for (int x = 0; x < MAX_WIDTH; ++x) {
@@ -446,9 +463,9 @@ void EditorMode::onRender() {
     /*
     Info box text
     Just the transient save/load status now — the control legend that used
-    to fill the rest of this box lives in HelpMode (see help/help_mode.cpp,
-    reachable with [H]), reusing these same EditorPanel::HELP_* strings
-    rather than duplicating them.
+    to fill the rest of this box lives in help/help_panel.cpp
+    (HelpPanel::EDITOR_WORLD_*), the single centralized place all control
+    text is edited from — reachable in-app with [H].
     */
     const int boxStartY = MAX_HEIGHT + 2;
     {

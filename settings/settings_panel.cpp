@@ -4,9 +4,6 @@ namespace SettingsPanel {
 
 const std::string TITLE = "SETTINGS MENU";
 
-const std::string HINT =
-    "Navigate: [W/S] / [\u2191\u2193] \u2503 Column: [A/D] / [\u2190\u2192] \u2503 Select: [SPACE] \u2503 Close: [ESC] \u2503 Quit: [Q]";
-
 const std::string HEADER_SETTING = "SETTING";
 const std::string HEADER_OPTION  = "OPTION";
 

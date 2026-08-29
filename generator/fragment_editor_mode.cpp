@@ -444,9 +444,9 @@ void FragmentEditorMode::onRender() {
     /*
     Info box text
     Just the transient save/load status now — the control legend that used
-    to fill the rest of this box lives in HelpMode (see help/help_mode.cpp,
-    reachable with [H]), reusing these same FragmentEditorPanel::HELP_*
-    strings rather than duplicating them.
+    to fill the rest of this box lives in help/help_panel.cpp
+    (HelpPanel::EDITOR_GENERATOR_*), the single centralized place all
+    control text is edited from — reachable in-app with [H].
     */
     const int boxStartY = MAX_HEIGHT + 2;
     {

@@ -220,10 +220,10 @@ void SettingsMode::onRender() {
     }
 
     /*
-    HINT used to be drawn here — that control legend now lives in
-    HelpMode's Settings category (help/help_panel.cpp), reachable with
-    [H], reusing this same SettingsPanel::HINT string rather than
-    duplicating it.
+    A control legend used to be drawn here — that wording now lives in
+    help/help_panel.cpp (HelpPanel::SETTINGS_HINT), reachable with [H],
+    since HelpMode is the single centralized place all control text is
+    edited from.
     */
     drawStringPx(SettingsPanel::TITLE, SettingsPanel::COL_LEFT * CELL_SIZE,
                  SettingsPanel::ROW_TITLE * CELL_SIZE);

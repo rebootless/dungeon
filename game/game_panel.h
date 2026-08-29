@@ -59,8 +59,6 @@ namespace GamePanel {
     extern const std::vector<std::string> RIGHT_PANEL_LINES;
 
     // Static label text
-    extern const std::string CONTROLS_MOVE;
-    extern const std::string CONTROLS_MISC;
     extern const std::string ZOOM_LABEL_PREFIX; // " Zoom: " — sandwiches getZoom()
     extern const std::string ZOOM_LABEL_SUFFIX; // "x"
 

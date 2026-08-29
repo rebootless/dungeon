@@ -32,13 +32,7 @@ namespace EditorPanel {
     */
     constexpr int WORLD_LIST_START_ROW = 2;
 
-    // Static label text — HELP_* are drawn by HelpMode (help/help_mode.cpp),
-    // not in this info box; kept here since it's where the text belongs.
+    // Static label text
     extern const std::string WORLD_LEGEND;
-    extern const std::string HELP_PLACE;
-    extern const std::string HELP_COLLISION;
-    extern const std::string HELP_LOCATION;
-    extern const std::string HELP_SAVE;
-    extern const std::string HELP_QUIT;
 
 } // namespace EditorPanel
