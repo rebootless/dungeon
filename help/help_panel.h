@@ -5,86 +5,119 @@
 
 /*
 HelpMode panel layout
-Same layout constants as SettingsPanel (settings/settings_panel.h) —
-categories in a left column, that category's control legend in a right
-column, no fixed-size map to work around.
+
+Left column is a two-level tree:
+CONTROLS
+  Game
+  Editor world
+  Editor generator
+  Generator
+  Settings
+  Console
+CONSOLE COMMANDS
+  Possible commands
+
+Group rows are headers and are not selectable. Only leaves are
+selectable.
+
+The right column displays the controls/commands belonging to the
+currently selected leaf. Its header tracks the group owning that leaf:
+CONTROLS or CONSOLE COMMANDS.
 */
 namespace HelpPanel {
 
-    constexpr int ROW_TITLE      = 1;
-    constexpr int ROW_HEADERS    = 3;
-    constexpr int ROW_LIST_START = 4;
-
-    constexpr int COL_LEFT  = 2;  // category column
-    constexpr int COL_RIGHT = 20; // that category's controls column
-
     extern const std::string TITLE;
-    extern const std::string HEADER_CATEGORY;
-    extern const std::string HEADER_CONTROLS;
 
-    // One entry per mode, in the order shown in the left column.
-    extern const std::vector<std::string> CATEGORY_NAMES;
+    constexpr int ROW_TITLE          = 1;
+    constexpr int ROW_HEADERS        = 3;
+    constexpr int ROW_LIST_START     = 3;
+    constexpr int ROW_CONTROLS_START = 4;
+
+    constexpr int COL_LEFT  = 2;
+    constexpr int COL_RIGHT = 20;
+
+    /*
+    Leaf ids
+
+    Contiguous across both groups (0..LEAF_COUNT-1), so keyboard Up/Down
+    can increment/decrement one int while the tree itself skips
+    non-selectable group-header rows.
+    */
     constexpr int CATEGORY_GAME             = 0;
     constexpr int CATEGORY_EDITOR_WORLD     = 1;
     constexpr int CATEGORY_EDITOR_GENERATOR = 2;
     constexpr int CATEGORY_GENERATOR        = 3;
     constexpr int CATEGORY_SETTINGS         = 4;
     constexpr int CATEGORY_CONSOLE          = 5;
+    constexpr int CATEGORY_CONSOLE_COMMANDS = 6;
+    constexpr int LEAF_COUNT                = 7;
+
+    struct HelpTreeLeaf {
+        int id;
+        std::string name;
+    };
+
+    struct HelpTreeGroup {
+        std::string name;
+        std::vector<HelpTreeLeaf> leaves;
+    };
 
     /*
-    Control text
-    Every string a mode's controls legend is built from, all in this one
-    file so editing any mode's wording never means hunting through that
-    mode's own panel header — GameMode/EditorMode/FragmentEditorMode/
-    SettingsMode/the console no longer hold any control-text constants of
-    their own (see each's *_panel.cpp) — this is the only copy, and
-    controlsForCategory() below is the only reader.
+    One control entry.
+
+    key:
+    Keyboard/mouse input.
+
+    description:
+    Action performed by that input.
+
+    The renderer can use these two fields to create a clean aligned
+    two-column legend instead of storing pre-formatted strings.
     */
+    struct HelpControl {
+        std::string key;
+        std::string description;
+    };
 
-    // Game
-    extern const std::string GAME_MOVE;
-    extern const std::string GAME_MISC;
-
-    // Editor world
-    extern const std::string EDITOR_WORLD_PLACE;
-    extern const std::string EDITOR_WORLD_COLLISION;
-    extern const std::string EDITOR_WORLD_LOCATION;
-    extern const std::string EDITOR_WORLD_SAVE;
-    extern const std::string EDITOR_WORLD_QUIT;
-
-    // Editor generator (fragment editor)
-    extern const std::string EDITOR_GENERATOR_PLACE;
-    extern const std::string EDITOR_GENERATOR_COLLISION;
-    extern const std::string EDITOR_GENERATOR_SIZE;
-    extern const std::string EDITOR_GENERATOR_SAVE;
-    extern const std::string EDITOR_GENERATOR_QUIT;
-
-    // Generator (test mode) — never drew its own inline legend even
-    // before HelpMode existed (see generator/generator_mode.cpp), so
-    // this wording has never lived anywhere else.
-    extern const std::string GENERATOR_REGENERATE;
-    extern const std::string GENERATOR_QUIT;
-
-    // Settings
-    extern const std::string SETTINGS_HINT;
+    extern const std::vector<HelpTreeGroup> CATEGORY_TREE;
 
     /*
-    Console — how to use the backtick prompt itself, then every command
-    core/app.cpp's dispatchCommand() understands. Keep this list in sync
-    with registerConsoleCommands()'s command tree by hand; nothing
-    enforces it automatically.
+    Returns the group owning the specified category.
+
+    Examples:
+    CATEGORY_GAME             -> "CONTROLS"
+    CATEGORY_EDITOR_WORLD     -> "CONTROLS"
+    CATEGORY_CONSOLE          -> "CONTROLS"
+    CATEGORY_CONSOLE_COMMANDS -> "CONSOLE COMMANDS"
     */
-    extern const std::string CONSOLE_TOGGLE;
-    extern const std::string CONSOLE_SUBMIT;
-    extern const std::string CONSOLE_HISTORY;
-    extern const std::string CONSOLE_AUTOCOMPLETE;
+    std::string headerForCategory(int category);
+
+    extern const std::vector<HelpControl> GAME_CONTROLS;
+
+    extern const std::vector<HelpControl> EDITOR_WORLD_CONTROLS;
+
+    extern const std::vector<HelpControl> EDITOR_GENERATOR_CONTROLS;
+
+    extern const std::vector<HelpControl> GENERATOR_CONTROLS;
+
+    extern const std::vector<HelpControl> SETTINGS_CONTROLS;
+
+    extern const std::vector<HelpControl> CONSOLE_CONTROLS;
+
+    /*
+    Possible console commands.
+
+    Kept in sync by hand with core/app.cpp's registerConsoleCommands()/
+    dispatchCommand().
+    */
     extern const std::vector<std::string> CONSOLE_COMMANDS;
 
-    // Every category's legend ends with this — [H] works from every mode
-    // HelpMode can be reached from, including HelpMode's own return targets.
-    extern const std::string HELP_KEY;
+    /*
+    Returns the complete control legend for one category.
 
-    // The full control legend for one category, one line per entry.
-    std::vector<std::string> controlsForCategory(int category);
+    The returned entries contain separate key and description fields,
+    allowing the renderer to align them into columns.
+    */
+    std::vector<HelpControl> controlsForCategory(int category);
 
 } // namespace HelpPanel

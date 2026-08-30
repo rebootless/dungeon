@@ -235,19 +235,25 @@ void FragmentEditorMode::onEvent(const SDL_Event& e) {
             Fragment size — grown/shrunk from the fixed top-left corner
             (0,0). Clamped to [1, MAX_WIDTH]/[1, MAX_HEIGHT]; painting
             itself is never restricted to this rectangle (see frPlaceTile).
+            WASD are plain aliases for the arrows here, same as
+            EditorMode's world-coordinate stepping.
             */
+            case SDL_SCANCODE_A:
             case SDL_SCANCODE_LEFT:
                 fragmentWidth = std::max(1, fragmentWidth - 1);
                 break;
 
+            case SDL_SCANCODE_D:
             case SDL_SCANCODE_RIGHT:
                 fragmentWidth = std::min(MAX_WIDTH, fragmentWidth + 1);
                 break;
 
+            case SDL_SCANCODE_W:
             case SDL_SCANCODE_UP:
                 fragmentHeight = std::max(1, fragmentHeight - 1);
                 break;
 
+            case SDL_SCANCODE_S:
             case SDL_SCANCODE_DOWN:
                 fragmentHeight = std::min(MAX_FRAGMENT_HEIGHT, fragmentHeight + 1);
                 break;

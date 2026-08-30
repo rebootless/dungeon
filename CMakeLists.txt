@@ -81,4 +81,4 @@ add_custom_command(TARGET dungeon POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E create_symlink
         "${CMAKE_CURRENT_SOURCE_DIR}/fragments"
         "${CMAKE_CURRENT_BINARY_DIR}/fragments"
-    COMMENT "Linking assets/, world/, and fragments/ into build directory")
+    COMMENT "[100%] Linking assets/, world/, fragments/ into build directory")

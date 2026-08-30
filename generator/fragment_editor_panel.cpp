@@ -2,6 +2,6 @@
 
 namespace FragmentEditorPanel {
 
-const std::string FRAGMENT_LEGEND = "ID \u2503 PgUp/PgDn to switch";
+const std::string FRAGMENT_LEGEND = "ID:";
 
 } // namespace FragmentEditorPanel

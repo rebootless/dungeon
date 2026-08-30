@@ -12,8 +12,8 @@ are just "where things go" rather than a hard row budget.
 namespace SettingsPanel {
 
     constexpr int ROW_TITLE       = 1;
-    constexpr int ROW_HEADERS     = 4;
-    constexpr int ROW_LIST_START  = 5;
+    constexpr int ROW_HEADERS     = 3;
+    constexpr int ROW_LIST_START  = 4;
 
     constexpr int COL_LEFT  = 2;  // "SETTING" column (categories)
     constexpr int COL_RIGHT = 20; // "OPTION" column (that category's values)
