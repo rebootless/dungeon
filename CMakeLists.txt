@@ -5,33 +5,33 @@ set(CMAKE_CXX_STANDARD 17)
 
 add_executable(dungeon
     main.cpp
-    core/level.cpp
-    core/json_min.cpp
-    core/renderer.cpp
-    core/display.cpp
-    core/console.cpp
-    core/app.cpp
-    core/tiles.cpp
-    game/game_mode.cpp
-    game/game_controls.cpp
-    game/game_panel.cpp
-    game/interactions.cpp
-    editor/editor_mode.cpp
-    editor/editor_controls.cpp
-    editor/editor_panel.cpp
-    generator/fragment.cpp
-    generator/fragment_editor_mode.cpp
-    generator/fragment_editor_controls.cpp
-    generator/fragment_editor_panel.cpp
-    generator/dungeon_generator.cpp
-    generator/generator_mode.cpp
-    settings/settings_mode.cpp
-    settings/settings_panel.cpp
-    help/help_mode.cpp
-    help/help_panel.cpp
+    src/core/level.cpp
+    src/core/json_min.cpp
+    src/core/renderer.cpp
+    src/core/display.cpp
+    src/core/console.cpp
+    src/core/app.cpp
+    src/core/tiles.cpp
+    src/game/game_mode.cpp
+    src/game/game_controls.cpp
+    src/game/game_panel.cpp
+    src/game/interactions.cpp
+    src/editor/editor_mode.cpp
+    src/editor/editor_controls.cpp
+    src/editor/editor_panel.cpp
+    src/generator/fragment.cpp
+    src/generator/fragment_editor_mode.cpp
+    src/generator/fragment_editor_controls.cpp
+    src/generator/fragment_editor_panel.cpp
+    src/generator/dungeon_generator.cpp
+    src/generator/generator_mode.cpp
+    src/settings/settings_mode.cpp
+    src/settings/settings_panel.cpp
+    src/help/help_mode.cpp
+    src/help/help_panel.cpp
 )
 
-target_include_directories(dungeon PRIVATE core game editor generator settings help)
+target_include_directories(dungeon PRIVATE src)
 
 if(WIN32)
 
@@ -63,22 +63,14 @@ else()
 
 endif()
 
+# world/ and fragments/ (core/level.h's WORLD_DIR, generator/fragment.h's
+# FRAGMENTS_DIR) now live under assets/ as real subdirectories, so linking
+# assets/ into the build directory already exposes both — no separate
+# symlink needed for either.
 add_custom_command(TARGET dungeon POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E rm -f
         "${CMAKE_CURRENT_BINARY_DIR}/assets"
     COMMAND ${CMAKE_COMMAND} -E create_symlink
         "${CMAKE_CURRENT_SOURCE_DIR}/assets"
         "${CMAKE_CURRENT_BINARY_DIR}/assets"
-    COMMAND ${CMAKE_COMMAND} -E rm -f
-        "${CMAKE_CURRENT_BINARY_DIR}/world"
-    COMMAND ${CMAKE_COMMAND} -E create_symlink
-        "${CMAKE_CURRENT_SOURCE_DIR}/world"
-        "${CMAKE_CURRENT_BINARY_DIR}/world"
-    COMMAND ${CMAKE_COMMAND} -E make_directory
-        "${CMAKE_CURRENT_SOURCE_DIR}/fragments"
-    COMMAND ${CMAKE_COMMAND} -E rm -f
-        "${CMAKE_CURRENT_BINARY_DIR}/fragments"
-    COMMAND ${CMAKE_COMMAND} -E create_symlink
-        "${CMAKE_CURRENT_SOURCE_DIR}/fragments"
-        "${CMAKE_CURRENT_BINARY_DIR}/fragments"
-    COMMENT "[100%] Linking assets/, world/, fragments/ into build directory")
+    COMMENT "[100%] Linking assets/ into build directory")

@@ -58,6 +58,16 @@ an entry for the OTHER control (e.g. the barrel).
 const Interaction* findInteraction(TileID obj, Control control);
 
 /*
+Looks up what happens when the player steps onto an Objects-layer cell
+showing tile `obj`, independent of Interact/Attack entirely — currently
+only the trap ("armed" -> "triggered") answers this. Checked once per
+successful step, right where stairs markers are (game/game_controls.cpp),
+so it fires exactly once per fresh arrival rather than every frame spent
+standing on the cell.
+*/
+const Interaction* findStepTrigger(TileID obj);
+
+/*
 True while `obj` (a raw Objects-layer cell — anchor OR sub-tile, since
 doors are 1x2) is a closed or still-opening door. Movement collision uses
 this so doors block the player while shut without ever needing a

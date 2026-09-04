@@ -15,12 +15,12 @@ if [[ ! -f "dungeon" ]]; then
     exit 1
 fi
 
-rm -f assets world fragments
+# world/ and fragments/ (core/level.h's WORLD_DIR, generator/fragment.h's
+# FRAGMENTS_DIR) live under assets/, so copying assets/ already brings
+# both along — no separate copy needed for either.
+rm -f assets
 
 cp -r ../assets .
-cp -r ../world .
-mkdir -p ../fragments
-cp -r ../fragments .
 
 rm -rf CMakeFiles CMakeCache.txt cmake_install.cmake Makefile
 

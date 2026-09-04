@@ -1,565 +1,438 @@
 #include "tiles.h"
 
-#include <algorithm>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <unordered_map>
-
-// Tile metadata registry
-static const std::unordered_map<TileID, TileMetadata> s_meta = {
-    // Entities & UI
-    { makeTile(5, 33),  { LayerType::Entities, 1, 1 } }, // PLAYER — kept paintable so a spawn point can be placed from the palette
-    { makeTile(4, 33),  { LayerType::Entities, 1, 1, false } }, // FACING_INDICATOR — drawn as an overlay only, never placed on a layer
-
-    // Minecart
-    { makeTile(6, 18),  { LayerType::Entities, 1, 1 } }, // Full
-    { makeTile(6, 19),  { LayerType::Entities, 1, 1 } }, // Empty
-
-    { makeTile(1, 33),  { LayerType::Objects,  1, 1, false } }, // HORIZONTAL_BORDER — drawn automatically by FrameBuilder
-    { makeTile(2, 33),  { LayerType::Objects,  1, 1, false } }, // VERTICAL_BORDER
-    { makeTile(3, 33),  { LayerType::Objects,  1, 1, false } }, // CORNER_BORDER
-
-    { COLLISION_MARKER,   { LayerType::Collision,1, 1, false } }, // placed via the editor's [1] tool
-    { STAIRS_UP_MARKER,   { LayerType::Collision,1, 1, false } }, // placed via the editor's [5] tool
-    { STAIRS_DOWN_MARKER, { LayerType::Collision,1, 1, false } }, // placed via the editor's [6] tool
-
-    // Floor tiles
-    // 1x1
-    { makeTile(2, 1), { LayerType::Ground, 1, 1 } },
-    // 1x1
-    { makeTile(3, 1), { LayerType::Ground, 1, 1 } },
-    // 1x1
-    { makeTile(4, 1), { LayerType::Ground, 1, 1 } },
-    // 1x1
-    { makeTile(5, 1), { LayerType::Ground, 1, 1 } },
-    // 1x1
-    { makeTile(6, 1), { LayerType::Ground, 1, 1 } },
-    // 1x1
-    { makeTile(7, 1), { LayerType::Ground, 1, 1 } },
-    // 1x1
-    { makeTile(8, 1), { LayerType::Ground, 1, 1 } },
-    // 1x1
-    { makeTile(9, 1), { LayerType::Ground, 1, 1 } },
-    // 1x1
-    { makeTile(10, 1), { LayerType::Ground, 1, 1 } },
-    // 1x1
-    { makeTile(11, 1), { LayerType::Ground, 1, 1 } },
-    // 1x1
-    { makeTile(12, 1), { LayerType::Ground, 1, 1 } },
-    // 1x1
-    { makeTile(13, 1), { LayerType::Ground, 1, 1 } },
-    // 1x1
-    { makeTile(14, 1), { LayerType::Ground, 1, 1 } },
-    // 1x1
-    { makeTile(15, 1), { LayerType::Ground, 1, 1 } },
-    // 1x1
-    { makeTile(16, 1), { LayerType::Ground, 1, 1 } },
-    // 1x1
-    { makeTile(17, 1), { LayerType::Ground, 1, 1 } },
-
-    // 3x3
-    { makeTile(1, 2), { LayerType::Ground, 1, 1 } },
-    { makeTile(2, 2), { LayerType::Ground, 1, 1 } },
-    { makeTile(3, 2), { LayerType::Ground, 1, 1 } },
-    { makeTile(1, 3), { LayerType::Ground, 1, 1 } },
-    { makeTile(2, 3), { LayerType::Ground, 1, 1 } },
-    { makeTile(3, 3), { LayerType::Ground, 1, 1 } },
-    { makeTile(1, 4), { LayerType::Ground, 1, 1 } },
-    { makeTile(2, 4), { LayerType::Ground, 1, 1 } },
-    { makeTile(3, 4), { LayerType::Ground, 1, 1 } },
-
-    // 3x3
-    { makeTile(4, 2), { LayerType::Ground, 1, 1 } },
-    { makeTile(5, 2), { LayerType::Ground, 1, 1 } },
-    { makeTile(6, 2), { LayerType::Ground, 1, 1 } },
-    { makeTile(4, 3), { LayerType::Ground, 1, 1 } },
-    { makeTile(5, 3), { LayerType::Ground, 1, 1 } },
-    { makeTile(6, 3), { LayerType::Ground, 1, 1 } },
-    { makeTile(4, 4), { LayerType::Ground, 1, 1 } },
-    { makeTile(5, 4), { LayerType::Ground, 1, 1 } },
-    { makeTile(6, 4), { LayerType::Ground, 1, 1 } },
-
-    // 3x3
-    { makeTile(7, 2), { LayerType::Ground, 1, 1 } },
-    { makeTile(8, 2), { LayerType::Ground, 1, 1 } },
-    { makeTile(9, 2), { LayerType::Ground, 1, 1 } },
-    { makeTile(7, 3), { LayerType::Ground, 1, 1 } },
-    { makeTile(8, 3), { LayerType::Ground, 1, 1 } },
-    { makeTile(9, 3), { LayerType::Ground, 1, 1 } },
-    { makeTile(7, 4), { LayerType::Ground, 1, 1 } },
-    { makeTile(8, 4), { LayerType::Ground, 1, 1 } },
-    { makeTile(9, 4), { LayerType::Ground, 1, 1 } },
-
-    // 3x3
-    { makeTile(10, 2), { LayerType::Ground, 1, 1 } },
-    { makeTile(11, 2), { LayerType::Ground, 1, 1 } },
-    { makeTile(12, 2), { LayerType::Ground, 1, 1 } },
-    { makeTile(10, 3), { LayerType::Ground, 1, 1 } },
-    { makeTile(11, 3), { LayerType::Ground, 1, 1 } },
-    { makeTile(12, 3), { LayerType::Ground, 1, 1 } },
-    { makeTile(10, 4), { LayerType::Ground, 1, 1 } },
-    { makeTile(11, 4), { LayerType::Ground, 1, 1 } },
-    { makeTile(12, 4), { LayerType::Ground, 1, 1 } },
-
-    // 3x3
-    { makeTile(13, 2), { LayerType::Ground, 1, 1 } },
-    { makeTile(14, 2), { LayerType::Ground, 1, 1 } },
-    { makeTile(15, 2), { LayerType::Ground, 1, 1 } },
-    { makeTile(13, 3), { LayerType::Ground, 1, 1 } },
-    { makeTile(14, 3), { LayerType::Ground, 1, 1 } },
-    { makeTile(15, 3), { LayerType::Ground, 1, 1 } },
-    { makeTile(13, 4), { LayerType::Ground, 1, 1 } },
-    { makeTile(14, 4), { LayerType::Ground, 1, 1 } },
-    { makeTile(15, 4), { LayerType::Ground, 1, 1 } },
-
-    // 2x2
-    { makeTile(8, 14), { LayerType::Ground, 1, 1 } },
-    { makeTile(9, 14), { LayerType::Ground, 1, 1 } },
-    { makeTile(8, 15), { LayerType::Ground, 1, 1 } },
-    { makeTile(9, 15), { LayerType::Ground, 1, 1 } },
-
-    // 2x2
-    { makeTile(10, 14), { LayerType::Ground, 1, 1 } },
-    { makeTile(11, 14), { LayerType::Ground, 1, 1 } },
-    { makeTile(10, 15), { LayerType::Ground, 1, 1 } },
-    { makeTile(11, 15), { LayerType::Ground, 1, 1 } },
-
-    // 2x2
-    { makeTile(12, 14), { LayerType::Ground, 1, 1 } },
-    { makeTile(13, 14), { LayerType::Ground, 1, 1 } },
-    { makeTile(12, 15), { LayerType::Ground, 1, 1 } },
-    { makeTile(13, 15), { LayerType::Ground, 1, 1 } },
-
-    // 2x2
-    { makeTile(14, 14), { LayerType::Ground, 1, 1 } },
-    { makeTile(15, 14), { LayerType::Ground, 1, 1 } },
-    { makeTile(14, 15), { LayerType::Ground, 1, 1 } },
-    { makeTile(15, 15), { LayerType::Ground, 1, 1 } },
-
-    // 2x2
-    { makeTile(16, 14), { LayerType::Ground, 1, 1 } },
-    { makeTile(17, 14), { LayerType::Ground, 1, 1 } },
-    { makeTile(16, 15), { LayerType::Ground, 1, 1 } },
-    { makeTile(17, 15), { LayerType::Ground, 1, 1 } },
-
-    // Wall tiles
-    // 3x3
-    { makeTile(1, 5), { LayerType::Ground, 1, 1 } },
-    { makeTile(2, 5), { LayerType::Ground, 1, 1 } },
-    { makeTile(3, 5), { LayerType::Ground, 1, 1 } },
-    { makeTile(1, 6), { LayerType::Ground, 1, 1 } },
-    { makeTile(2, 6), { LayerType::Ground, 1, 1 } },
-    { makeTile(1, 7), { LayerType::Ground, 1, 1 } },
-    { makeTile(3, 7), { LayerType::Ground, 1, 1 } },
-    // 3x3
-    { makeTile(4, 5), { LayerType::Ground, 1, 1 } },
-    { makeTile(5, 5), { LayerType::Ground, 1, 1 } },
-    { makeTile(6, 5), { LayerType::Ground, 1, 1 } },
-    { makeTile(4, 6), { LayerType::Ground, 1, 1 } },
-    { makeTile(5, 6), { LayerType::Ground, 1, 1 } },
-    { makeTile(6, 6), { LayerType::Ground, 1, 1 } },
-    { makeTile(4, 7), { LayerType::Ground, 1, 1 } },
-    { makeTile(5, 7), { LayerType::Ground, 1, 1 } },
-    { makeTile(6, 7), { LayerType::Ground, 1, 1 } },
-    // 3x3
-    { makeTile(7, 5), { LayerType::Ground, 1, 1 } },
-    { makeTile(8, 5), { LayerType::Ground, 1, 1 } },
-    { makeTile(9, 5), { LayerType::Ground, 1, 1 } },
-    { makeTile(7, 6), { LayerType::Ground, 1, 1 } },
-    { makeTile(8, 6), { LayerType::Ground, 1, 1 } },
-    { makeTile(9, 6), { LayerType::Ground, 1, 1 } },
-    { makeTile(7, 7), { LayerType::Ground, 1, 1 } },
-    { makeTile(8, 7), { LayerType::Ground, 1, 1 } },
-    { makeTile(9, 7), { LayerType::Ground, 1, 1 } },
-    // 3x3
-    { makeTile(10, 5), { LayerType::Ground, 1, 1 } },
-    { makeTile(11, 5), { LayerType::Ground, 1, 1 } },
-    { makeTile(12, 5), { LayerType::Ground, 1, 1 } },
-    { makeTile(10, 6), { LayerType::Ground, 1, 1 } },
-    { makeTile(11, 6), { LayerType::Ground, 1, 1 } },
-    { makeTile(10, 7), { LayerType::Ground, 1, 1 } },
-    { makeTile(12, 7), { LayerType::Ground, 1, 1 } },
-    // 3x3
-    { makeTile(13, 5), { LayerType::Ground, 1, 1 } },
-    { makeTile(14, 5), { LayerType::Ground, 1, 1 } },
-    { makeTile(15, 5), { LayerType::Ground, 1, 1 } },
-    { makeTile(13, 6), { LayerType::Ground, 1, 1 } },
-    { makeTile(14, 6), { LayerType::Ground, 1, 1 } },
-    { makeTile(15, 6), { LayerType::Ground, 1, 1 } },
-    { makeTile(13, 7), { LayerType::Ground, 1, 1 } },
-    { makeTile(14, 7), { LayerType::Ground, 1, 1 } },
-    { makeTile(15, 7), { LayerType::Ground, 1, 1 } },
-    // 3x3
-    { makeTile(16, 5), { LayerType::Ground, 1, 1 } },
-    { makeTile(17, 5), { LayerType::Ground, 1, 1 } },
-    { makeTile(18, 5), { LayerType::Ground, 1, 1 } },
-    { makeTile(16, 6), { LayerType::Ground, 1, 1 } },
-    { makeTile(17, 6), { LayerType::Ground, 1, 1 } },
-    { makeTile(18, 6), { LayerType::Ground, 1, 1 } },
-    { makeTile(16, 7), { LayerType::Ground, 1, 1 } },
-    { makeTile(17, 7), { LayerType::Ground, 1, 1 } },
-    { makeTile(18, 7), { LayerType::Ground, 1, 1 } },
-
-    // 1x2 - Wall
-    { makeTile(1, 8), { LayerType::Ground, 1, 2 } },
-    // 1x2 - Door frame
-    { makeTile(2, 8), { LayerType::Ground, 1, 2 } },
-
-    // 1x2 - Wall
-    { makeTile(10, 8), { LayerType::Ground, 1, 2 } },
-    // 1x2 - Door frame
-    { makeTile(11, 8), { LayerType::Ground, 1, 2 } },
-
-    // 2x2
-    { makeTile(1, 10), { LayerType::Ground, 1, 1 } },
-    { makeTile(2, 10), { LayerType::Ground, 1, 1 } },
-    { makeTile(1, 11), { LayerType::Ground, 1, 1 } },
-    { makeTile(2, 11), { LayerType::Ground, 1, 1 } },
-    // 2x2
-    { makeTile(3, 10), { LayerType::Ground, 1, 1 } },
-    { makeTile(4, 10), { LayerType::Ground, 1, 1 } },
-    { makeTile(3, 11), { LayerType::Ground, 1, 1 } },
-    { makeTile(4, 11), { LayerType::Ground, 1, 1 } },
-    // 2x2
-    { makeTile(10, 10), { LayerType::Ground, 1, 1 } },
-    { makeTile(11, 10), { LayerType::Ground, 1, 1 } },
-    { makeTile(10, 11), { LayerType::Ground, 1, 1 } },
-    { makeTile(11, 11), { LayerType::Ground, 1, 1 } },
-    // 2x2
-    { makeTile(12, 10), { LayerType::Ground, 1, 1 } },
-    { makeTile(13, 10), { LayerType::Ground, 1, 1 } },
-    { makeTile(12, 11), { LayerType::Ground, 1, 1 } },
-    { makeTile(13, 11), { LayerType::Ground, 1, 1 } },
-
-    // 1x1
-    { makeTile(1, 12), { LayerType::Ground, 1, 1 } },
-    // 1x1
-    { makeTile(2, 12), { LayerType::Ground, 1, 1 } },
-    // 1x1
-    { makeTile(3, 12), { LayerType::Ground, 1, 1 } },
-    // 1x1
-    { makeTile(4, 12), { LayerType::Ground, 1, 1 } },
-    // 1x1
-    { makeTile(5, 12), { LayerType::Ground, 1, 1 } },
-
-    // 1x1
-    { makeTile(10, 12), { LayerType::Ground, 1, 1 } },
-    // 1x1
-    { makeTile(11, 12), { LayerType::Ground, 1, 1 } },
-    // 1x1
-    { makeTile(12, 12), { LayerType::Ground, 1, 1 } },
-    // 1x1
-    { makeTile(13, 12), { LayerType::Ground, 1, 1 } },
-    // 1x1
-    { makeTile(14, 12), { LayerType::Ground, 1, 1 } },
-
-    // Rocks 1x1
-    { makeTile(1, 13), { LayerType::Objects, 1, 1 } },
-    { makeTile(2, 13), { LayerType::Objects, 1, 1 } },
-    { makeTile(3, 13), { LayerType::Objects, 1, 1 } },
-    { makeTile(4, 13), { LayerType::Objects, 1, 1 } },
-    { makeTile(5, 13), { LayerType::Objects, 1, 1 } },
-    { makeTile(6, 13), { LayerType::Objects, 1, 1 } },
-    { makeTile(7, 13), { LayerType::Objects, 1, 1 } },
-
-    // Rocks 1x2
-    { makeTile(1, 14), { LayerType::Objects, 1, 2 } },
-    { makeTile(2, 14), { LayerType::Objects, 1, 2 } },
-    { makeTile(3, 14), { LayerType::Objects, 1, 2 } },
-    { makeTile(4, 14), { LayerType::Objects, 1, 2 } },
-    { makeTile(5, 14), { LayerType::Objects, 1, 2 } },
-    { makeTile(6, 14), { LayerType::Objects, 1, 2 } },
-    { makeTile(7, 14), { LayerType::Objects, 1, 2 } },
-
-    // Rails 1x1
-    { makeTile(1, 16),  { LayerType::Ground, 1, 1 } },
-    { makeTile(2, 16),  { LayerType::Ground, 1, 1 } },
-    { makeTile(3, 16),  { LayerType::Ground, 1, 1 } },
-    { makeTile(4, 16),  { LayerType::Ground, 1, 1 } },
-    { makeTile(5, 16),  { LayerType::Ground, 1, 1 } },
-    { makeTile(6, 16),  { LayerType::Ground, 1, 1 } },
-    { makeTile(7, 16),  { LayerType::Ground, 1, 1 } },
-    { makeTile(8, 16),  { LayerType::Ground, 1, 1 } },
-    { makeTile(9, 16),  { LayerType::Ground, 1, 1 } },
-    { makeTile(10, 16), { LayerType::Ground, 1, 1 } },
-
-    // Chests 1х1 (4 sprites for animation)
-    { makeTile(13, 16), { LayerType::Objects, 1, 1 } },
-    { makeTile(13, 17), { LayerType::Objects, 1, 1 } },
-    { makeTile(13, 18), { LayerType::Objects, 1, 1 } },
-    { makeTile(13, 19), { LayerType::Objects, 1, 1 } },
-
-    { makeTile(14, 16), { LayerType::Objects, 1, 1 } },
-    { makeTile(14, 17), { LayerType::Objects, 1, 1 } },
-    { makeTile(14, 18), { LayerType::Objects, 1, 1 } },
-    { makeTile(14, 19), { LayerType::Objects, 1, 1 } },
-
-    { makeTile(15, 16), { LayerType::Objects, 1, 1 } },
-    { makeTile(15, 17), { LayerType::Objects, 1, 1 } },
-    { makeTile(15, 18), { LayerType::Objects, 1, 1 } },
-    { makeTile(15, 19), { LayerType::Objects, 1, 1 } },
-
-    { makeTile(16, 16), { LayerType::Objects, 1, 1 } },
-    { makeTile(16, 17), { LayerType::Objects, 1, 1 } },
-    { makeTile(16, 18), { LayerType::Objects, 1, 1 } },
-    { makeTile(16, 19), { LayerType::Objects, 1, 1 } },
-
-    { makeTile(17, 16), { LayerType::Objects, 1, 1 } },
-    { makeTile(17, 17), { LayerType::Objects, 1, 1 } },
-    { makeTile(17, 18), { LayerType::Objects, 1, 1 } },
-    { makeTile(17, 19), { LayerType::Objects, 1, 1 } },
-
-    { makeTile(18, 16), { LayerType::Objects, 1, 1 } },
-    { makeTile(18, 17), { LayerType::Objects, 1, 1 } },
-    { makeTile(18, 18), { LayerType::Objects, 1, 1 } },
-    { makeTile(18, 19), { LayerType::Objects, 1, 1 } },
-
-    { makeTile(19, 16), { LayerType::Objects, 1, 1 } },
-    { makeTile(19, 17), { LayerType::Objects, 1, 1 } },
-    { makeTile(19, 18), { LayerType::Objects, 1, 1 } },
-    { makeTile(19, 19), { LayerType::Objects, 1, 1 } },
-
-    // Furniture 1x1
-    // Sign
-    { makeTile(1, 17),  { LayerType::Objects, 1, 1 } },
-
-    // Altar
-    { makeTile(2, 17),  { LayerType::Objects, 1, 1 } },
-
-    // Stool
-    { makeTile(3, 17),  { LayerType::Objects, 1, 1 } },
-
-    // Chair (4 sides)
-    { makeTile(4, 17),  { LayerType::Objects, 1, 1 } }, // Right
-    { makeTile(5, 17),  { LayerType::Objects, 1, 1 } }, // Down
-    { makeTile(6, 17),  { LayerType::Objects, 1, 1 } }, // Up
-    { makeTile(7, 17),  { LayerType::Objects, 1, 1 } }, // Left
-
-    // Barrels
-    { makeTile(8, 17),  { LayerType::Objects, 1, 1 } }, // Closed
-    { makeTile(9, 17),  { LayerType::Objects, 1, 1 } }, // Opened
-    { makeTile(10, 17), { LayerType::Objects, 1, 1 } }, // Broken
-
-    // Stairs (Going up)
-    { makeTile(1, 18),  { LayerType::Objects, 1, 1 } }, // Left
-    { makeTile(2, 18),  { LayerType::Objects, 1, 1 } }, // Right
-
-    // Stairs (Going down)
-    { makeTile(1, 19),  { LayerType::Objects, 1, 1 } }, // Left
-    { makeTile(2, 19),  { LayerType::Objects, 1, 1 } }, // Right
-
-    // Cobblestone stairs (Going up)
-    { makeTile(3, 18),  { LayerType::Objects, 1, 1 } }, // Left
-    { makeTile(4, 18),  { LayerType::Objects, 1, 1 } }, // Right
-
-    // Cobblestone stairs (Going down)
-    { makeTile(3, 19),  { LayerType::Objects, 1, 1 } }, // Left
-    { makeTile(4, 19),  { LayerType::Objects, 1, 1 } }, // Right
-
-    // Paintings 1x1
-    { makeTile(5, 24),  { LayerType::Objects, 1, 1 } }, // Variation 1
-    { makeTile(6, 24),  { LayerType::Objects, 1, 1 } }, // Variation 2
-    { makeTile(5, 25),  { LayerType::Objects, 1, 1 } }, // Variation 3
-    { makeTile(6, 25),  { LayerType::Objects, 1, 1 } }, // Variation 4
-
-    // Trap
-    { makeTile(7, 18),  { LayerType::Objects, 1, 1 } }, // Deactivated
-    { makeTile(7, 19),  { LayerType::Objects, 1, 1 } }, // Activated
-
-    // Cabinet
-    { makeTile(8, 18),  { LayerType::Objects, 1, 1 } }, // Clsoed
-    { makeTile(8, 19),  { LayerType::Objects, 1, 1 } }, // Opened
-
-    // Wall cabinet
-    { makeTile(9, 18),  { LayerType::Objects, 1, 1 } }, // Closed
-    { makeTile(9, 19),  { LayerType::Objects, 1, 1 } }, // Opened
-
-    // Large vase
-    { makeTile(10, 18), { LayerType::Objects, 1, 1 } },
-    { makeTile(10, 19), { LayerType::Objects, 1, 1 } }, // Broken
-
-    // Vase
-    { makeTile(11, 18), { LayerType::Objects, 1, 1 } },
-    { makeTile(11, 19), { LayerType::Objects, 1, 1 } }, // Broken
-
-    // Furniture 1x2
-    // Furnace 1x2
-    { makeTile(12, 18), { LayerType::Objects, 1, 2 } },
-
-    // Bookcase 1x2
-    { makeTile(1, 20),  { LayerType::Objects, 1, 2 } }, // Empty
-    { makeTile(2, 20),  { LayerType::Objects, 1, 2 } }, // With books
-
-    // Wardrobe 1x2
-    { makeTile(3, 20),  { LayerType::Objects, 1, 2 } }, // Closed
-    { makeTile(4, 20),  { LayerType::Objects, 1, 2 } }, // Opened
-
-    // Statues 1x2
-    { makeTile(5, 20),  { LayerType::Objects, 1, 2 } }, // With eyes
-    { makeTile(6, 20),  { LayerType::Objects, 1, 2 } }, // Without eyes
-    { makeTile(7, 21),  { LayerType::Objects, 1, 1 } }, // Damaged statue - half of sprite
-
-    // Boxes with weapons 1x2
-    { makeTile(8, 20),  { LayerType::Objects, 1, 2 } }, // With swords
-    { makeTile(9, 20),  { LayerType::Objects, 1, 2 } }, // With spears
-    { makeTile(10, 21), { LayerType::Objects, 1, 2 } }, // Empty - half of sprite
-
-    // Banners
-    // Simple banners
-    { makeTile(11, 20), { LayerType::Objects, 1, 1 } }, // Short
-    { makeTile(12, 20), { LayerType::Objects, 1, 2 } }, // Long
-    { makeTile(13, 20), { LayerType::Objects, 1, 1 } }, // Damaged hard
-    { makeTile(14, 20), { LayerType::Objects, 1, 1 } }, // Damaged medium
-    { makeTile(15, 20), { LayerType::Objects, 1, 2 } }, // Damaged low
-
-    // Ornamental banners
-    { makeTile(11, 22), { LayerType::Objects, 1, 1 } }, // Short
-    { makeTile(12, 22), { LayerType::Objects, 1, 2 } }, // Long
-    { makeTile(13, 22), { LayerType::Objects, 1, 1 } }, // Damaged hard
-    { makeTile(14, 22), { LayerType::Objects, 1, 1 } }, // Damaged medium
-    { makeTile(15, 22), { LayerType::Objects, 1, 2 } }, // Damaged low
-
-    // Furniture 2x2
-    // Bookcase 2x2
-    { makeTile(1, 22),  { LayerType::Objects, 2, 2 } }, // Empty
-    { makeTile(3, 22),  { LayerType::Objects, 2, 2 } }, // With books (Variation 1)
-    { makeTile(5, 22),  { LayerType::Objects, 2, 2 } }, // With books (Variation 2)
-
-    // Wall benches 2x2
-    { makeTile(7, 22),  { LayerType::Objects, 2, 2 } }, // Variation 1
-    { makeTile(9, 22),  { LayerType::Objects, 2, 2 } }, // Variation 2
-
-    // Coffin 2x2
-    { makeTile(5, 27),  { LayerType::Objects, 2, 2 } }, // Horizontal opened
-    { makeTile(8, 24),  { LayerType::Objects, 2, 2 } }, // Vertical opened
-
-    // Furniture 2x1
-    // Paintings 2x1
-    { makeTile(1, 24),  { LayerType::Objects, 2, 1 } }, // Variation 1
-    { makeTile(3, 24),  { LayerType::Objects, 2, 1 } }, // Variation 2
-    { makeTile(1, 25),  { LayerType::Objects, 2, 1 } }, // Variation 3
-    { makeTile(3, 25),  { LayerType::Objects, 2, 1 } }, // Variation 4
-
-    // Table 2x1
-    { makeTile(11, 16), { LayerType::Objects, 2, 1 } },
-
-    // Bench 2x1
-    { makeTile(11, 17), { LayerType::Objects, 2, 1 } },
-
-    // Coffins
-    // Coffin 2x1
-    { makeTile(5, 26),  { LayerType::Objects, 2, 1 } }, // Horizontal closed
-    // Coffin 1x2
-    { makeTile(7, 24),  { LayerType::Objects, 1, 2 } }, // Vertical closed
-
-    // Furniture 1x3
-    // Column 1x3
-    { makeTile(1, 26), { LayerType::Objects, 1, 3 } },
-
-    // Shrine 1x3
-    { makeTile(2, 26), { LayerType::Objects, 1, 3 } }, // Default
-    { makeTile(3, 26), { LayerType::Objects, 1, 3 } }, // With Spark
-
-    // Skeleton in wall 1x3
-    { makeTile(4, 26), { LayerType::Objects, 1, 3 } },
-
-    // Furniture 2x4
-    // Large slab
-    { makeTile(1, 29), { LayerType::Objects, 2, 4 } },
-
-    // Bookcase 2x4
-    { makeTile(3, 29), { LayerType::Objects, 2, 4 } }, // Variation 1
-    { makeTile(5, 29), { LayerType::Objects, 2, 4 } }, // Variation 2
-    { makeTile(7, 29), { LayerType::Objects, 2, 4 } }, // Variation 3
-
-    // Bookcase 1x4
-    { makeTile(9, 29), { LayerType::Objects, 1, 4 } }, // Left
-    { makeTile(10, 29), { LayerType::Objects, 1, 4 } }, // Right
-
-    // Doors 1х2 (4 sprites for animation)
-    { makeTile(16, 20), { LayerType::Objects, 1, 2 } },
-    { makeTile(16, 22), { LayerType::Objects, 1, 2 } },
-    { makeTile(16, 24), { LayerType::Objects, 1, 2 } },
-    { makeTile(16, 26), { LayerType::Objects, 1, 2 } },
-
-    { makeTile(17, 20), { LayerType::Objects, 1, 2 } },
-    { makeTile(17, 22), { LayerType::Objects, 1, 2 } },
-    { makeTile(17, 24), { LayerType::Objects, 1, 2 } },
-    { makeTile(17, 26), { LayerType::Objects, 1, 2 } },
-
-    { makeTile(18, 20), { LayerType::Objects, 1, 2 } },
-    { makeTile(18, 22), { LayerType::Objects, 1, 2 } },
-    { makeTile(18, 24), { LayerType::Objects, 1, 2 } },
-    { makeTile(18, 26), { LayerType::Objects, 1, 2 } },
-
-    // Nature
-    // 4x7
-    { makeTile(1, 37), { LayerType::Objects, 4, 7 } }, // Double birch tree
-
-    // 3x7
-    { makeTile(5, 37), { LayerType::Objects, 3, 7 } }, // Birch tree large
-
-    // 2x5
-    { makeTile(8, 39), { LayerType::Objects, 2, 5 } }, // Birch tree small
-
-    // 3x6
-    { makeTile(10, 38), { LayerType::Objects, 3, 6 } }, // Dead tree
-
-    // 2x2
-    { makeTile(13, 42), { LayerType::Objects, 2, 2 } }, // Bush
-
-    // Tree cluster
-
-    // Top parts
-    // 1x1
-    { makeTile(4, 44), { LayerType::Objects, 1, 1 } }, // Right top corner
-    // 1x1
-    { makeTile(6, 44), { LayerType::Objects, 1, 1 } }, // Left top corner
-    // 3x4
-    { makeTile(4, 46), { LayerType::Objects, 3, 4 } }, // Top part
-
-    // Middle parts
-    // 2x4
-    { makeTile(1, 51), { LayerType::Objects, 2, 4 } }, // Left-Middle part
-
-    // 3x4
-    { makeTile(4, 51), { LayerType::Objects, 3, 4 } }, // Middle part
-
-    // 2x4
-    { makeTile(8, 51), { LayerType::Objects, 2, 4 } }, // Right-Middle part
-
-    // Bottom parts
-    // 2x6
-    { makeTile(1, 56), { LayerType::Objects, 2, 6 } }, // Left-Bottom part
-
-    // 3x6
-    { makeTile(4, 56), { LayerType::Objects, 3, 6 } }, // Bottom part
-
-    // 2x6
-    { makeTile(8, 56), { LayerType::Objects, 2, 6 } }, // Right-Bottom part
+#include <vector>
+
+#include "json_min.h"
+
+namespace {
+
+/*
+tiles.json entry, exactly as authored — see assets/tiles/tiles.json's own
+field-by-field usage for what each mode actually needs. Defaults here
+match the generator's: cellW/cellH/tier default to 1, col/row/mask
+default to 0/-1, paletteVisible defaults true.
+*/
+struct RawEntry {
+    TileID      id = EMPTY_ID;
+    std::string file;
+    LayerType   layer = LayerType::Ground;
+    TileMode    mode  = TileMode::Manual;
+    int         cellW = 1, cellH = 1;
+    int         col = 0, row = 0;
+    std::string group;
+    std::string object;
+    int         tier = 1;
+    std::string role;
+    std::string blobKind;
+    int         mask = -1;
+    bool        paletteVisible = true;
 };
 
-TileMetadata getTileMeta(TileID id) {
-    auto it = s_meta.find(id);
-    if (it != s_meta.end()) return it->second;
+std::vector<RawEntry> g_entries;
 
-    // Fallback for unknown tiles
-    return { LayerType::Ground, 1, 1 };
+// TileID -> resolved render/footprint metadata, for every real entry AND
+// every synthesized sub-cell (see synthesizeSubTiles below).
+std::unordered_map<TileID, TileMetadata> g_meta;
+
+// TileID -> which group/mode it belongs to (real entries only — a
+// synthesized sub-cell is never itself group-addressable, only its
+// anchor is, which is exactly what placeTile/eraseTile already hold).
+std::unordered_map<TileID, std::string> g_groupOf;
+std::unordered_map<TileID, TileMode>    g_modeOf;
+
+// group -> members, in file order — random-fill resolution.
+std::unordered_map<std::string, std::vector<TileID>> g_randomGroups;
+
+// group -> role -> id — autotile_blend resolution.
+std::unordered_map<std::string, std::unordered_map<std::string, TileID>> g_blendGroups;
+
+// group -> mask -> id — autotile_blob resolution.
+std::unordered_map<std::string, std::unordered_map<int, TileID>> g_blobGroups;
+
+// "object|tier" -> ordered frames — interactive resolution.
+std::unordered_map<std::string, std::vector<TileID>> g_interactiveFrames;
+
+// TileID (real OR synthesized sub-id) -> (object, tier, frame index) —
+// covers sub-ids too, since isDoorBlocking() may be asked about a door's
+// bottom-half sub-cell just as often as its anchor.
+struct InteractiveInfo { std::string object; int tier; int frameIndex; };
+std::unordered_map<TileID, InteractiveInfo> g_interactiveInfo;
+
+// Sub-cell synthesis (see tiles.h's subTileId doc comment). Starts well
+// above the highest possible makeTileId() value (0x5A5A) and stays well
+// below the special-sprite constants (0xFFF5+), leaving ~24k ids of
+// headroom — far more than any realistic sheet of multi-cell sprites
+// will ever need.
+constexpr TileID kSubIdRangeStart = 0x6000;
+constexpr TileID kSubIdRangeEnd   = 0xFFF4;
+TileID g_nextSubId = kSubIdRangeStart;
+
+inline uint32_t subKey(TileID anchor, int dx, int dy) {
+    return ((uint32_t)anchor << 16) | ((uint32_t)(uint8_t)dy << 8) | (uint32_t)(uint8_t)dx;
+}
+std::unordered_map<uint32_t, TileID> g_subIds;
+
+// Reverse of g_subIds — synthesized sub-id -> (anchor, dx, dy). See
+// tiles.h's anchorOf.
+struct AnchorInfo { TileID anchor; int dx, dy; };
+std::unordered_map<TileID, AnchorInfo> g_anchorOf;
+
+std::vector<TileID> g_paletteTiles;
+std::vector<TileID> g_autotilePaletteTiles;
+
+[[noreturn]] void fail(const std::string& message) {
+    fprintf(stderr, "tiles.json: %s\n", message.c_str());
+    exit(1);
 }
 
-std::vector<TileID> getPaletteTiles() {
-    std::vector<TileID> ids;
-    ids.reserve(s_meta.size());
-    for (const auto& [id, meta] : s_meta)
-        if (meta.paletteVisible) ids.push_back(id);
+LayerType parseLayer(const std::string& s) {
+    if (s == "ground")   return LayerType::Ground;
+    if (s == "objects")  return LayerType::Objects;
+    if (s == "entities") return LayerType::Entities;
+    fail("unknown layer \"" + s + "\"");
+}
 
-    /*
-    s_meta is an unordered_map, so its iteration order isn't something to
-    rely on (and isn't guaranteed stable across runs/platforms). Sorting
-    by (y, then x) gives the palette a deterministic, sensible order —
-    reading the spritesheet top-to-bottom, left-to-right — every time.
-    */
-    std::sort(ids.begin(), ids.end(), [](TileID a, TileID b) {
-        if (tileY(a) != tileY(b)) return tileY(a) < tileY(b);
-        return tileX(a) < tileX(b);
-    });
-    return ids;
+TileMode parseMode(const std::string& s) {
+    if (s == "manual")          return TileMode::Manual;
+    if (s == "random")          return TileMode::Random;
+    if (s == "interactive")     return TileMode::Interactive;
+    if (s == "autotile_blend")  return TileMode::AutotileBlend;
+    if (s == "autotile_blob")   return TileMode::AutotileBlob;
+    fail("unknown mode \"" + s + "\"");
+}
+
+// Every character of a tiles.json id must be one of these 36 symbols —
+// see tiles.h's makeTileId doc comment for why that keeps the packed
+// TileID space collision-free by construction.
+bool validIdChar(char c) { return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z'); }
+
+TileID parseId(const std::string& s) {
+    if (s.size() != 2 || !validIdChar(s[0]) || !validIdChar(s[1]))
+        fail("id \"" + s + "\" must be exactly 2 characters from [0-9A-Z]");
+    return makeTileId(s[0], s[1]);
+}
+
+// Parses one {...} object (the cursor sits just past its opening brace's
+// containing array bracket — see loadTileRegistry) into a RawEntry, using
+// the same key-dispatch loop as core/level.cpp's loadLevelFromFile.
+const char* parseEntry(const char* p, RawEntry& e) {
+    std::string idStr, layerStr, modeStr;
+    p = jChar(p, '{');
+
+    while (p && *p && *p != '}') {
+        char key[32] = {};
+        p = jString(p, key, sizeof(key));
+        p = jChar(p, ':');
+
+        char strBuf[256] = {};
+        long long v = 0;
+
+        if      (strcmp(key, "id")             == 0) { p = jString(p, strBuf, sizeof(strBuf)); idStr = strBuf; }
+        else if (strcmp(key, "file")            == 0) { p = jString(p, strBuf, sizeof(strBuf)); e.file = strBuf; }
+        else if (strcmp(key, "layer")           == 0) { p = jString(p, strBuf, sizeof(strBuf)); layerStr = strBuf; }
+        else if (strcmp(key, "mode")            == 0) { p = jString(p, strBuf, sizeof(strBuf)); modeStr = strBuf; }
+        else if (strcmp(key, "cellW")           == 0) { p = jInt(p, &v); e.cellW = (int)v; }
+        else if (strcmp(key, "cellH")           == 0) { p = jInt(p, &v); e.cellH = (int)v; }
+        else if (strcmp(key, "col")             == 0) { p = jInt(p, &v); e.col = (int)v; }
+        else if (strcmp(key, "row")             == 0) { p = jInt(p, &v); e.row = (int)v; }
+        else if (strcmp(key, "group")           == 0) { p = jString(p, strBuf, sizeof(strBuf)); e.group = strBuf; }
+        else if (strcmp(key, "object")          == 0) { p = jString(p, strBuf, sizeof(strBuf)); e.object = strBuf; }
+        else if (strcmp(key, "tier")            == 0) { p = jInt(p, &v); e.tier = (int)v; }
+        else if (strcmp(key, "role")            == 0) { p = jString(p, strBuf, sizeof(strBuf)); e.role = strBuf; }
+        else if (strcmp(key, "blobKind")        == 0) { p = jString(p, strBuf, sizeof(strBuf)); e.blobKind = strBuf; }
+        else if (strcmp(key, "mask")            == 0) { p = jInt(p, &v); e.mask = (int)v; }
+        else if (strcmp(key, "paletteVisible")  == 0) { p = jBool(p, &e.paletteVisible); }
+        else                                            { p = jSkipValue(p); } // forward-compatible: ignore unknown keys
+
+        p = jSkip(p);
+        if (p && *p == ',') ++p;
+        p = jSkip(p);
+    }
+    p = jChar(p, '}');
+
+    if (idStr.empty())    fail("entry with file \"" + e.file + "\" has no \"id\"");
+    if (e.file.empty())   fail("entry \"" + idStr + "\" has no \"file\"");
+    if (layerStr.empty()) fail("entry \"" + idStr + "\" has no \"layer\"");
+    if (modeStr.empty())  fail("entry \"" + idStr + "\" has no \"mode\"");
+
+    e.id    = parseId(idStr);
+    e.layer = parseLayer(layerStr);
+    e.mode  = parseMode(modeStr);
+    return p;
+}
+
+TileMetadata metaFor(const RawEntry& e) {
+    TileMetadata m;
+    m.layer          = e.layer;
+    m.w              = (uint8_t)e.cellW;
+    m.h              = (uint8_t)e.cellH;
+    m.file           = e.file;
+    m.srcCellX       = e.col * e.cellW;
+    m.srcCellY       = e.row * e.cellH;
+    m.paletteVisible = e.paletteVisible;
+    return m;
+}
+
+/*
+Allocates a fresh sub-id for every non-anchor (dx, dy) offset of every
+multi-cell entry, so every render loop can stay a dumb per-cell "look up
+this exact TileID" pass — see tiles.h's subTileId doc comment for why
+this exists at all instead of just having getTileMeta report a footprint
+for renderer.cpp to crop into.
+*/
+void synthesizeSubTiles(const RawEntry& e) {
+    if (e.cellW <= 1 && e.cellH <= 1) return;
+
+    for (int dy = 0; dy < e.cellH; ++dy) {
+        for (int dx = 0; dx < e.cellW; ++dx) {
+            if (dx == 0 && dy == 0) continue; // the anchor cell IS e.id — nothing to synthesize
+
+            if (g_nextSubId >= kSubIdRangeEnd)
+                fail("ran out of synthesized sub-tile ids (too many multi-cell entries)");
+            TileID subId = g_nextSubId++;
+
+            TileMetadata m;
+            m.layer          = e.layer;
+            m.w = m.h        = 1;
+            m.file           = e.file;
+            m.srcCellX       = e.col * e.cellW + dx;
+            m.srcCellY       = e.row * e.cellH + dy;
+            m.paletteVisible = false;
+            g_meta[subId] = m;
+            g_subIds[subKey(e.id, dx, dy)] = subId;
+            g_anchorOf[subId] = { e.id, dx, dy };
+
+            // Propagate interactive identity so a door's bottom half
+            // still answers tileObjectName()/isDoorBlocking() correctly.
+            auto it = g_interactiveInfo.find(e.id);
+            if (it != g_interactiveInfo.end())
+                g_interactiveInfo[subId] = it->second;
+        }
+    }
+}
+
+} // namespace
+
+void loadTileRegistry() {
+    g_entries.clear();
+    g_meta.clear();
+    g_groupOf.clear();
+    g_modeOf.clear();
+    g_randomGroups.clear();
+    g_blendGroups.clear();
+    g_blobGroups.clear();
+    g_interactiveFrames.clear();
+    g_interactiveInfo.clear();
+    g_subIds.clear();
+    g_anchorOf.clear();
+    g_paletteTiles.clear();
+    g_autotilePaletteTiles.clear();
+    g_nextSubId = kSubIdRangeStart;
+
+    const char* path = "assets/tiles/tiles.json";
+    FILE* f = fopen(path, "rb");
+    if (!f) fail(std::string("could not open \"") + path + "\"");
+
+    fseek(f, 0, SEEK_END);
+    long len = ftell(f);
+    rewind(f);
+    std::vector<char> buf(len + 1);
+    fread(buf.data(), 1, (size_t)len, f);
+    fclose(f);
+    buf[len] = '\0';
+
+    const char* p = jChar(buf.data(), '[');
+    p = jSkip(p);
+    while (p && *p && *p != ']') {
+        RawEntry e;
+        p = parseEntry(p, e);
+
+        if (g_meta.count(e.id))
+            fail("duplicate id \"" + std::string(1, (char)(e.id >> 8)) + std::string(1, (char)(e.id & 0xFF)) + "\"");
+
+        g_entries.push_back(e);
+        g_meta[e.id]     = metaFor(e);
+        g_groupOf[e.id]  = e.group;
+        g_modeOf[e.id]   = e.mode;
+
+        if (e.mode == TileMode::Random && !e.group.empty())
+            g_randomGroups[e.group].push_back(e.id);
+
+        if (e.mode == TileMode::AutotileBlend && !e.group.empty() && !e.role.empty())
+            g_blendGroups[e.group][e.role] = e.id;
+
+        if (e.mode == TileMode::AutotileBlob && !e.group.empty() && e.mask >= 0)
+            g_blobGroups[e.group][e.mask] = e.id;
+
+        if (e.mode == TileMode::Interactive && !e.object.empty()) {
+            std::string key = e.object + "|" + std::to_string(e.tier);
+            int frameIndex = (int)g_interactiveFrames[key].size();
+            g_interactiveFrames[key].push_back(e.id);
+            g_interactiveInfo[e.id] = { e.object, e.tier, frameIndex };
+        }
+
+        if (e.paletteVisible) {
+            if (e.mode == TileMode::Manual || e.mode == TileMode::Random || e.mode == TileMode::Interactive)
+                g_paletteTiles.push_back(e.id);
+            else if (e.mode == TileMode::AutotileBlend || e.mode == TileMode::AutotileBlob)
+                g_autotilePaletteTiles.push_back(e.id);
+        }
+
+        p = jSkip(p);
+        if (p && *p == ',') ++p;
+        p = jSkip(p);
+    }
+
+    // Sub-tile synthesis happens in a second pass, after every real entry
+    // (and every interactive entry's g_interactiveInfo) is already known.
+    for (const RawEntry& e : g_entries)
+        synthesizeSubTiles(e);
+}
+
+TileMetadata getTileMeta(TileID id) {
+    auto it = g_meta.find(id);
+    if (it != g_meta.end()) return it->second;
+    return TileMetadata{}; // EMPTY_ID, a sentinel, or an unknown id — safe, invisible default
+}
+
+std::vector<TileID> getPaletteTiles() { return g_paletteTiles; }
+std::vector<TileID> getAutotilePaletteTiles() { return g_autotilePaletteTiles; }
+
+TileID subTileId(TileID anchorId, int dx, int dy) {
+    if (dx == 0 && dy == 0) return anchorId;
+    auto it = g_subIds.find(subKey(anchorId, dx, dy));
+    return (it != g_subIds.end()) ? it->second : EMPTY_ID;
+}
+
+TileID anchorOf(TileID id, int& dx, int& dy) {
+    auto it = g_anchorOf.find(id);
+    if (it == g_anchorOf.end()) { dx = 0; dy = 0; return id; }
+    dx = it->second.dx;
+    dy = it->second.dy;
+    return it->second.anchor;
+}
+
+TileID pickRandomVariant(TileID id) {
+    auto groupIt = g_groupOf.find(id);
+    if (groupIt == g_groupOf.end() || groupIt->second.empty()) return id;
+
+    auto membersIt = g_randomGroups.find(groupIt->second);
+    if (membersIt == g_randomGroups.end() || membersIt->second.empty()) return id;
+
+    const std::vector<TileID>& members = membersIt->second;
+    return members[(size_t)rand() % members.size()];
+}
+
+bool isAutotileTile(TileID id) {
+    auto it = g_modeOf.find(id);
+    return it != g_modeOf.end() && (it->second == TileMode::AutotileBlend || it->second == TileMode::AutotileBlob);
+}
+
+bool isAutotileBlend(TileID id) {
+    auto it = g_modeOf.find(id);
+    return it != g_modeOf.end() && it->second == TileMode::AutotileBlend;
+}
+
+bool isAutotileBlob(TileID id) {
+    auto it = g_modeOf.find(id);
+    return it != g_modeOf.end() && it->second == TileMode::AutotileBlob;
+}
+
+bool sameTileGroup(TileID a, TileID b) {
+    auto ga = g_groupOf.find(a);
+    auto gb = g_groupOf.find(b);
+    if (ga == g_groupOf.end() || gb == g_groupOf.end()) return false;
+    if (ga->second.empty() || gb->second.empty()) return false;
+    return ga->second == gb->second;
+}
+
+/*
+computeBlendRole
+Picks which of the 9 base pieces or 4 concave-corner pieces represents
+this neighbourhood, for a material laid out as a rounded blob region
+(see assets/tiles/tiles.json's "autotile_blend" entries and the visual
+catalogue this was designed from). Concave corners take priority over the
+base 3x3 grid since they're the more specific case (an L-shaped bend in
+an otherwise fully-surrounded cell); only one corner is ever reported per
+call even if a cell technically qualifies for more than one, since a
+single flat tile can't composite two overlays at once — this is a
+best-effort convention to verify visually and adjust in tiles.json
+(the (col,row) of any role), not a confirmed pixel-perfect spec.
+*/
+std::string computeBlendRole(bool n, bool s, bool e, bool w,
+                              bool ne, bool nw, bool se, bool sw) {
+    if (n && e && !ne) return "corner_ne";
+    if (n && w && !nw) return "corner_nw";
+    if (s && e && !se) return "corner_se";
+    if (s && w && !sw) return "corner_sw";
+
+    if (!n && !w && s && e) return "nw";
+    if (!n && !e && s && w) return "ne";
+    if (!s && !w && n && e) return "sw";
+    if (!s && !e && n && w) return "se";
+
+    if (!n && s && e && w) return "n";
+    if (!s && n && e && w) return "s";
+    if (!w && n && s && e) return "w";
+    if (!e && n && s && w) return "e";
+
+    return "c";
+}
+
+TileID resolveAutotileBlend(TileID id, bool n, bool s, bool e, bool w,
+                             bool ne, bool nw, bool se, bool sw) {
+    auto groupIt = g_groupOf.find(id);
+    if (groupIt == g_groupOf.end() || groupIt->second.empty()) return id;
+
+    auto blendIt = g_blendGroups.find(groupIt->second);
+    if (blendIt == g_blendGroups.end()) return id;
+
+    std::string role = computeBlendRole(n, s, e, w, ne, nw, se, sw);
+    auto roleIt = blendIt->second.find(role);
+    return (roleIt != blendIt->second.end()) ? roleIt->second : id;
+}
+
+TileID resolveAutotileBlob(TileID id, bool n, bool s, bool e, bool w) {
+    auto groupIt = g_groupOf.find(id);
+    if (groupIt == g_groupOf.end() || groupIt->second.empty()) return id;
+
+    auto blobIt = g_blobGroups.find(groupIt->second);
+    if (blobIt == g_blobGroups.end()) return id;
+
+    // Classic 4-bit blob bitmask: bit0=N, bit1=E, bit2=S, bit3=W — see
+    // tiles.json's generator notes on autotile_blob for the (col,row)
+    // convention this indexes into.
+    int mask = (n ? 1 : 0) | (e ? 2 : 0) | (s ? 4 : 0) | (w ? 8 : 0);
+
+    auto maskIt = blobIt->second.find(mask);
+    if (maskIt != blobIt->second.end()) return maskIt->second;
+
+    // Sheet too small to cover every mask (e.g. rails' 10 cells can't
+    // hold all 16) — fall back to mask 0 rather than leaving a hole.
+    auto zeroIt = blobIt->second.find(0);
+    return (zeroIt != blobIt->second.end()) ? zeroIt->second : id;
+}
+
+std::vector<TileID> interactiveFrames(const std::string& object, int tier) {
+    auto it = g_interactiveFrames.find(object + "|" + std::to_string(tier));
+    return (it != g_interactiveFrames.end()) ? it->second : std::vector<TileID>{};
+}
+
+std::string tileObjectName(TileID id) {
+    auto it = g_interactiveInfo.find(id);
+    return (it != g_interactiveInfo.end()) ? it->second.object : std::string();
+}
+
+int tileObjectTier(TileID id) {
+    auto it = g_interactiveInfo.find(id);
+    return (it != g_interactiveInfo.end()) ? it->second.tier : 1;
+}
+
+int tileObjectFrameIndex(TileID id) {
+    auto it = g_interactiveInfo.find(id);
+    return (it != g_interactiveInfo.end()) ? it->second.frameIndex : 0;
 }

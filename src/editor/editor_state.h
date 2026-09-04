@@ -49,7 +49,8 @@ struct MultiTileCell {
 };
 extern MultiTileCell mtMap[MAX_HEIGHT][MAX_WIDTH];
 
-// Tile palette
+// Tile palette — built from getPaletteTiles() + getAutotilePaletteTiles()
+// (core/tiles.h) by buildPalette() in editor_mode.cpp; see its comment.
 extern std::vector<TileID> availableTiles;
 extern TileID               selectedTile;
 

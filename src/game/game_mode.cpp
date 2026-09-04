@@ -59,11 +59,11 @@ down, steps through it frame by frame with a visible delay.
 /*
 Stamps newAnchor's full w x h footprint into gObjectLayer starting at
 (ax, ay), first clearing whichever of the old/new footprints is larger.
-Mirrors EditorMode's placeTile: each covered cell gets its own sub-tile
-(tileX(newAnchor)+dx, tileY(newAnchor)+dy), not a copy of the anchor —
-that's what makes "is gObjectLayer[y][x] a known anchor tile" a reliable
-lookup key elsewhere: an untouched anchor cell always literally equals
-whatever TileID it was placed with, dx=dy=0 leaves it unchanged.
+Mirrors EditorMode's placeTile: each covered cell gets its own registered
+sub-id (core/tiles.h's subTileId), not a copy of the anchor — that's what
+makes "is gObjectLayer[y][x] a known anchor tile" a reliable lookup key
+elsewhere: an untouched anchor cell always literally equals whatever
+TileID it was placed with, dx=dy=0 leaves it unchanged.
 */
 static void replaceFootprint(int ax, int ay, TileID oldAnchor, TileID newAnchor) {
     TileMetadata oldMeta = getTileMeta(oldAnchor);
@@ -81,7 +81,7 @@ static void replaceFootprint(int ax, int ay, TileID oldAnchor, TileID newAnchor)
         for (int dx = 0; dx < newMeta.w; dx++) {
             int cx = ax + dx, cy = ay + dy;
             if (cx < MAX_WIDTH && cy < MAX_HEIGHT)
-                gObjectLayer[cy][cx] = makeTile(tileX(newAnchor) + dx, tileY(newAnchor) + dy);
+                gObjectLayer[cy][cx] = subTileId(newAnchor, dx, dy);
         }
 }
 

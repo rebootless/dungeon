@@ -32,12 +32,12 @@ for dll in libgcc_s_seh-1.dll libstdc++-6.dll libwinpthread-1.dll; do
     fi
 done
 
-rm -f assets world fragments
+# world/ and fragments/ (core/level.h's WORLD_DIR, generator/fragment.h's
+# FRAGMENTS_DIR) live under assets/, so copying assets/ already brings
+# both along — no separate copy needed for either.
+rm -f assets
 
 cp -r ../assets .
-cp -r ../world .
-mkdir -p ../fragments
-cp -r ../fragments .
 
 rm -rf CMakeFiles CMakeCache.txt cmake_install.cmake Makefile
 

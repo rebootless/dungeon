@@ -136,10 +136,12 @@ decides the correct tile for each marked cell purely from how many of its
   a divider meets the outer edge, or
   a cross where two dividers meet)    -> CORNER_BORDER
 
-CORNER_BORDER's sprite is a full 4-way connector (see assets/spritesheet's
-tile (3,33): drawn as both a horizontal AND a vertical bar through the
-same cell) — the exact same tile therefore reads correctly as a corner,
-a T-junction, or a full cross, so one sprite is all this needs.
+CORNER_BORDER's sprite (assets/border_corner.png — one of the five
+special sprites hardcoded in this file, never part of tiles.json; see
+core/tiles.h's "Special sprites" section) is a full 4-way connector:
+drawn as both a horizontal AND a vertical bar through the same cell — the
+exact same tile therefore reads correctly as a corner, a T-junction, or a
+full cross, so one sprite is all this needs.
 
 Cells are addressed by raw canvas pixel position, not grid index, so a
 frame can be docked anywhere.

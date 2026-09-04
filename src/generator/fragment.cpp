@@ -10,7 +10,7 @@
 
 /*
 Map authoring notes
-Fragments are stored one-per-file in fragments/FRAGMENT-<id>.json and
+Fragments are stored one-per-file in FRAGMENTS_DIR/FRAGMENT_<id>.json and
 loaded at startup by initFragments(). In the fragment editor: F5 saves
 the buffer currently being edited to the selected id, F9 loads the
 selected id's file back into the editor. See
@@ -21,7 +21,9 @@ std::unordered_map<int, Fragment> fragments;
 
 std::string fragmentFileName(int id) {
     char buf[96];
-    snprintf(buf, sizeof(buf), "%s/FRAGMENT-%02d.json", FRAGMENTS_DIR, id);
+    // id is never negative (FRAGMENT_ID_MIN is 0), so plain %02d already
+    // zero-pads correctly with no sign to account for.
+    snprintf(buf, sizeof(buf), "%s/FRAGMENT_%02d.json", FRAGMENTS_DIR, id);
     return std::string(buf);
 }
 
@@ -173,7 +175,7 @@ void initFragments() {
 
             std::string fname = entry.path().filename().string();
             int id = 0;
-            if (sscanf(fname.c_str(), "FRAGMENT-%d.json", &id) != 1)
+            if (sscanf(fname.c_str(), "FRAGMENT_%d.json", &id) != 1)
                 continue; // not a fragment file — ignore
 
             Fragment fragment;

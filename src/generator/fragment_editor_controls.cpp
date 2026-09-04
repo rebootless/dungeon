@@ -10,6 +10,42 @@
 #include "../settings/settings_mode.h"
 #include "fragment_editor_state.h"
 
+// Same paint-time autotiling as editor/editor_controls.cpp — see its
+// comment. Fragments can contain autotile-blend/blob ground materials
+// just like a regular location, and get stitched into the world later
+// (generator/dungeon_generator.cpp), so they need to resolve correctly
+// here too, independent of GameMode/EditorMode.
+static void frReevaluateAutotileCell(TileID (*map)[MAX_WIDTH], int x, int y) {
+    if (x < 0 || x >= MAX_WIDTH || y < 0 || y >= MAX_HEIGHT) return;
+
+    TileID id = map[y][x];
+    if (id == EMPTY_ID || !isAutotileTile(id)) return;
+
+    auto sameGroupAt = [&](int nx, int ny) {
+        if (nx < 0 || nx >= MAX_WIDTH || ny < 0 || ny >= MAX_HEIGHT) return false;
+        return sameTileGroup(id, map[ny][nx]);
+    };
+
+    bool n = sameGroupAt(x, y - 1), s = sameGroupAt(x, y + 1);
+    bool e = sameGroupAt(x + 1, y), w = sameGroupAt(x - 1, y);
+
+    if (isAutotileBlend(id)) {
+        bool ne = sameGroupAt(x + 1, y - 1), nw = sameGroupAt(x - 1, y - 1);
+        bool se = sameGroupAt(x + 1, y + 1), sw = sameGroupAt(x - 1, y + 1);
+        map[y][x] = resolveAutotileBlend(id, n, s, e, w, ne, nw, se, sw);
+    } else {
+        map[y][x] = resolveAutotileBlob(id, n, s, e, w);
+    }
+}
+
+static void frReevaluateAutotileNeighborhood(TileID (*map)[MAX_WIDTH], int x, int y) {
+    frReevaluateAutotileCell(map, x, y);
+    frReevaluateAutotileCell(map, x, y - 1);
+    frReevaluateAutotileCell(map, x, y + 1);
+    frReevaluateAutotileCell(map, x - 1, y);
+    frReevaluateAutotileCell(map, x + 1, y);
+}
+
 // frPlaceTile
 void frPlaceTile(int gx, int gy) {
     if (frActiveLayer == FragmentEditLayer::COLLISION) {
@@ -31,7 +67,8 @@ void frPlaceTile(int gx, int gy) {
         return;
     }
 
-    TileMetadata meta = getTileMeta(frSelectedTile);
+    TileID stampId = pickRandomVariant(frSelectedTile);
+    TileMetadata meta = getTileMeta(stampId);
 
     if (gx + meta.w > MAX_WIDTH || gy + meta.h > MAX_HEIGHT) return;
 
@@ -56,7 +93,7 @@ void frPlaceTile(int gx, int gy) {
     for (int dy = 0; dy < meta.h; ++dy) {
         for (int dx = 0; dx < meta.w; ++dx) {
             int cx = gx + dx, cy = gy + dy;
-            map[cy][cx] = makeTile(tileX(frSelectedTile) + dx, tileY(frSelectedTile) + dy);
+            map[cy][cx] = subTileId(stampId, dx, dy);
             if (dx == 0 && dy == 0) {
                 frMtMap[cy][cx] = { false, 0, 0 };
             } else {
@@ -64,6 +101,8 @@ void frPlaceTile(int gx, int gy) {
             }
         }
     }
+
+    if (isAutotileTile(stampId)) frReevaluateAutotileNeighborhood(map, gx, gy);
 }
 
 // frEraseTile
@@ -91,7 +130,10 @@ void frEraseTile(int gx, int gy) {
         ay = frMtMap[gy][gx].anchorY;
     }
 
-    TileMetadata meta = getTileMeta(map[ay][ax]);
+    TileID erasedId = map[ay][ax];
+    bool wasAutotile = isAutotileTile(erasedId);
+
+    TileMetadata meta = getTileMeta(erasedId);
     for (int dy = 0; dy < meta.h; ++dy) {
         for (int dx = 0; dx < meta.w; ++dx) {
             int cx = ax + dx, cy = ay + dy;
@@ -101,6 +143,8 @@ void frEraseTile(int gx, int gy) {
             }
         }
     }
+
+    if (wasAutotile) frReevaluateAutotileNeighborhood(map, ax, ay);
 }
 
 /*
@@ -263,14 +307,16 @@ void FragmentEditorMode::onEvent(const SDL_Event& e) {
             Steps selectedFragmentId — the F5/F9 target. Works whether or
             not that id has a saved file yet, exactly like EditorMode's
             selectedCoord stepping (step to an unused id, draw, F5).
+            Clamped to [FRAGMENT_ID_MIN, FRAGMENT_ID_MAX] (generator/fragment.h)
+            — the range assets/fragments/FRAGMENTS.md allows.
             */
             case SDL_SCANCODE_PAGEUP:
-                ++selectedFragmentId;
+                selectedFragmentId = std::clamp(selectedFragmentId + 1, FRAGMENT_ID_MIN, FRAGMENT_ID_MAX);
                 loadFragmentIntoEditor(selectedFragmentId);
                 break;
 
             case SDL_SCANCODE_PAGEDOWN:
-                --selectedFragmentId;
+                selectedFragmentId = std::clamp(selectedFragmentId - 1, FRAGMENT_ID_MIN, FRAGMENT_ID_MAX);
                 loadFragmentIntoEditor(selectedFragmentId);
                 break;
 

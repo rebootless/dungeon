@@ -11,7 +11,7 @@
 
 /*
 Map authoring notes
-Locations are stored one-per-file in world/LEVEL-<floor>-<x>-<y>.json
+Locations are stored one-per-file in WORLD_DIR/LEVEL_<floor>_<x>_<y>.json
 and loaded at startup by initLevels(). In the Editor: F5 saves the map
 currently being edited to the selected coordinate, F6 loads the selected
 coordinate's file back into the editor. See editor/editor_mode.cpp.
@@ -19,10 +19,26 @@ coordinate's file back into the editor. See editor/editor_mode.cpp.
 
 std::unordered_map<LevelCoord, Level, LevelCoordHash> worldLevels;
 
+// Formats one world coordinate as a sign-aware, always-2-digit-magnitude
+// field ("-01", "00", "03") per assets/world/WORLD.md — plain "%02d"
+// doesn't zero-pad the magnitude once a '-' is involved.
+static void appendCoord(std::string& out, int v) {
+    char buf[16];
+    if (v < 0) snprintf(buf, sizeof(buf), "-%02d", -v);
+    else       snprintf(buf, sizeof(buf), "%02d", v);
+    out += buf;
+}
+
 std::string levelFileName(int floor, int x, int y) {
-    char buf[96];
-    snprintf(buf, sizeof(buf), "%s/LEVEL-%02d-%02d-%02d.json", WORLD_DIR, floor, x, y);
-    return std::string(buf);
+    std::string name = WORLD_DIR;
+    name += "/LEVEL_";
+    appendCoord(name, floor);
+    name += "_";
+    appendCoord(name, x);
+    name += "_";
+    appendCoord(name, y);
+    name += ".json";
+    return name;
 }
 
 static void fillEmpty(Level& level) {
@@ -146,9 +162,9 @@ std::vector<LevelCoord> listWorldLevels() {
 /*
 initLevels
 Called once at startup (before entering GameMode) and again whenever the
-editor or /load wants a fresh view of what's on disk. Scans world/ for
-every LEVEL-<floor>-<x>-<y>.json file and loads it — nothing more. There
-is no fallback placeholder: if world/ is empty (or (0,0,0) specifically
+editor or /load wants a fresh view of what's on disk. Scans WORLD_DIR for
+every LEVEL_<floor>_<x>_<y>.json file and loads it — nothing more. There
+is no fallback placeholder: if WORLD_DIR is empty (or (0,0,0) specifically
 isn't in it), worldLevels ends up empty (or missing that coordinate), and
 callers are expected to handle "nothing loaded here" themselves rather
 than silently getting synthesized content.
@@ -164,8 +180,11 @@ void initLevels() {
 
             std::string fname = entry.path().filename().string();
             int floor = 0, x = 0, y = 0;
-            if (sscanf(fname.c_str(), "LEVEL-%d-%d-%d.json", &floor, &x, &y) != 3)
+            if (sscanf(fname.c_str(), "LEVEL_%d_%d_%d.json", &floor, &x, &y) != 3)
                 continue; // not a location file — ignore
+            // sscanf's %d parses "-01" as -1 regardless of the leading
+            // zero, so the write-side zero-padding above needs no
+            // matching read-side logic here.
 
             Level level;
             fillEmpty(level);

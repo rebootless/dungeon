@@ -28,7 +28,7 @@ MultiTileCell mtMap[MAX_HEIGHT][MAX_WIDTH];
 
 // Tile palette
 std::vector<TileID> availableTiles;
-TileID               selectedTile = makeTile(1, 2);
+TileID               selectedTile = EMPTY_ID; // overwritten by buildPalette() before onRender() ever runs
 
 // Layer management
 EditLayer activeLayer = EditLayer::GROUND;
@@ -45,11 +45,16 @@ TileID (*getLayerMap(EditLayer layer))[MAX_WIDTH] {
 }
 
 EditLayer layerForTile(TileID id) {
+    // Sentinels have no LayerType of their own (see tiles.h) — never
+    // actually reached from a palette click (no marker has a palette
+    // entry), but handled here too so the mapping stays total.
+    if (id == COLLISION_MARKER || id == STAIRS_UP_MARKER || id == STAIRS_DOWN_MARKER) return EditLayer::COLLISION;
+    if (id == OCCLUSION_MARKER) return EditLayer::OCCLUSION;
+
     switch (getTileMeta(id).layer) {
-        case LayerType::Ground:    return EditLayer::GROUND;
-        case LayerType::Objects:   return EditLayer::OBJECTS;
-        case LayerType::Entities:  return EditLayer::ENTITIES;
-        case LayerType::Collision: return EditLayer::COLLISION;
+        case LayerType::Ground:   return EditLayer::GROUND;
+        case LayerType::Objects:  return EditLayer::OBJECTS;
+        case LayerType::Entities: return EditLayer::ENTITIES;
     }
     return EditLayer::GROUND;
 }
@@ -68,13 +73,18 @@ CollisionTool activeCollisionTool = CollisionTool::BLOCK;
 
 /*
 buildPalette
-No scanning of assets/spritesheet.png for non-transparent cells — the
-palette is built entirely from tiles.cpp's hand-maintained registry (see
-core/tiles.h's getPaletteTiles()). Adding a new paintable tile is a
-one-line addition there; this function needs no changes for it.
+No scanning of assets/tiles/*.png for non-transparent cells — the palette
+is built entirely from tiles.cpp's tiles.json-backed registry (see
+core/tiles.h's getPaletteTiles()/getAutotilePaletteTiles()). Adding a new
+paintable tile, or a new autotile material, is a tiles.json edit; this
+function needs no changes for it. Autotile representatives are appended
+after the plain tiles so ordinary manual/random/interactive entries keep
+their existing shelf positions.
 */
 static void buildPalette() {
     availableTiles = getPaletteTiles();
+    std::vector<TileID> autoTiles = getAutotilePaletteTiles();
+    availableTiles.insert(availableTiles.end(), autoTiles.begin(), autoTiles.end());
     if (!availableTiles.empty()) selectedTile = availableTiles[0];
 }
 

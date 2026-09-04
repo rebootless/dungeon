@@ -31,7 +31,7 @@ FragmentMultiTileCell frMtMap[MAX_HEIGHT][MAX_WIDTH];
 
 // Tile palette
 std::vector<TileID> frAvailableTiles;
-TileID               frSelectedTile = makeTile(1, 2);
+TileID               frSelectedTile = EMPTY_ID; // overwritten by buildFragmentPalette() before onRender() ever runs
 
 // Layer management
 FragmentEditLayer frActiveLayer = FragmentEditLayer::GROUND;
@@ -49,11 +49,16 @@ TileID (*frGetLayerMap(FragmentEditLayer layer))[MAX_WIDTH] {
 }
 
 FragmentEditLayer frLayerForTile(TileID id) {
+    // Sentinels have no LayerType of their own — see
+    // editor/editor_mode.cpp's layerForTile, same reasoning.
+    if (id == COLLISION_MARKER || id == STAIRS_UP_MARKER || id == STAIRS_DOWN_MARKER) return FragmentEditLayer::COLLISION;
+    if (id == OCCLUSION_MARKER) return FragmentEditLayer::OCCLUSION;
+    if (id == CONNECTOR_MARKER) return FragmentEditLayer::CONNECTOR;
+
     switch (getTileMeta(id).layer) {
-        case LayerType::Ground:    return FragmentEditLayer::GROUND;
-        case LayerType::Objects:   return FragmentEditLayer::OBJECTS;
-        case LayerType::Entities:  return FragmentEditLayer::ENTITIES;
-        case LayerType::Collision: return FragmentEditLayer::COLLISION;
+        case LayerType::Ground:   return FragmentEditLayer::GROUND;
+        case LayerType::Objects:  return FragmentEditLayer::OBJECTS;
+        case LayerType::Entities: return FragmentEditLayer::ENTITIES;
     }
     return FragmentEditLayer::GROUND;
 }
@@ -74,11 +79,13 @@ FragmentCollisionTool frActiveCollisionTool = FragmentCollisionTool::BLOCK;
 
 /*
 buildFragmentPalette
-Same source as EditorMode's buildPalette — tiles.cpp's hand-maintained
-registry (core/tiles.h's getPaletteTiles()).
+Same source as EditorMode's buildPalette — tiles.cpp's tiles.json-backed
+registry (core/tiles.h's getPaletteTiles()/getAutotilePaletteTiles()).
 */
 static void buildFragmentPalette() {
     frAvailableTiles = getPaletteTiles();
+    std::vector<TileID> autoTiles = getAutotilePaletteTiles();
+    frAvailableTiles.insert(frAvailableTiles.end(), autoTiles.begin(), autoTiles.end());
     if (!frAvailableTiles.empty()) frSelectedTile = frAvailableTiles[0];
 }
 

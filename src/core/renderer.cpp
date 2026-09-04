@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <iostream>
 #include <string>
+#include <unordered_map>
 
 #include "renderer.h"
 #include "layout.h"
@@ -13,12 +14,46 @@
 // SDL globals
 static SDL_Window*   window        = nullptr;
 static SDL_Renderer* renderer      = nullptr;
-static SDL_Texture*  atlas         = nullptr;
 static SDL_Texture*  canvasBgTex   = nullptr; // checkerboard swatch for FragmentEditorMode's "transparent" background
 static TTF_Font*     font          = nullptr;
 static SDL_Texture*  logicalTarget = nullptr; // pixel-perfect canvas; blitted to the real window in endFrame()
 static int           canvasW_      = 0;       // size logicalTarget is currently allocated at
 static int           canvasH_      = 0;
+
+/*
+Special-sprite textures
+The five images tiles.h's "Special sprites" section reserves TileID
+constants for — never looked up through the tiles.json registry, loaded
+once here by their fixed, hardcoded path instead. See resolveTile() below
+for where these get matched against a TileID.
+*/
+static SDL_Texture* borderHTex      = nullptr;
+static SDL_Texture* borderVTex      = nullptr;
+static SDL_Texture* borderCornerTex = nullptr;
+static SDL_Texture* playerTex       = nullptr;
+static SDL_Texture* cursorTex       = nullptr;
+
+/*
+Per-file tile texture cache
+assets/tiles/*.png is one file per sprite/spritesheet now, not one shared
+atlas, so textures are loaded on first use and kept here for the rest of
+the process — looked up by the filename tiles.cpp's registry names in
+each entry's "file" field. A failed load is cached too (as nullptr) so a
+bad path in tiles.json logs once and then just draws nothing, rather than
+retrying (and re-logging) every single frame.
+*/
+static std::unordered_map<std::string, SDL_Texture*> tileTextureCache;
+
+static SDL_Texture* getTileTexture(const std::string& file) {
+    auto it = tileTextureCache.find(file);
+    if (it != tileTextureCache.end()) return it->second;
+
+    std::string path = "assets/tiles/" + file;
+    SDL_Texture* tex = IMG_LoadTexture(renderer, path.c_str());
+    if (!tex) std::cerr << "Failed to load tile texture: " << path << " (" << IMG_GetError() << ")\n";
+    tileTextureCache[file] = tex;
+    return tex;
+}
 
 /*
 Used for both the canvas clear (beginFrame) and the letterbox fill
@@ -77,8 +112,21 @@ void initSDL() {
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer) exit(1);
 
-    atlas = IMG_LoadTexture(renderer, "assets/spritesheet.png");
-    if (!atlas) exit(1);
+    /*
+    The five special sprites are mandatory — unlike a missing tiles.json
+    entry (which just draws nothing), a missing border/player/cursor
+    asset means the interface itself can't be drawn, so this aborts
+    startup exactly like a missing window/renderer would.
+    */
+    borderHTex      = IMG_LoadTexture(renderer, "assets/border_horizontal.png");
+    borderVTex      = IMG_LoadTexture(renderer, "assets/border_vertical.png");
+    borderCornerTex = IMG_LoadTexture(renderer, "assets/border_corner.png");
+    playerTex       = IMG_LoadTexture(renderer, "assets/player.png");
+    cursorTex       = IMG_LoadTexture(renderer, "assets/cursor.png");
+    if (!borderHTex || !borderVTex || !borderCornerTex || !playerTex || !cursorTex) {
+        std::cerr << "Failed to load a special sprite: " << IMG_GetError() << "\n";
+        exit(1);
+    }
 
     /*
     Optional — FragmentEditorMode's checkerboard background degrades to a
@@ -99,7 +147,13 @@ void initSDL() {
 void cleanupSDL() {
     if (logicalTarget) { SDL_DestroyTexture(logicalTarget); logicalTarget = nullptr; }
     if (font)     { TTF_CloseFont(font);            font     = nullptr; }
-    if (atlas)    { SDL_DestroyTexture(atlas);      atlas    = nullptr; }
+    for (auto& [file, tex] : tileTextureCache) if (tex) SDL_DestroyTexture(tex);
+    tileTextureCache.clear();
+    if (borderHTex)      { SDL_DestroyTexture(borderHTex);      borderHTex      = nullptr; }
+    if (borderVTex)      { SDL_DestroyTexture(borderVTex);      borderVTex      = nullptr; }
+    if (borderCornerTex) { SDL_DestroyTexture(borderCornerTex); borderCornerTex = nullptr; }
+    if (playerTex)       { SDL_DestroyTexture(playerTex);       playerTex       = nullptr; }
+    if (cursorTex)       { SDL_DestroyTexture(cursorTex);       cursorTex       = nullptr; }
     if (canvasBgTex) { SDL_DestroyTexture(canvasBgTex); canvasBgTex = nullptr; }
     if (renderer) { SDL_DestroyRenderer(renderer);  renderer = nullptr; }
     if (window)   { SDL_DestroyWindow(window);      window   = nullptr; }
@@ -145,29 +199,64 @@ void endFrame() {
     SDL_RenderPresent(renderer);
 }
 
+/*
+resolveTile
+Single place that turns a TileID into "which texture, which source cell
+rect" — used by both drawTileRect (arbitrary dst, footprint-aware, see
+its own comment) and drawMapChar (always exactly one source cell, zoom-
+aware). Handles the five hardcoded special sprites before ever consulting
+the tiles.json-backed registry, and returns false for EMPTY_ID, a
+sentinel, or any id the registry doesn't recognize — callers treat that
+as "draw nothing", exactly like the old atlas system's EMPTY_ID check.
+*/
+namespace {
+struct ResolvedTile { SDL_Texture* tex; int srcCellX, srcCellY, cellW, cellH; };
+
+bool resolveTile(TileID c, ResolvedTile& out) {
+    if (c == EMPTY_ID) return false;
+
+    if (c == HORIZONTAL_BORDER) { out = {borderHTex,      0, 0, 1, 1}; return true; }
+    if (c == VERTICAL_BORDER)   { out = {borderVTex,      0, 0, 1, 1}; return true; }
+    if (c == CORNER_BORDER)     { out = {borderCornerTex, 0, 0, 1, 1}; return true; }
+    if (c == PLAYER)            { out = {playerTex,       0, 0, 1, 1}; return true; }
+    if (c == FACING_INDICATOR)  { out = {cursorTex,       0, 0, 1, 1}; return true; }
+
+    TileMetadata meta = getTileMeta(c);
+    if (meta.file.empty()) return false; // a sentinel, or an id tiles.json doesn't define
+
+    SDL_Texture* tex = getTileTexture(meta.file);
+    if (!tex) return false;
+
+    out = { tex, meta.srcCellX, meta.srcCellY, meta.w, meta.h };
+    return true;
+}
+} // namespace
+
 void drawChar(TileID c, int x, int y) {
     drawTileRect(c, SDL_Rect{ x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE });
 }
 
 void drawTileRect(TileID c, SDL_Rect dst) {
-    if (c == EMPTY_ID) return;
+    ResolvedTile r;
+    if (!resolveTile(c, r)) return;
+
     /*
     src's width/height must never exceed what dst actually asked for.
     The map draws every cell one at a time with dst == one CELL_SIZE
-    cell — even a multi-tile anchor's own cell — expecting only that
-    cell's 1x1 slice; the palette instead passes a dst sized to the
-    full meta.w x meta.h sprite and wants the whole region. Clamping
-    src to dst (capped by the sheet's real footprint) satisfies both:
-    a 1-cell dst still crops 1 cell even for a multi-tile anchor, while
-    a full-size dst still gets the entire sprite.
+    cell — even a multi-tile anchor's own cell, whose registry entry
+    reports the FULL sprite's footprint — expecting only that cell's 1x1
+    slice; the palette instead passes a dst sized to the full
+    meta.w x meta.h sprite and wants the whole region. Clamping src to
+    dst (capped by the sprite's real footprint) satisfies both: a 1-cell
+    dst still crops 1 cell even for a multi-tile anchor, while a
+    full-size dst still gets the entire sprite.
     */
-    TileMetadata meta = getTileMeta(c);
     SDL_Rect src = {
-        tileX(c) * CELL_SIZE, tileY(c) * CELL_SIZE,
-        std::min(dst.w, meta.w * CELL_SIZE),
-        std::min(dst.h, meta.h * CELL_SIZE)
+        r.srcCellX * CELL_SIZE, r.srcCellY * CELL_SIZE,
+        std::min(dst.w, r.cellW * CELL_SIZE),
+        std::min(dst.h, r.cellH * CELL_SIZE)
     };
-    SDL_RenderCopy(renderer, atlas, &src, &dst);
+    SDL_RenderCopy(renderer, r.tex, &src, &dst);
 }
 
 void drawCanvasTile(SDL_Rect dst) {
@@ -242,9 +331,13 @@ static int mapOriginX = 0;
 void setMapOrigin(int originX) { mapOriginX = originX; }
 
 void drawMapChar(TileID c, int x, int y) {
-    if (c == EMPTY_ID) return;
+    ResolvedTile r;
+    if (!resolveTile(c, r)) return;
 
-    SDL_Rect src = { tileX(c) * CELL_SIZE, tileY(c) * CELL_SIZE, CELL_SIZE, CELL_SIZE };
+    // Always exactly one source cell — see resolveTile's doc comment on
+    // why a multi-tile anchor's own registry entry (reporting its full
+    // footprint) still only contributes its own top-left slice here.
+    SDL_Rect src = { r.srcCellX * CELL_SIZE, r.srcCellY * CELL_SIZE, CELL_SIZE, CELL_SIZE };
 
     int tileSize = CELL_SIZE * zoomLevel;
     int screenX, screenY;
@@ -260,7 +353,7 @@ void drawMapChar(TileID c, int x, int y) {
     }
 
     SDL_Rect dst = { screenX, screenY, tileSize, tileSize };
-    SDL_RenderCopy(renderer, atlas, &src, &dst);
+    SDL_RenderCopy(renderer, r.tex, &src, &dst);
 }
 
 void setMapClip(bool enable) {

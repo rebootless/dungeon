@@ -15,12 +15,21 @@ const int MAX_HEIGHT = 37;
 
 /*
 World directory
-Every location is one JSON file in this folder, at the project root (a
-sibling of CMakeLists.txt / the built executable's working directory) —
-NOT inside levels/ or the build tree. Created on demand the first time
-something is saved (see saveLevelToFile).
+Every location is one JSON file in this folder, under assets/ (a sibling
+of the other game data assets) — NOT inside levels/ or the build tree.
+Created on demand the first time something is saved (see saveLevelToFile).
+See assets/world/WORLD.md for the on-disk naming convention.
 */
-constexpr const char* WORLD_DIR = "world";
+constexpr const char* WORLD_DIR = "assets/world";
+
+/*
+Valid range for a single world coordinate (floor, x, or y) — see
+assets/world/WORLD.md. Enforced when the editor steps the selected
+coordinate (editor/editor_controls.cpp); loading never rejects a file
+whose name falls outside this range, it just parses whatever is there.
+*/
+constexpr int WORLD_COORD_MIN = -99;
+constexpr int WORLD_COORD_MAX = 99;
 
 /*
 Level coordinate
@@ -49,10 +58,12 @@ struct LevelCoordHash {
 };
 
 /*
-File name for a location's JSON, e.g. "world/LEVEL-00-01-00.json".
-Coordinates may be negative — %02d still produces an unambiguous name
-(e.g. "LEVEL-00--01-00.json") since parsing (see loadWorld) reads the
-three integers with sscanf rather than splitting on '-'.
+File name for a location's JSON, e.g. "assets/world/LEVEL_00_01_00.json".
+Each coordinate is always exactly 2 digits, with a leading '-' for
+negative values (e.g. floor=0, x=-1, y=0 -> "LEVEL_00_-01_00.json") — see
+assets/world/WORLD.md. Plain "%02d" can't produce this on its own (it
+counts the sign towards the field width, so -1 prints as "-1" not "-01");
+levelFileName pads the magnitude itself instead.
 */
 std::string levelFileName(int floor, int x, int y);
 
@@ -89,8 +100,8 @@ hold a `Level*` to the current location across frames.
 extern std::unordered_map<LevelCoord, Level, LevelCoordHash> worldLevels;
 
 /*
-Scans world/*.json, loading every file matching LEVEL-<floor>-<x>-<y>.json
-into worldLevels. No fallback content: if world/ is empty, worldLevels
+Scans WORLD_DIR for every file matching LEVEL_<floor>_<x>_<y>.json into
+worldLevels. No fallback content: if the directory is empty, worldLevels
 ends up empty too — there is no synthesized placeholder location.
 */
 void initLevels();

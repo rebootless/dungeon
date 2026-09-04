@@ -12,41 +12,25 @@
 resolveInteractionAnchor
 Multi-cell Objects-layer sprites (currently: 1x2 doors, the 1x2 wardrobe)
 only register their TOP-LEFT anchor tile in interactions.cpp's table —
-every other cell of the footprint holds a raw sub-tile stamped by
-replaceFootprint (the anchor's TileID with a (dx,dy) offset baked in, see
-game_mode.cpp), which isn't a registered interaction key on its own. So
-facing anything but the anchor itself (e.g. the bottom half of a door)
-makes a direct findInteraction() lookup fail even though the object very
-much has a registered interaction.
+every other cell of the footprint holds a synthesized sub-id (see
+core/tiles.h's subTileId/anchorOf), which isn't a registered interaction
+key on its own. So facing anything but the anchor itself (e.g. the bottom
+half of a door) makes a direct findInteraction() lookup fail even though
+the object very much has a registered interaction.
 
-This walks backward from (fx, fy) looking for a cell whose tile, offset by
-(dx, dy), would produce exactly the raw tile the player is facing — i.e.
-"is (fx, fy) cell (dx, dy) inside SOME anchor's footprint", searching
-backward from the facing cell rather than forward from a spritesheet scan.
-kMaxSpan bounds the search to the largest footprint any registered tile
-could plausibly have; every real object today is only 1x2, so this rarely
-walks more than one cell.
+anchorOf() already knows the (dx, dy) offset every synthesized sub-id was
+generated at (tiles.cpp records it once, at registry-load time), so
+finding the anchor's grid position is just subtracting that offset — no
+search needed.
 */
 static bool resolveInteractionAnchor(int fx, int fy, int& ax, int& ay) {
-    constexpr int kMaxSpan = 8;
     TileID facingRaw = gObjectLayer[fy][fx];
 
-    for (int dy = 0; dy < kMaxSpan && fy - dy >= 0; ++dy) {
-        for (int dx = 0; dx < kMaxSpan && fx - dx >= 0; ++dx) {
-            if (dx == 0 && dy == 0) continue;
-
-            int cx = fx - dx, cy = fy - dy;
-            TileID candidate = gObjectLayer[cy][cx];
-            TileMetadata meta = getTileMeta(candidate);
-            if (dx >= meta.w || dy >= meta.h) continue; // candidate's footprint doesn't reach (fx, fy)
-
-            if (facingRaw == makeTile(tileX(candidate) + dx, tileY(candidate) + dy)) {
-                ax = cx; ay = cy;
-                return true;
-            }
-        }
-    }
-    return false;
+    int dx = 0, dy = 0;
+    anchorOf(facingRaw, dx, dy); // (0, 0) if facingRaw is already an anchor, or isn't multi-cell at all
+    ax = fx - dx;
+    ay = fy - dy;
+    return ax >= 0 && ay >= 0;
 }
 
 /*
@@ -245,6 +229,18 @@ void GameMode::onEvent(const SDL_Event& e) {
         else if (gCollisionLayer[gPlayerPosY][gPlayerPosX] == STAIRS_UP_MARKER) {
             if (!enterLevel(gCurrentCoord.floor + 1, gCurrentCoord.x, gCurrentCoord.y, LevelEntry{LevelEntry::Kind::FromBelow, 0}))
                 gGameMessage = " The way up hasn't been built yet.";
+        }
+
+        /*
+        Traps fire on a fresh step exactly like stairs above — otherwise
+        every frame spent standing on a sprung trap would try (and fail,
+        since it's terminal/one-way — see interactions.cpp's stepTable)
+        to re-trigger it. Traps are always 1x1, so no anchor resolution
+        is needed here the way E/Space's facingCell() lookup needs it.
+        */
+        if (const Interaction* trap = findStepTrigger(gObjectLayer[gPlayerPosY][gPlayerPosX])) {
+            playAnimation(gPlayerPosX, gPlayerPosY, trap->frames);
+            gGameMessage = trap->description;
         }
     }
 }

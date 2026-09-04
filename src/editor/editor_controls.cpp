@@ -1,5 +1,7 @@
 #include "editor_mode.h"
 
+#include <algorithm>
+
 #include "../core/display.h"
 #include "../core/level.h"
 #include "../core/renderer.h"
@@ -7,6 +9,46 @@
 #include "../help/help_mode.h"
 #include "../settings/settings_mode.h"
 #include "editor_state.h"
+
+/*
+Autotile neighbour re-evaluation
+Blend/blob materials are always 1x1 (see assets/tiles/tiles.json), so
+placing or erasing one only ever needs to re-check the edited cell itself
+plus its 4 orthogonal neighbours — a classic paint-time autotiler
+(Tiled/RPG Maker style): every affected cell gets its concrete piece
+baked into the map right now, so GameMode's render loop never needs to
+know autotiling exists at all.
+*/
+static void reevaluateAutotileCell(TileID (*map)[MAX_WIDTH], int x, int y) {
+    if (x < 0 || x >= MAX_WIDTH || y < 0 || y >= MAX_HEIGHT) return;
+
+    TileID id = map[y][x];
+    if (id == EMPTY_ID || !isAutotileTile(id)) return;
+
+    auto sameGroupAt = [&](int nx, int ny) {
+        if (nx < 0 || nx >= MAX_WIDTH || ny < 0 || ny >= MAX_HEIGHT) return false;
+        return sameTileGroup(id, map[ny][nx]);
+    };
+
+    bool n = sameGroupAt(x, y - 1), s = sameGroupAt(x, y + 1);
+    bool e = sameGroupAt(x + 1, y), w = sameGroupAt(x - 1, y);
+
+    if (isAutotileBlend(id)) {
+        bool ne = sameGroupAt(x + 1, y - 1), nw = sameGroupAt(x - 1, y - 1);
+        bool se = sameGroupAt(x + 1, y + 1), sw = sameGroupAt(x - 1, y + 1);
+        map[y][x] = resolveAutotileBlend(id, n, s, e, w, ne, nw, se, sw);
+    } else {
+        map[y][x] = resolveAutotileBlob(id, n, s, e, w);
+    }
+}
+
+static void reevaluateAutotileNeighborhood(TileID (*map)[MAX_WIDTH], int x, int y) {
+    reevaluateAutotileCell(map, x, y);
+    reevaluateAutotileCell(map, x, y - 1);
+    reevaluateAutotileCell(map, x, y + 1);
+    reevaluateAutotileCell(map, x - 1, y);
+    reevaluateAutotileCell(map, x + 1, y);
+}
 
 // placeTile
 void placeTile(int gx, int gy) {
@@ -27,7 +69,17 @@ void placeTile(int gx, int gy) {
         return;
     }
 
-    TileMetadata meta = getTileMeta(selectedTile);
+    /*
+    Random-fill groups (e.g. "grass") resolve to a concrete member here,
+    once per stamp — everything below just sees a plain TileID and has no
+    idea a group was ever involved. Autotile materials pass through
+    unchanged (pickRandomVariant is a no-op for anything that isn't a
+    "random" entry); their concrete piece is decided after stamping, by
+    reevaluateAutotileNeighborhood below, from actual map neighbours
+    rather than from the palette selection.
+    */
+    TileID stampId = pickRandomVariant(selectedTile);
+    TileMetadata meta = getTileMeta(stampId);
 
     if (gx + meta.w > MAX_WIDTH || gy + meta.h > MAX_HEIGHT) return;
 
@@ -52,7 +104,10 @@ void placeTile(int gx, int gy) {
     for (int dy = 0; dy < meta.h; ++dy) {
         for (int dx = 0; dx < meta.w; ++dx) {
             int cx = gx + dx, cy = gy + dy;
-            map[cy][cx] = makeTile(tileX(selectedTile) + dx, tileY(selectedTile) + dy);
+            // Every offset gets its own registered sub-id (see
+            // core/tiles.h's subTileId) so the render loops can stay a
+            // dumb per-cell draw with no footprint awareness of their own.
+            map[cy][cx] = subTileId(stampId, dx, dy);
             if (dx == 0 && dy == 0) {
                 mtMap[cy][cx] = { false, 0, 0 };
             } else {
@@ -60,6 +115,8 @@ void placeTile(int gx, int gy) {
             }
         }
     }
+
+    if (isAutotileTile(stampId)) reevaluateAutotileNeighborhood(map, gx, gy);
 }
 
 // eraseTile
@@ -82,7 +139,10 @@ void eraseTile(int gx, int gy) {
         ay = mtMap[gy][gx].anchorY;
     }
 
-    TileMetadata meta = getTileMeta(map[ay][ax]);
+    TileID erasedId = map[ay][ax];
+    bool wasAutotile = isAutotileTile(erasedId);
+
+    TileMetadata meta = getTileMeta(erasedId);
     for (int dy = 0; dy < meta.h; ++dy) {
         for (int dx = 0; dx < meta.w; ++dx) {
             int cx = ax + dx, cy = ay + dy;
@@ -92,6 +152,11 @@ void eraseTile(int gx, int gy) {
             }
         }
     }
+
+    // The erased cell itself is empty now and reevaluateAutotileCell
+    // skips empty cells, so this only ever touches its 4 orthogonal
+    // neighbours — exactly what needs to react to it disappearing.
+    if (wasAutotile) reevaluateAutotileNeighborhood(map, ax, ay);
 }
 
 /*
@@ -266,33 +331,35 @@ void EditorMode::onEvent(const SDL_Event& e) {
             whether or not that coordinate has a saved file yet, which is
             how new locations get created: step to an unused spot, draw,
             F5. Clicking a row in the right-panel list jumps here too.
+            Each axis is clamped to [WORLD_COORD_MIN, WORLD_COORD_MAX]
+            (core/level.h) — the range assets/world/WORLD.md allows.
             */
             case SDL_SCANCODE_A:
             case SDL_SCANCODE_LEFT:
-                --selectedCoord.x;
+                selectedCoord.x = std::clamp(selectedCoord.x - 1, WORLD_COORD_MIN, WORLD_COORD_MAX);
                 break;
 
             case SDL_SCANCODE_D:
             case SDL_SCANCODE_RIGHT:
-                ++selectedCoord.x;
+                selectedCoord.x = std::clamp(selectedCoord.x + 1, WORLD_COORD_MIN, WORLD_COORD_MAX);
                 break;
 
             case SDL_SCANCODE_W:
             case SDL_SCANCODE_UP:
-                --selectedCoord.y;
+                selectedCoord.y = std::clamp(selectedCoord.y - 1, WORLD_COORD_MIN, WORLD_COORD_MAX);
                 break;
 
             case SDL_SCANCODE_S:
             case SDL_SCANCODE_DOWN:
-                ++selectedCoord.y;
+                selectedCoord.y = std::clamp(selectedCoord.y + 1, WORLD_COORD_MIN, WORLD_COORD_MAX);
                 break;
 
             case SDL_SCANCODE_PAGEUP:
-                ++selectedCoord.floor;
+                selectedCoord.floor = std::clamp(selectedCoord.floor + 1, WORLD_COORD_MIN, WORLD_COORD_MAX);
                 break;
 
             case SDL_SCANCODE_PAGEDOWN:
-                --selectedCoord.floor;
+                selectedCoord.floor = std::clamp(selectedCoord.floor - 1, WORLD_COORD_MIN, WORLD_COORD_MAX);
                 break;
 
             case SDL_SCANCODE_F5:

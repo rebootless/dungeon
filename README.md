@@ -36,10 +36,10 @@ Written in C++17 and SDL2, `dungeon` runs the game and the level editor inside t
 | Script | Purpose | What it does |
 | --- | --- | --- |
 | `setup.sh` | One-time environment setup | Installs Linux build dependencies (CMake, SDL2, SDL2_image, SDL2_ttf, MinGW) via `apt`, and downloads the MinGW builds of SDL2, SDL2_image, and SDL2_ttf into `win_libs/` for Windows cross-compilation. Run once before the first build, or after switching machines. |
-| `build.sh` | Linux build | Configures the project with CMake and compiles it into `./build`. Creates symbolic links to `assets/` and `world/` inside the build directory so the editor reads and writes the original project data directly, without copying. |
+| `build.sh` | Linux build | Configures the project with CMake and compiles it into `./build`. Creates a symbolic link to `assets/` (which itself contains `world/` and `fragments/`) inside the build directory so the editor reads and writes the original project data directly, without copying. |
 | `build_win.sh` | Windows cross-build | Cross-compiles the project with MinGW into `./build_win`, producing `dungeon.exe`, and copies the required SDL DLLs next to the executable so it runs standalone on Windows. |
-| `release.sh` | Linux release packaging | Builds a standalone distribution in `release/`: replaces the `assets/` and `world/` symlinks with real copies, strips temporary CMake artifacts, and leaves a directory ready to ship. |
-| `release_win.sh` | Windows release packaging | Same as `release.sh`, but produces a standalone Windows distribution in `release_win/`, including `dungeon.exe`, DLLs, and real copies of `assets/` and `world/`. |
+| `release.sh` | Linux release packaging | Builds a standalone distribution in `release/`: replaces the `assets/` symlink with a real copy, strips temporary CMake artifacts, and leaves a directory ready to ship. |
+| `release_win.sh` | Windows release packaging | Same as `release.sh`, but produces a standalone Windows distribution in `release_win/`, including `dungeon.exe`, DLLs, and a real copy of `assets/`. |
 
 ### Linux
 
@@ -62,7 +62,7 @@ The resulting executable is:
 ./build/dungeon
 ```
 
-`build.sh` creates symbolic links to the project's `assets/` and `world/` directories, allowing the editor to work directly with the original project data.
+`build.sh` creates a symbolic link to the project's `assets/` directory (which contains `world/` and `fragments/`), allowing the editor to work directly with the original project data.
 
 ### Windows (Cross-compiling from Linux using MinGW)
 
@@ -85,7 +85,7 @@ All required SDL DLLs are copied next to the executable.
 
 During the release process they:
 
-- replace symbolic links with real copies of `assets/` and `world/`,
+- replace the `assets/` symlink with a real copy,
 - remove temporary CMake files,
 - produce a directory ready for distribution.
 
@@ -133,7 +133,7 @@ Tab provides auto-completion for commands and their arguments, including existin
 
 ```text
 core/       Shared infrastructure: virtual canvas, layout, renderer, window scaling,
-            console, tile metadata, level format, and world (world/*.json)
+            console, tile metadata, level format, and world (assets/world/*.json)
 
 game/       Gameplay mode: game state, input handling, interactions, HUD
 
@@ -143,9 +143,8 @@ settings/   Settings screen
 
 main.cpp    Application entry point
 
-assets/     Sprites and fonts
-
-world/      Saved world locations (JSON, one file per location)
+assets/     Sprites, fonts, tile metadata (tiles/tiles.json), saved world
+            locations (world/), and dungeon fragments (fragments/)
 
 docs/       ASCII interface mockups and design notes
 ```

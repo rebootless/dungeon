@@ -8,13 +8,20 @@
 
 /*
 Fragments directory
-Every fragment is one JSON file in this folder, at the project root —
-same convention as core/level.h's WORLD_DIR. Created on demand the first
-time something is saved (see saveFragmentToFile).
+Every fragment is one JSON file in this folder, under assets/ — same
+convention as core/level.h's WORLD_DIR. Created on demand the first time
+something is saved (see saveFragmentToFile). See
+assets/fragments/FRAGMENTS.md for the on-disk naming convention.
 */
-constexpr const char* FRAGMENTS_DIR = "fragments";
+constexpr const char* FRAGMENTS_DIR = "assets/fragments";
 
-// File name for a fragment's JSON, e.g. "fragments/FRAGMENT-03.json".
+// Valid range for a fragment id — see assets/fragments/FRAGMENTS.md.
+// Enforced when the fragment editor steps the selected id
+// (generator/fragment_editor_controls.cpp).
+constexpr int FRAGMENT_ID_MIN = 0;
+constexpr int FRAGMENT_ID_MAX = 99;
+
+// File name for a fragment's JSON, e.g. "assets/fragments/FRAGMENT_03.json".
 std::string fragmentFileName(int id);
 
 /*

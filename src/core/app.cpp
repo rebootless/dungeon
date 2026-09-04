@@ -9,6 +9,7 @@
 #include "layout.h"
 #include "level.h"
 #include "renderer.h"
+#include "tiles.h"
 
 #include "../editor/editor_mode.h"
 #include "../game/game_mode.h"
@@ -207,6 +208,13 @@ void App::handleEvent(const SDL_Event& e) {
 
 void App::run() {
     initSDL();
+    /*
+    Must happen before initLevels()/initFragments() load any saved map —
+    a level/fragment file's TileIDs are only meaningful once
+    assets/tiles/tiles.json has been parsed into the registry those ids
+    are looked up against (core/tiles.h).
+    */
+    loadTileRegistry();
     srand(static_cast<unsigned>(time(nullptr)));
     initLevels();
     initFragments();
