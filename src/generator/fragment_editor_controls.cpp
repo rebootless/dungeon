@@ -11,8 +11,8 @@
 #include "fragment_editor_state.h"
 
 // Same paint-time autotiling as editor/editor_controls.cpp — see its
-// comment. Fragments can contain autotile-blend/blob ground materials
-// just like a regular location, and get stitched into the world later
+// comment. Fragments can contain autotile-blend ground materials just
+// like a regular location, and get stitched into the world later
 // (generator/dungeon_generator.cpp), so they need to resolve correctly
 // here too, independent of GameMode/EditorMode.
 static void frReevaluateAutotileCell(TileID (*map)[MAX_WIDTH], int x, int y) {
@@ -28,22 +28,16 @@ static void frReevaluateAutotileCell(TileID (*map)[MAX_WIDTH], int x, int y) {
 
     bool n = sameGroupAt(x, y - 1), s = sameGroupAt(x, y + 1);
     bool e = sameGroupAt(x + 1, y), w = sameGroupAt(x - 1, y);
+    bool ne = sameGroupAt(x + 1, y - 1), nw = sameGroupAt(x - 1, y - 1);
+    bool se = sameGroupAt(x + 1, y + 1), sw = sameGroupAt(x - 1, y + 1);
 
-    if (isAutotileBlend(id)) {
-        bool ne = sameGroupAt(x + 1, y - 1), nw = sameGroupAt(x - 1, y - 1);
-        bool se = sameGroupAt(x + 1, y + 1), sw = sameGroupAt(x - 1, y + 1);
-        map[y][x] = resolveAutotileBlend(id, n, s, e, w, ne, nw, se, sw);
-    } else {
-        map[y][x] = resolveAutotileBlob(id, n, s, e, w);
-    }
+    map[y][x] = resolveAutotileBlend(id, n, s, e, w, ne, nw, se, sw);
 }
 
 static void frReevaluateAutotileNeighborhood(TileID (*map)[MAX_WIDTH], int x, int y) {
-    frReevaluateAutotileCell(map, x, y);
-    frReevaluateAutotileCell(map, x, y - 1);
-    frReevaluateAutotileCell(map, x, y + 1);
-    frReevaluateAutotileCell(map, x - 1, y);
-    frReevaluateAutotileCell(map, x + 1, y);
+    for (int dy = -1; dy <= 1; ++dy)
+        for (int dx = -1; dx <= 1; ++dx)
+            frReevaluateAutotileCell(map, x + dx, y + dy);
 }
 
 // frPlaceTile

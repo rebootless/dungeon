@@ -12,12 +12,15 @@
 
 /*
 Autotile neighbour re-evaluation
-Blend/blob materials are always 1x1 (see assets/tiles/tiles.json), so
-placing or erasing one only ever needs to re-check the edited cell itself
-plus its 4 orthogonal neighbours — a classic paint-time autotiler
-(Tiled/RPG Maker style): every affected cell gets its concrete piece
-baked into the map right now, so GameMode's render loop never needs to
-know autotiling exists at all.
+Blend materials are always 1x1 (see assets/tiles/tiles.json), so placing
+or erasing one only ever needs to re-check the edited cell itself plus
+its 8 surrounding neighbours — a classic paint-time autotiler (Tiled/RPG
+Maker style): every affected cell gets its concrete piece baked into the
+map right now, so GameMode's render loop never needs to know autotiling
+exists at all. The full 3x3 neighbourhood matters here, not just the 4
+orthogonal cells: resolveAutotileBlend picks concave-corner pieces from
+the diagonal neighbours too, so a diagonal neighbour's own piece can
+change as a side effect of this edit just as much as an orthogonal one's.
 */
 static void reevaluateAutotileCell(TileID (*map)[MAX_WIDTH], int x, int y) {
     if (x < 0 || x >= MAX_WIDTH || y < 0 || y >= MAX_HEIGHT) return;
@@ -32,22 +35,16 @@ static void reevaluateAutotileCell(TileID (*map)[MAX_WIDTH], int x, int y) {
 
     bool n = sameGroupAt(x, y - 1), s = sameGroupAt(x, y + 1);
     bool e = sameGroupAt(x + 1, y), w = sameGroupAt(x - 1, y);
+    bool ne = sameGroupAt(x + 1, y - 1), nw = sameGroupAt(x - 1, y - 1);
+    bool se = sameGroupAt(x + 1, y + 1), sw = sameGroupAt(x - 1, y + 1);
 
-    if (isAutotileBlend(id)) {
-        bool ne = sameGroupAt(x + 1, y - 1), nw = sameGroupAt(x - 1, y - 1);
-        bool se = sameGroupAt(x + 1, y + 1), sw = sameGroupAt(x - 1, y + 1);
-        map[y][x] = resolveAutotileBlend(id, n, s, e, w, ne, nw, se, sw);
-    } else {
-        map[y][x] = resolveAutotileBlob(id, n, s, e, w);
-    }
+    map[y][x] = resolveAutotileBlend(id, n, s, e, w, ne, nw, se, sw);
 }
 
 static void reevaluateAutotileNeighborhood(TileID (*map)[MAX_WIDTH], int x, int y) {
-    reevaluateAutotileCell(map, x, y);
-    reevaluateAutotileCell(map, x, y - 1);
-    reevaluateAutotileCell(map, x, y + 1);
-    reevaluateAutotileCell(map, x - 1, y);
-    reevaluateAutotileCell(map, x + 1, y);
+    for (int dy = -1; dy <= 1; ++dy)
+        for (int dx = -1; dx <= 1; ++dx)
+            reevaluateAutotileCell(map, x + dx, y + dy);
 }
 
 // placeTile
@@ -154,7 +151,7 @@ void eraseTile(int gx, int gy) {
     }
 
     // The erased cell itself is empty now and reevaluateAutotileCell
-    // skips empty cells, so this only ever touches its 4 orthogonal
+    // skips empty cells, so this only ever touches its 8 surrounding
     // neighbours — exactly what needs to react to it disappearing.
     if (wasAutotile) reevaluateAutotileNeighborhood(map, ax, ay);
 }

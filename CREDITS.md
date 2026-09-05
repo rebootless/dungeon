@@ -23,3 +23,19 @@
 - License: Custom license
 - Modified: Yes
 - Retrieved: 2026-07-05
+
+### Hexany's Monster Menagerie
+
+- Author: Hexany Ives
+- Source: https://hexany-ives.itch.io/hexanys-monster-menagerie
+- License: CC0 1.0 Universal
+- Modified: No
+- Retrieved: 2026-07-05
+
+### Hexany's Roguelike Tiles
+
+- Author: Hexany Ives
+- Source: https://hexany-ives.itch.io/hexanys-roguelike-tiles
+- License: CC0 1.0 Universal
+- Modified: No
+- Retrieved: 2026-07-05

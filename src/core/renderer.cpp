@@ -259,6 +259,23 @@ void drawTileRect(TileID c, SDL_Rect dst) {
     SDL_RenderCopy(renderer, r.tex, &src, &dst);
 }
 
+void drawTilePreview(TileID c, SDL_Rect dst) {
+    if (c == EMPTY_ID) return;
+
+    TileMetadata meta = getPalettePreviewMeta(c);
+    if (meta.file.empty()) return; // a sentinel, or an id tiles.json doesn't define
+
+    SDL_Texture* tex = getTileTexture(meta.file);
+    if (!tex) return;
+
+    SDL_Rect src = {
+        meta.srcCellX * CELL_SIZE, meta.srcCellY * CELL_SIZE,
+        std::min(dst.w, meta.w * CELL_SIZE),
+        std::min(dst.h, meta.h * CELL_SIZE)
+    };
+    SDL_RenderCopy(renderer, tex, &src, &dst);
+}
+
 void drawCanvasTile(SDL_Rect dst) {
     if (!canvasBgTex) return;
     SDL_RenderCopy(renderer, canvasBgTex, nullptr, &dst);

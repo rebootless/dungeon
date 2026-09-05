@@ -64,6 +64,18 @@ a few px within their cell, etc). drawChar is a thin wrapper around this.
 */
 void drawTileRect(TileID c, SDL_Rect dst);
 
+/*
+Like drawTileRect, but sources its rect from core/tiles.h's
+getPalettePreviewMeta instead of getTileMeta — the one difference being
+an autotile_blend representative renders its whole 3x3 base sheet here
+instead of the single "c" piece it actually resolves to on the map. Used
+only for the palette's own tile icons (editor/editor_mode.cpp's
+onRender and the fragment editor's equivalent); every other draw call
+(the map, the palette's own selection outline, FrameBuilder, ...) keeps
+using plain drawTileRect/drawChar/drawMapChar.
+*/
+void drawTilePreview(TileID c, SDL_Rect dst);
+
 // Render UTF-8 string `str` at grid cell (x, y) using the game font, in
 // plain white.
 void drawString(const std::string& str, int x, int y);

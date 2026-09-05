@@ -93,7 +93,10 @@ static void buildFragmentPalette() {
 Palette layout (shelf packing)
 Identical algorithm to editor/editor_mode.cpp's computePaletteLayout —
 kept as its own instance since it packs frAvailableTiles into
-FragmentPaletteEntry rects rather than EditorMode's PaletteEntry.
+FragmentPaletteEntry rects rather than EditorMode's PaletteEntry. Sizes
+by core/tiles.h's getPalettePreviewMeta for the same reason EditorMode's
+version does: an autotile_blend material's shelf space should match its
+3x3 icon, not the 1x1 cell it actually paints.
 */
 std::vector<FragmentPaletteEntry> computeFragmentPaletteLayout(int panelW) {
     std::vector<FragmentPaletteEntry> entries;
@@ -103,7 +106,7 @@ std::vector<FragmentPaletteEntry> computeFragmentPaletteLayout(int panelW) {
     int cursorX = 0, cursorY = 0, shelfH = 0;
 
     for (TileID id : frAvailableTiles) {
-        TileMetadata meta = getTileMeta(id);
+        TileMetadata meta = getPalettePreviewMeta(id);
         int w = meta.w * PALETTE_CELL;
         int h = meta.h * PALETTE_CELL;
 
@@ -287,7 +290,7 @@ void FragmentEditorMode::onRender() {
             int py = r.y - frPaletteScroll;
 
             if (py + r.h > 0 && py < panelH)
-                drawTileRect(entry.id, SDL_Rect{px, py, r.w, r.h});
+                drawTilePreview(entry.id, SDL_Rect{px, py, r.w, r.h});
 
             if (entry.id == frSelectedTile)
                 drawRectOutline(px, py, r.w, r.h, SDL_Color{255, 255, 0, 255});

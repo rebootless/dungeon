@@ -92,7 +92,11 @@ static void buildPalette() {
 Palette layout (shelf packing)
 See editor_state.h's PaletteEntry/computePaletteLayout comment — this is
 the one implementation, shared by onRender() below (drawing) and
-editor_controls.cpp's handlePointerAction (click hit-testing).
+editor_controls.cpp's handlePointerAction (click hit-testing). Sizes each
+entry by core/tiles.h's getPalettePreviewMeta rather than getTileMeta, so
+an autotile_blend material's shelf space (and hit box) matches the 3x3
+icon drawTilePreview actually draws for it, not the single 1x1 cell it
+resolves to once placed.
 */
 std::vector<PaletteEntry> computePaletteLayout(int panelW) {
     std::vector<PaletteEntry> entries;
@@ -102,7 +106,7 @@ std::vector<PaletteEntry> computePaletteLayout(int panelW) {
     int cursorX = 0, cursorY = 0, shelfH = 0;
 
     for (TileID id : availableTiles) {
-        TileMetadata meta = getTileMeta(id);
+        TileMetadata meta = getPalettePreviewMeta(id);
         int w = meta.w * PALETTE_CELL;
         int h = meta.h * PALETTE_CELL;
 
@@ -319,7 +323,7 @@ void EditorMode::onRender() {
             int py = r.y - paletteScroll;
 
             if (py + r.h > 0 && py < panelH)
-                drawTileRect(entry.id, SDL_Rect{px, py, r.w, r.h});
+                drawTilePreview(entry.id, SDL_Rect{px, py, r.w, r.h});
 
             if (entry.id == selectedTile)
                 drawRectOutline(px, py, r.w, r.h, SDL_Color{255, 255, 0, 255});

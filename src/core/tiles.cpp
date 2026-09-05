@@ -13,8 +13,8 @@ namespace {
 /*
 tiles.json entry, exactly as authored — see assets/tiles/tiles.json's own
 field-by-field usage for what each mode actually needs. Defaults here
-match the generator's: cellW/cellH/tier default to 1, col/row/mask
-default to 0/-1, paletteVisible defaults true.
+match the generator's: cellW/cellH/tier default to 1, col/row default to
+0, paletteVisible defaults true.
 */
 struct RawEntry {
     TileID      id = EMPTY_ID;
@@ -27,8 +27,6 @@ struct RawEntry {
     std::string object;
     int         tier = 1;
     std::string role;
-    std::string blobKind;
-    int         mask = -1;
     bool        paletteVisible = true;
 };
 
@@ -49,9 +47,6 @@ std::unordered_map<std::string, std::vector<TileID>> g_randomGroups;
 
 // group -> role -> id — autotile_blend resolution.
 std::unordered_map<std::string, std::unordered_map<std::string, TileID>> g_blendGroups;
-
-// group -> mask -> id — autotile_blob resolution.
-std::unordered_map<std::string, std::unordered_map<int, TileID>> g_blobGroups;
 
 // "object|tier" -> ordered frames — interactive resolution.
 std::unordered_map<std::string, std::vector<TileID>> g_interactiveFrames;
@@ -101,7 +96,6 @@ TileMode parseMode(const std::string& s) {
     if (s == "random")          return TileMode::Random;
     if (s == "interactive")     return TileMode::Interactive;
     if (s == "autotile_blend")  return TileMode::AutotileBlend;
-    if (s == "autotile_blob")   return TileMode::AutotileBlob;
     fail("unknown mode \"" + s + "\"");
 }
 
@@ -143,8 +137,6 @@ const char* parseEntry(const char* p, RawEntry& e) {
         else if (strcmp(key, "object")          == 0) { p = jString(p, strBuf, sizeof(strBuf)); e.object = strBuf; }
         else if (strcmp(key, "tier")            == 0) { p = jInt(p, &v); e.tier = (int)v; }
         else if (strcmp(key, "role")            == 0) { p = jString(p, strBuf, sizeof(strBuf)); e.role = strBuf; }
-        else if (strcmp(key, "blobKind")        == 0) { p = jString(p, strBuf, sizeof(strBuf)); e.blobKind = strBuf; }
-        else if (strcmp(key, "mask")            == 0) { p = jInt(p, &v); e.mask = (int)v; }
         else if (strcmp(key, "paletteVisible")  == 0) { p = jBool(p, &e.paletteVisible); }
         else                                            { p = jSkipValue(p); } // forward-compatible: ignore unknown keys
 
@@ -224,7 +216,6 @@ void loadTileRegistry() {
     g_modeOf.clear();
     g_randomGroups.clear();
     g_blendGroups.clear();
-    g_blobGroups.clear();
     g_interactiveFrames.clear();
     g_interactiveInfo.clear();
     g_subIds.clear();
@@ -265,9 +256,6 @@ void loadTileRegistry() {
         if (e.mode == TileMode::AutotileBlend && !e.group.empty() && !e.role.empty())
             g_blendGroups[e.group][e.role] = e.id;
 
-        if (e.mode == TileMode::AutotileBlob && !e.group.empty() && e.mask >= 0)
-            g_blobGroups[e.group][e.mask] = e.id;
-
         if (e.mode == TileMode::Interactive && !e.object.empty()) {
             std::string key = e.object + "|" + std::to_string(e.tier);
             int frameIndex = (int)g_interactiveFrames[key].size();
@@ -278,7 +266,7 @@ void loadTileRegistry() {
         if (e.paletteVisible) {
             if (e.mode == TileMode::Manual || e.mode == TileMode::Random || e.mode == TileMode::Interactive)
                 g_paletteTiles.push_back(e.id);
-            else if (e.mode == TileMode::AutotileBlend || e.mode == TileMode::AutotileBlob)
+            else if (e.mode == TileMode::AutotileBlend)
                 g_autotilePaletteTiles.push_back(e.id);
         }
 
@@ -297,6 +285,26 @@ TileMetadata getTileMeta(TileID id) {
     auto it = g_meta.find(id);
     if (it != g_meta.end()) return it->second;
     return TileMetadata{}; // EMPTY_ID, a sentinel, or an unknown id — safe, invisible default
+}
+
+TileMetadata getPalettePreviewMeta(TileID id) {
+    auto groupIt = g_groupOf.find(id);
+    if (groupIt == g_groupOf.end() || groupIt->second.empty()) return getTileMeta(id);
+
+    auto blendIt = g_blendGroups.find(groupIt->second);
+    if (blendIt == g_blendGroups.end()) return getTileMeta(id); // not an autotile_blend id at all
+
+    // "nw" sits at the base sheet's (0, 0) — see the BLEND_ROLES_3x3
+    // layout in assets/tiles/tiles.json's generator — so its own srcCell
+    // is already the top-left corner of the whole 3x3 sheet; only the
+    // reported footprint needs widening from 1x1 to 3x3.
+    auto nwIt = blendIt->second.find("nw");
+    if (nwIt == blendIt->second.end()) return getTileMeta(id);
+
+    TileMetadata preview = getTileMeta(nwIt->second);
+    preview.w = 3;
+    preview.h = 3;
+    return preview;
 }
 
 std::vector<TileID> getPaletteTiles() { return g_paletteTiles; }
@@ -329,17 +337,7 @@ TileID pickRandomVariant(TileID id) {
 
 bool isAutotileTile(TileID id) {
     auto it = g_modeOf.find(id);
-    return it != g_modeOf.end() && (it->second == TileMode::AutotileBlend || it->second == TileMode::AutotileBlob);
-}
-
-bool isAutotileBlend(TileID id) {
-    auto it = g_modeOf.find(id);
     return it != g_modeOf.end() && it->second == TileMode::AutotileBlend;
-}
-
-bool isAutotileBlob(TileID id) {
-    auto it = g_modeOf.find(id);
-    return it != g_modeOf.end() && it->second == TileMode::AutotileBlob;
 }
 
 bool sameTileGroup(TileID a, TileID b) {
@@ -394,27 +392,6 @@ TileID resolveAutotileBlend(TileID id, bool n, bool s, bool e, bool w,
     std::string role = computeBlendRole(n, s, e, w, ne, nw, se, sw);
     auto roleIt = blendIt->second.find(role);
     return (roleIt != blendIt->second.end()) ? roleIt->second : id;
-}
-
-TileID resolveAutotileBlob(TileID id, bool n, bool s, bool e, bool w) {
-    auto groupIt = g_groupOf.find(id);
-    if (groupIt == g_groupOf.end() || groupIt->second.empty()) return id;
-
-    auto blobIt = g_blobGroups.find(groupIt->second);
-    if (blobIt == g_blobGroups.end()) return id;
-
-    // Classic 4-bit blob bitmask: bit0=N, bit1=E, bit2=S, bit3=W — see
-    // tiles.json's generator notes on autotile_blob for the (col,row)
-    // convention this indexes into.
-    int mask = (n ? 1 : 0) | (e ? 2 : 0) | (s ? 4 : 0) | (w ? 8 : 0);
-
-    auto maskIt = blobIt->second.find(mask);
-    if (maskIt != blobIt->second.end()) return maskIt->second;
-
-    // Sheet too small to cover every mask (e.g. rails' 10 cells can't
-    // hold all 16) — fall back to mask 0 rather than leaving a hole.
-    auto zeroIt = blobIt->second.find(0);
-    return (zeroIt != blobIt->second.end()) ? zeroIt->second : id;
 }
 
 std::vector<TileID> interactiveFrames(const std::string& object, int tier) {

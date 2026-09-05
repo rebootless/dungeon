@@ -643,489 +643,558 @@
     "id": "1T",
     "file": "brick_wall_autotile.png",
     "layer": "ground",
-    "mode": "autotile_blob",
-    "group": "brick_wall",
-    "blobKind": "wall",
-    "mask": 0
+    "mode": "manual"
   },
   {
     "id": "1U",
     "file": "brick_wall_autotile.png",
     "layer": "ground",
-    "mode": "autotile_blob",
-    "col": 1,
-    "group": "brick_wall",
-    "blobKind": "wall",
-    "mask": 1,
-    "paletteVisible": false
+    "mode": "manual",
+    "col": 1
   },
   {
     "id": "1V",
     "file": "brick_wall_autotile.png",
     "layer": "ground",
-    "mode": "autotile_blob",
-    "col": 2,
-    "group": "brick_wall",
-    "blobKind": "wall",
-    "mask": 2,
-    "paletteVisible": false
+    "mode": "manual",
+    "col": 2
   },
   {
     "id": "1W",
     "file": "brick_wall_autotile.png",
     "layer": "ground",
-    "mode": "autotile_blob",
-    "col": 3,
-    "group": "brick_wall",
-    "blobKind": "wall",
-    "mask": 3,
-    "paletteVisible": false
+    "mode": "manual",
+    "col": 3
   },
   {
     "id": "1X",
     "file": "brick_wall_autotile.png",
     "layer": "ground",
-    "mode": "autotile_blob",
-    "row": 1,
-    "group": "brick_wall",
-    "blobKind": "wall",
-    "mask": 4,
-    "paletteVisible": false
+    "mode": "manual",
+    "col": 4
   },
   {
     "id": "1Y",
     "file": "brick_wall_autotile.png",
     "layer": "ground",
-    "mode": "autotile_blob",
-    "col": 1,
-    "row": 1,
-    "group": "brick_wall",
-    "blobKind": "wall",
-    "mask": 5,
-    "paletteVisible": false
-  },
-  {
-    "id": "1Z",
-    "file": "brick_wall_autotile.png",
-    "layer": "ground",
-    "mode": "autotile_blob",
-    "col": 2,
-    "row": 1,
-    "group": "brick_wall",
-    "blobKind": "wall",
-    "mask": 6,
-    "paletteVisible": false
-  },
-  {
-    "id": "20",
-    "file": "brick_wall_autotile.png",
-    "layer": "ground",
-    "mode": "autotile_blob",
-    "col": 3,
-    "row": 1,
-    "group": "brick_wall",
-    "blobKind": "wall",
-    "mask": 7,
-    "paletteVisible": false
+    "mode": "manual",
+    "col": 5
   },
   {
     "id": "21",
     "file": "brick_wall_autotile.png",
     "layer": "ground",
-    "mode": "autotile_blob",
-    "row": 2,
-    "group": "brick_wall",
-    "blobKind": "wall",
-    "mask": 8,
-    "paletteVisible": false
+    "mode": "manual",
+    "row": 1
   },
   {
     "id": "22",
     "file": "brick_wall_autotile.png",
     "layer": "ground",
-    "mode": "autotile_blob",
+    "mode": "manual",
     "col": 1,
-    "row": 2,
-    "group": "brick_wall",
-    "blobKind": "wall",
-    "mask": 9,
-    "paletteVisible": false
+    "row": 1
   },
   {
     "id": "23",
     "file": "brick_wall_autotile.png",
     "layer": "ground",
-    "mode": "autotile_blob",
+    "mode": "manual",
     "col": 2,
-    "row": 2,
-    "group": "brick_wall",
-    "blobKind": "wall",
-    "mask": 10,
-    "paletteVisible": false
+    "row": 1
   },
   {
     "id": "24",
     "file": "brick_wall_autotile.png",
     "layer": "ground",
-    "mode": "autotile_blob",
+    "mode": "manual",
     "col": 3,
-    "row": 2,
-    "group": "brick_wall",
-    "blobKind": "wall",
-    "mask": 11,
-    "paletteVisible": false
+    "row": 1
   },
   {
     "id": "25",
     "file": "brick_wall_autotile.png",
     "layer": "ground",
-    "mode": "autotile_blob",
-    "row": 3,
-    "group": "brick_wall",
-    "blobKind": "wall",
-    "mask": 12,
-    "paletteVisible": false
+    "mode": "manual",
+    "col": 4,
+    "row": 1
   },
   {
     "id": "26",
     "file": "brick_wall_autotile.png",
     "layer": "ground",
-    "mode": "autotile_blob",
-    "col": 1,
-    "row": 3,
-    "group": "brick_wall",
-    "blobKind": "wall",
-    "mask": 13,
-    "paletteVisible": false
-  },
-  {
-    "id": "27",
-    "file": "brick_wall_autotile.png",
-    "layer": "ground",
-    "mode": "autotile_blob",
-    "col": 2,
-    "row": 3,
-    "group": "brick_wall",
-    "blobKind": "wall",
-    "mask": 14,
-    "paletteVisible": false
-  },
-  {
-    "id": "28",
-    "file": "brick_wall_autotile.png",
-    "layer": "ground",
-    "mode": "autotile_blob",
-    "col": 3,
-    "row": 3,
-    "group": "brick_wall",
-    "blobKind": "wall",
-    "mask": 15,
-    "paletteVisible": false
+    "mode": "manual",
+    "col": 5,
+    "row": 1
   },
   {
     "id": "29",
-    "file": "cobblestone_wall_autotile.png",
+    "file": "brick_wall_autotile.png",
     "layer": "ground",
-    "mode": "autotile_blob",
-    "group": "cobblestone_wall",
-    "blobKind": "wall",
-    "mask": 0
+    "mode": "manual",
+    "row": 2
   },
   {
     "id": "2A",
-    "file": "cobblestone_wall_autotile.png",
+    "file": "brick_wall_autotile.png",
     "layer": "ground",
-    "mode": "autotile_blob",
+    "mode": "manual",
     "col": 1,
-    "group": "cobblestone_wall",
-    "blobKind": "wall",
-    "mask": 1,
-    "paletteVisible": false
+    "row": 2
   },
   {
     "id": "2B",
-    "file": "cobblestone_wall_autotile.png",
+    "file": "brick_wall_autotile.png",
     "layer": "ground",
-    "mode": "autotile_blob",
+    "mode": "manual",
     "col": 2,
-    "group": "cobblestone_wall",
-    "blobKind": "wall",
-    "mask": 2,
-    "paletteVisible": false
+    "row": 2
   },
   {
     "id": "2C",
-    "file": "cobblestone_wall_autotile.png",
+    "file": "brick_wall_autotile.png",
     "layer": "ground",
-    "mode": "autotile_blob",
+    "mode": "manual",
     "col": 3,
-    "group": "cobblestone_wall",
-    "blobKind": "wall",
-    "mask": 3,
-    "paletteVisible": false
+    "row": 2
   },
   {
     "id": "2D",
-    "file": "cobblestone_wall_autotile.png",
+    "file": "brick_wall_autotile.png",
     "layer": "ground",
-    "mode": "autotile_blob",
-    "row": 1,
-    "group": "cobblestone_wall",
-    "blobKind": "wall",
-    "mask": 4,
-    "paletteVisible": false
+    "mode": "manual",
+    "col": 4,
+    "row": 2
   },
   {
     "id": "2E",
-    "file": "cobblestone_wall_autotile.png",
+    "file": "brick_wall_autotile.png",
     "layer": "ground",
-    "mode": "autotile_blob",
-    "col": 1,
-    "row": 1,
-    "group": "cobblestone_wall",
-    "blobKind": "wall",
-    "mask": 5,
-    "paletteVisible": false
+    "mode": "manual",
+    "col": 5,
+    "row": 2
   },
   {
     "id": "2F",
-    "file": "cobblestone_wall_autotile.png",
+    "file": "brick_wall_autotile.png",
     "layer": "ground",
-    "mode": "autotile_blob",
-    "col": 2,
-    "row": 1,
-    "group": "cobblestone_wall",
-    "blobKind": "wall",
-    "mask": 6,
-    "paletteVisible": false
+    "mode": "manual",
+    "col": 6,
+    "row": 2
   },
   {
     "id": "2G",
-    "file": "cobblestone_wall_autotile.png",
+    "file": "brick_wall_autotile.png",
     "layer": "ground",
-    "mode": "autotile_blob",
-    "col": 3,
-    "row": 1,
-    "group": "cobblestone_wall",
-    "blobKind": "wall",
-    "mask": 7,
-    "paletteVisible": false
+    "mode": "manual",
+    "col": 7,
+    "row": 2
   },
   {
     "id": "2H",
-    "file": "cobblestone_wall_autotile.png",
+    "file": "brick_wall_autotile.png",
     "layer": "ground",
-    "mode": "autotile_blob",
-    "row": 2,
-    "group": "cobblestone_wall",
-    "blobKind": "wall",
-    "mask": 8,
-    "paletteVisible": false
+    "mode": "manual",
+    "row": 3
   },
   {
     "id": "2I",
-    "file": "cobblestone_wall_autotile.png",
+    "file": "brick_wall_autotile.png",
     "layer": "ground",
-    "mode": "autotile_blob",
+    "mode": "manual",
     "col": 1,
-    "row": 2,
-    "group": "cobblestone_wall",
-    "blobKind": "wall",
-    "mask": 9,
-    "paletteVisible": false
+    "row": 3
   },
   {
     "id": "2J",
-    "file": "cobblestone_wall_autotile.png",
+    "file": "brick_wall_autotile.png",
     "layer": "ground",
-    "mode": "autotile_blob",
+    "mode": "manual",
     "col": 2,
-    "row": 2,
-    "group": "cobblestone_wall",
-    "blobKind": "wall",
-    "mask": 10,
-    "paletteVisible": false
+    "row": 3
   },
   {
     "id": "2K",
-    "file": "cobblestone_wall_autotile.png",
+    "file": "brick_wall_autotile.png",
     "layer": "ground",
-    "mode": "autotile_blob",
+    "mode": "manual",
     "col": 3,
-    "row": 2,
-    "group": "cobblestone_wall",
-    "blobKind": "wall",
-    "mask": 11,
-    "paletteVisible": false
+    "row": 3
   },
   {
     "id": "2L",
-    "file": "cobblestone_wall_autotile.png",
+    "file": "brick_wall_autotile.png",
     "layer": "ground",
-    "mode": "autotile_blob",
-    "row": 3,
-    "group": "cobblestone_wall",
-    "blobKind": "wall",
-    "mask": 12,
-    "paletteVisible": false
+    "mode": "manual",
+    "col": 4,
+    "row": 3
   },
   {
     "id": "2M",
-    "file": "cobblestone_wall_autotile.png",
+    "file": "brick_wall_autotile.png",
     "layer": "ground",
-    "mode": "autotile_blob",
-    "col": 1,
-    "row": 3,
-    "group": "cobblestone_wall",
-    "blobKind": "wall",
-    "mask": 13,
-    "paletteVisible": false
+    "mode": "manual",
+    "col": 5,
+    "row": 3
   },
   {
     "id": "2N",
-    "file": "cobblestone_wall_autotile.png",
+    "file": "brick_wall_autotile.png",
     "layer": "ground",
-    "mode": "autotile_blob",
-    "col": 2,
-    "row": 3,
-    "group": "cobblestone_wall",
-    "blobKind": "wall",
-    "mask": 14,
-    "paletteVisible": false
+    "mode": "manual",
+    "col": 6,
+    "row": 3
   },
   {
     "id": "2O",
-    "file": "cobblestone_wall_autotile.png",
+    "file": "brick_wall_autotile.png",
     "layer": "ground",
-    "mode": "autotile_blob",
-    "col": 3,
-    "row": 3,
-    "group": "cobblestone_wall",
-    "blobKind": "wall",
-    "mask": 15,
-    "paletteVisible": false
+    "mode": "manual",
+    "col": 7,
+    "row": 3
   },
   {
     "id": "2P",
-    "file": "rails_autotile.png",
+    "file": "brick_wall_autotile.png",
     "layer": "ground",
-    "mode": "autotile_blob",
-    "group": "rails",
-    "blobKind": "rails",
-    "mask": 0
+    "mode": "manual",
+    "row": 4
   },
   {
     "id": "2Q",
-    "file": "rails_autotile.png",
+    "file": "brick_wall_autotile.png",
     "layer": "ground",
-    "mode": "autotile_blob",
+    "mode": "manual",
     "col": 1,
-    "group": "rails",
-    "blobKind": "rails",
-    "mask": 1,
-    "paletteVisible": false
+    "row": 4
   },
   {
     "id": "2R",
-    "file": "rails_autotile.png",
+    "file": "brick_wall_autotile.png",
     "layer": "ground",
-    "mode": "autotile_blob",
+    "mode": "manual",
     "col": 2,
-    "group": "rails",
-    "blobKind": "rails",
-    "mask": 2,
-    "paletteVisible": false
-  },
-  {
-    "id": "2S",
-    "file": "rails_autotile.png",
-    "layer": "ground",
-    "mode": "autotile_blob",
-    "col": 3,
-    "group": "rails",
-    "blobKind": "rails",
-    "mask": 3,
-    "paletteVisible": false
-  },
-  {
-    "id": "2T",
-    "file": "rails_autotile.png",
-    "layer": "ground",
-    "mode": "autotile_blob",
-    "col": 4,
-    "group": "rails",
-    "blobKind": "rails",
-    "mask": 4,
-    "paletteVisible": false
-  },
-  {
-    "id": "2U",
-    "file": "rails_autotile.png",
-    "layer": "ground",
-    "mode": "autotile_blob",
-    "row": 1,
-    "group": "rails",
-    "blobKind": "rails",
-    "mask": 5,
-    "paletteVisible": false
-  },
-  {
-    "id": "2V",
-    "file": "rails_autotile.png",
-    "layer": "ground",
-    "mode": "autotile_blob",
-    "col": 1,
-    "row": 1,
-    "group": "rails",
-    "blobKind": "rails",
-    "mask": 6,
-    "paletteVisible": false
-  },
-  {
-    "id": "2W",
-    "file": "rails_autotile.png",
-    "layer": "ground",
-    "mode": "autotile_blob",
-    "col": 2,
-    "row": 1,
-    "group": "rails",
-    "blobKind": "rails",
-    "mask": 7,
-    "paletteVisible": false
+    "row": 4
   },
   {
     "id": "2X",
-    "file": "rails_autotile.png",
+    "file": "cobblestone_wall_autotile.png",
     "layer": "ground",
-    "mode": "autotile_blob",
-    "col": 3,
-    "row": 1,
-    "group": "rails",
-    "blobKind": "rails",
-    "mask": 8,
-    "paletteVisible": false
+    "mode": "manual"
   },
   {
     "id": "2Y",
-    "file": "rails_autotile.png",
+    "file": "cobblestone_wall_autotile.png",
     "layer": "ground",
-    "mode": "autotile_blob",
-    "col": 4,
-    "row": 1,
-    "group": "rails",
-    "blobKind": "rails",
-    "mask": 9,
-    "paletteVisible": false
+    "mode": "manual",
+    "col": 1
   },
   {
     "id": "2Z",
+    "file": "cobblestone_wall_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "col": 2
+  },
+  {
+    "id": "30",
+    "file": "cobblestone_wall_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "col": 3
+  },
+  {
+    "id": "31",
+    "file": "cobblestone_wall_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "col": 4
+  },
+  {
+    "id": "32",
+    "file": "cobblestone_wall_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "col": 5
+  },
+  {
+    "id": "35",
+    "file": "cobblestone_wall_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "row": 1
+  },
+  {
+    "id": "36",
+    "file": "cobblestone_wall_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "col": 1,
+    "row": 1
+  },
+  {
+    "id": "37",
+    "file": "cobblestone_wall_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "col": 2,
+    "row": 1
+  },
+  {
+    "id": "38",
+    "file": "cobblestone_wall_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "col": 3,
+    "row": 1
+  },
+  {
+    "id": "39",
+    "file": "cobblestone_wall_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "col": 4,
+    "row": 1
+  },
+  {
+    "id": "3A",
+    "file": "cobblestone_wall_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "col": 5,
+    "row": 1
+  },
+  {
+    "id": "3D",
+    "file": "cobblestone_wall_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "row": 2
+  },
+  {
+    "id": "3E",
+    "file": "cobblestone_wall_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "col": 1,
+    "row": 2
+  },
+  {
+    "id": "3F",
+    "file": "cobblestone_wall_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "col": 2,
+    "row": 2
+  },
+  {
+    "id": "3G",
+    "file": "cobblestone_wall_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "col": 3,
+    "row": 2
+  },
+  {
+    "id": "3H",
+    "file": "cobblestone_wall_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "col": 4,
+    "row": 2
+  },
+  {
+    "id": "3I",
+    "file": "cobblestone_wall_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "col": 5,
+    "row": 2
+  },
+  {
+    "id": "3J",
+    "file": "cobblestone_wall_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "col": 6,
+    "row": 2
+  },
+  {
+    "id": "3K",
+    "file": "cobblestone_wall_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "col": 7,
+    "row": 2
+  },
+  {
+    "id": "3L",
+    "file": "cobblestone_wall_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "row": 3
+  },
+  {
+    "id": "3M",
+    "file": "cobblestone_wall_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "col": 1,
+    "row": 3
+  },
+  {
+    "id": "3N",
+    "file": "cobblestone_wall_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "col": 2,
+    "row": 3
+  },
+  {
+    "id": "3O",
+    "file": "cobblestone_wall_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "col": 3,
+    "row": 3
+  },
+  {
+    "id": "3P",
+    "file": "cobblestone_wall_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "col": 4,
+    "row": 3
+  },
+  {
+    "id": "3Q",
+    "file": "cobblestone_wall_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "col": 5,
+    "row": 3
+  },
+  {
+    "id": "3R",
+    "file": "cobblestone_wall_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "col": 6,
+    "row": 3
+  },
+  {
+    "id": "3S",
+    "file": "cobblestone_wall_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "col": 7,
+    "row": 3
+  },
+  {
+    "id": "3T",
+    "file": "cobblestone_wall_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "row": 4
+  },
+  {
+    "id": "3U",
+    "file": "cobblestone_wall_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "col": 1,
+    "row": 4
+  },
+  {
+    "id": "3V",
+    "file": "cobblestone_wall_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "col": 2,
+    "row": 4
+  },
+  {
+    "id": "41",
+    "file": "rails_autotile.png",
+    "layer": "ground",
+    "mode": "manual"
+  },
+  {
+    "id": "42",
+    "file": "rails_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "col": 1
+  },
+  {
+    "id": "43",
+    "file": "rails_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "col": 2
+  },
+  {
+    "id": "44",
+    "file": "rails_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "col": 3
+  },
+  {
+    "id": "45",
+    "file": "rails_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "col": 4
+  },
+  {
+    "id": "46",
+    "file": "rails_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "row": 1
+  },
+  {
+    "id": "47",
+    "file": "rails_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "col": 1,
+    "row": 1
+  },
+  {
+    "id": "48",
+    "file": "rails_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "col": 2,
+    "row": 1
+  },
+  {
+    "id": "49",
+    "file": "rails_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "col": 3,
+    "row": 1
+  },
+  {
+    "id": "4A",
+    "file": "rails_autotile.png",
+    "layer": "ground",
+    "mode": "manual",
+    "col": 4,
+    "row": 1
+  },
+  {
+    "id": "4B",
     "file": "grass_spritesheet.png",
     "layer": "ground",
     "mode": "random",
     "group": "grass_variants"
   },
   {
-    "id": "30",
+    "id": "4C",
     "file": "grass_spritesheet.png",
     "layer": "ground",
     "mode": "random",
@@ -1134,7 +1203,7 @@
     "paletteVisible": false
   },
   {
-    "id": "31",
+    "id": "4D",
     "file": "grass_spritesheet.png",
     "layer": "ground",
     "mode": "random",
@@ -1143,7 +1212,7 @@
     "paletteVisible": false
   },
   {
-    "id": "32",
+    "id": "4E",
     "file": "grass_spritesheet.png",
     "layer": "ground",
     "mode": "random",
@@ -1152,7 +1221,7 @@
     "paletteVisible": false
   },
   {
-    "id": "33",
+    "id": "4F",
     "file": "grass_spritesheet.png",
     "layer": "ground",
     "mode": "random",
@@ -1161,7 +1230,7 @@
     "paletteVisible": false
   },
   {
-    "id": "34",
+    "id": "4G",
     "file": "grass_spritesheet.png",
     "layer": "ground",
     "mode": "random",
@@ -1170,7 +1239,7 @@
     "paletteVisible": false
   },
   {
-    "id": "35",
+    "id": "4H",
     "file": "grass_spritesheet.png",
     "layer": "ground",
     "mode": "random",
@@ -1179,7 +1248,7 @@
     "paletteVisible": false
   },
   {
-    "id": "36",
+    "id": "4I",
     "file": "grass_spritesheet.png",
     "layer": "ground",
     "mode": "random",
@@ -1188,14 +1257,14 @@
     "paletteVisible": false
   },
   {
-    "id": "37",
+    "id": "4J",
     "file": "stone_tiles_spritesheet.png",
     "layer": "ground",
     "mode": "random",
     "group": "stone_tiles_variants"
   },
   {
-    "id": "38",
+    "id": "4K",
     "file": "stone_tiles_spritesheet.png",
     "layer": "ground",
     "mode": "random",
@@ -1204,7 +1273,7 @@
     "paletteVisible": false
   },
   {
-    "id": "39",
+    "id": "4L",
     "file": "stone_tiles_spritesheet.png",
     "layer": "ground",
     "mode": "random",
@@ -1213,14 +1282,14 @@
     "paletteVisible": false
   },
   {
-    "id": "3A",
+    "id": "4M",
     "file": "rocks_spritesheet.png",
     "layer": "ground",
     "mode": "random",
     "group": "rocks_variants"
   },
   {
-    "id": "3B",
+    "id": "4N",
     "file": "rocks_spritesheet.png",
     "layer": "ground",
     "mode": "random",
@@ -1229,7 +1298,7 @@
     "paletteVisible": false
   },
   {
-    "id": "3C",
+    "id": "4O",
     "file": "rocks_spritesheet.png",
     "layer": "ground",
     "mode": "random",
@@ -1238,7 +1307,7 @@
     "paletteVisible": false
   },
   {
-    "id": "3D",
+    "id": "4P",
     "file": "rocks_spritesheet.png",
     "layer": "ground",
     "mode": "random",
@@ -1247,7 +1316,7 @@
     "paletteVisible": false
   },
   {
-    "id": "3E",
+    "id": "4Q",
     "file": "rocks_spritesheet.png",
     "layer": "ground",
     "mode": "random",
@@ -1256,7 +1325,7 @@
     "paletteVisible": false
   },
   {
-    "id": "3F",
+    "id": "4R",
     "file": "rocks_spritesheet.png",
     "layer": "ground",
     "mode": "random",
@@ -1265,7 +1334,7 @@
     "paletteVisible": false
   },
   {
-    "id": "3G",
+    "id": "4S",
     "file": "rocks_spritesheet.png",
     "layer": "ground",
     "mode": "random",
@@ -1274,7 +1343,7 @@
     "paletteVisible": false
   },
   {
-    "id": "3H",
+    "id": "4T",
     "file": "rocks_tall_spritesheet.png",
     "layer": "ground",
     "mode": "random",
@@ -1282,7 +1351,7 @@
     "group": "rocks_tall_variants"
   },
   {
-    "id": "3I",
+    "id": "4U",
     "file": "rocks_tall_spritesheet.png",
     "layer": "ground",
     "mode": "random",
@@ -1292,7 +1361,7 @@
     "paletteVisible": false
   },
   {
-    "id": "3J",
+    "id": "4V",
     "file": "rocks_tall_spritesheet.png",
     "layer": "ground",
     "mode": "random",
@@ -1302,7 +1371,7 @@
     "paletteVisible": false
   },
   {
-    "id": "3K",
+    "id": "4W",
     "file": "rocks_tall_spritesheet.png",
     "layer": "ground",
     "mode": "random",
@@ -1312,7 +1381,7 @@
     "paletteVisible": false
   },
   {
-    "id": "3L",
+    "id": "4X",
     "file": "rocks_tall_spritesheet.png",
     "layer": "ground",
     "mode": "random",
@@ -1322,7 +1391,7 @@
     "paletteVisible": false
   },
   {
-    "id": "3M",
+    "id": "4Y",
     "file": "rocks_tall_spritesheet.png",
     "layer": "ground",
     "mode": "random",
@@ -1332,7 +1401,7 @@
     "paletteVisible": false
   },
   {
-    "id": "3N",
+    "id": "4Z",
     "file": "rocks_tall_spritesheet.png",
     "layer": "ground",
     "mode": "random",
@@ -1342,386 +1411,35 @@
     "paletteVisible": false
   },
   {
-    "id": "3O",
-    "file": "chairs.png",
-    "layer": "objects",
-    "mode": "manual"
-  },
-  {
-    "id": "3P",
-    "file": "chairs.png",
-    "layer": "objects",
-    "mode": "manual",
-    "col": 1
-  },
-  {
-    "id": "3Q",
-    "file": "chairs.png",
-    "layer": "objects",
-    "mode": "manual",
-    "col": 2
-  },
-  {
-    "id": "3R",
-    "file": "chairs.png",
-    "layer": "objects",
-    "mode": "manual",
-    "col": 3
-  },
-  {
-    "id": "3S",
-    "file": "bookcase_spritesheet.png",
-    "layer": "objects",
-    "mode": "manual",
-    "cellW": 2,
-    "cellH": 2
-  },
-  {
-    "id": "3T",
-    "file": "bookcase_spritesheet.png",
-    "layer": "objects",
-    "mode": "manual",
-    "cellW": 2,
-    "cellH": 2,
-    "col": 1
-  },
-  {
-    "id": "3U",
-    "file": "bookcase_spritesheet.png",
-    "layer": "objects",
-    "mode": "manual",
-    "cellW": 2,
-    "cellH": 2,
-    "col": 2
-  },
-  {
-    "id": "3V",
-    "file": "bookcase_narrow_spritesheet.png",
-    "layer": "objects",
-    "mode": "manual",
-    "cellH": 2
-  },
-  {
-    "id": "3W",
-    "file": "bookcase_narrow_spritesheet.png",
-    "layer": "objects",
-    "mode": "manual",
-    "cellH": 2,
-    "col": 1
-  },
-  {
-    "id": "3X",
-    "file": "bookcase_tall_spritesheet.png",
-    "layer": "objects",
-    "mode": "manual",
-    "cellW": 2,
-    "cellH": 4
-  },
-  {
-    "id": "3Y",
-    "file": "bookcase_tall_spritesheet.png",
-    "layer": "objects",
-    "mode": "manual",
-    "cellW": 2,
-    "cellH": 4,
-    "col": 1
-  },
-  {
-    "id": "3Z",
-    "file": "bookcase_tall_spritesheet.png",
-    "layer": "objects",
-    "mode": "manual",
-    "cellW": 2,
-    "cellH": 4,
-    "col": 2
-  },
-  {
-    "id": "40",
-    "file": "paintings_spritesheet.png",
-    "layer": "objects",
-    "mode": "manual"
-  },
-  {
-    "id": "41",
-    "file": "paintings_spritesheet.png",
-    "layer": "objects",
-    "mode": "manual",
-    "col": 1
-  },
-  {
-    "id": "42",
-    "file": "paintings_spritesheet.png",
-    "layer": "objects",
-    "mode": "manual",
-    "col": 2
-  },
-  {
-    "id": "43",
-    "file": "paintings_spritesheet.png",
-    "layer": "objects",
-    "mode": "manual",
-    "col": 3
-  },
-  {
-    "id": "44",
-    "file": "paintings_wide_spritesheet.png",
-    "layer": "objects",
-    "mode": "manual",
-    "cellW": 2
-  },
-  {
-    "id": "45",
-    "file": "paintings_wide_spritesheet.png",
-    "layer": "objects",
-    "mode": "manual",
-    "cellW": 2,
-    "col": 1
-  },
-  {
-    "id": "46",
-    "file": "paintings_wide_spritesheet.png",
-    "layer": "objects",
-    "mode": "manual",
-    "cellW": 2,
-    "col": 2
-  },
-  {
-    "id": "47",
-    "file": "paintings_wide_spritesheet.png",
-    "layer": "objects",
-    "mode": "manual",
-    "cellW": 2,
-    "col": 3
-  },
-  {
-    "id": "48",
-    "file": "minecart.png",
-    "layer": "entities",
-    "mode": "manual"
-  },
-  {
-    "id": "49",
-    "file": "minecart.png",
-    "layer": "entities",
-    "mode": "manual",
-    "col": 1
-  },
-  {
-    "id": "4A",
-    "file": "statue_spritesheet.png",
-    "layer": "objects",
-    "mode": "manual",
-    "cellH": 2
-  },
-  {
-    "id": "4B",
-    "file": "statue_spritesheet.png",
-    "layer": "objects",
-    "mode": "manual",
-    "cellH": 2,
-    "col": 1
-  },
-  {
-    "id": "4C",
-    "file": "statue_spritesheet.png",
-    "layer": "objects",
-    "mode": "manual",
-    "col": 2,
-    "row": 1
-  },
-  {
-    "id": "4D",
-    "file": "crates_spritesheet.png",
-    "layer": "objects",
-    "mode": "manual",
-    "cellH": 2
-  },
-  {
-    "id": "4E",
-    "file": "crates_spritesheet.png",
-    "layer": "objects",
-    "mode": "manual",
-    "cellH": 2,
-    "col": 1
-  },
-  {
-    "id": "4F",
-    "file": "crates_spritesheet.png",
-    "layer": "objects",
-    "mode": "manual",
-    "cellH": 2,
-    "col": 2
-  },
-  {
-    "id": "4G",
-    "file": "banner_spritesheet.png",
-    "layer": "objects",
-    "mode": "manual"
-  },
-  {
-    "id": "4H",
-    "file": "banner_spritesheet.png",
-    "layer": "objects",
-    "mode": "manual",
-    "cellH": 2,
-    "col": 1
-  },
-  {
-    "id": "4I",
-    "file": "banner_spritesheet.png",
-    "layer": "objects",
-    "mode": "manual",
-    "col": 2
-  },
-  {
-    "id": "4J",
-    "file": "banner_spritesheet.png",
-    "layer": "objects",
-    "mode": "manual",
-    "col": 3
-  },
-  {
-    "id": "4K",
-    "file": "banner_spritesheet.png",
-    "layer": "objects",
-    "mode": "manual",
-    "cellH": 2,
-    "col": 4
-  },
-  {
-    "id": "4L",
-    "file": "fancy_banner_spritesheet.png",
-    "layer": "objects",
-    "mode": "manual"
-  },
-  {
-    "id": "4M",
-    "file": "fancy_banner_spritesheet.png",
-    "layer": "objects",
-    "mode": "manual",
-    "cellH": 2,
-    "col": 1
-  },
-  {
-    "id": "4N",
-    "file": "fancy_banner_spritesheet.png",
-    "layer": "objects",
-    "mode": "manual",
-    "col": 2
-  },
-  {
-    "id": "4O",
-    "file": "fancy_banner_spritesheet.png",
-    "layer": "objects",
-    "mode": "manual",
-    "col": 3
-  },
-  {
-    "id": "4P",
-    "file": "fancy_banner_spritesheet.png",
-    "layer": "objects",
-    "mode": "manual",
-    "cellH": 2,
-    "col": 4
-  },
-  {
-    "id": "4Q",
-    "file": "coffin_horizontal_closed.png",
-    "layer": "objects",
-    "mode": "manual",
-    "cellW": 2
-  },
-  {
-    "id": "4R",
-    "file": "coffin_horizontal_opened.png",
-    "layer": "objects",
-    "mode": "manual",
-    "cellW": 2,
-    "cellH": 2
-  },
-  {
-    "id": "4S",
-    "file": "coffin_vertical_closed.png",
-    "layer": "objects",
-    "mode": "manual",
-    "cellH": 2
-  },
-  {
-    "id": "4T",
-    "file": "coffin_vertical_opened.png",
-    "layer": "objects",
-    "mode": "manual",
-    "cellW": 2,
-    "cellH": 2
-  },
-  {
-    "id": "4U",
-    "file": "altar.png",
-    "layer": "objects",
-    "mode": "manual"
-  },
-  {
-    "id": "4V",
-    "file": "sign.png",
-    "layer": "objects",
-    "mode": "manual"
-  },
-  {
-    "id": "4W",
-    "file": "cobblestone_floor.png",
-    "layer": "ground",
-    "mode": "manual"
-  },
-  {
-    "id": "4X",
-    "file": "parquet_square.png",
-    "layer": "ground",
-    "mode": "manual"
-  },
-  {
-    "id": "4Y",
-    "file": "fancy_tiles.png",
-    "layer": "ground",
-    "mode": "manual"
-  },
-  {
-    "id": "4Z",
-    "file": "bench.png",
-    "layer": "objects",
-    "mode": "manual",
-    "cellW": 2
-  },
-  {
     "id": "50",
-    "file": "table.png",
+    "file": "chairs.png",
     "layer": "objects",
-    "mode": "manual",
-    "cellW": 2
+    "mode": "manual"
   },
   {
     "id": "51",
-    "file": "fireplace.png",
+    "file": "chairs.png",
     "layer": "objects",
     "mode": "manual",
-    "cellH": 2
+    "col": 1
   },
   {
     "id": "52",
-    "file": "column.png",
+    "file": "chairs.png",
     "layer": "objects",
     "mode": "manual",
-    "cellH": 3
+    "col": 2
   },
   {
     "id": "53",
-    "file": "skeleton.png",
+    "file": "chairs.png",
     "layer": "objects",
     "mode": "manual",
-    "cellH": 3
+    "col": 3
   },
   {
     "id": "54",
-    "file": "bush.png",
+    "file": "bookcase_spritesheet.png",
     "layer": "objects",
     "mode": "manual",
     "cellW": 2,
@@ -1729,22 +1447,387 @@
   },
   {
     "id": "55",
-    "file": "brick_wall.png",
-    "layer": "ground",
+    "file": "bookcase_spritesheet.png",
+    "layer": "objects",
     "mode": "manual",
     "cellW": 2,
-    "cellH": 2
+    "cellH": 2,
+    "col": 1
   },
   {
     "id": "56",
-    "file": "cobblestone_wall.png",
-    "layer": "ground",
+    "file": "bookcase_spritesheet.png",
+    "layer": "objects",
+    "mode": "manual",
+    "cellW": 2,
+    "cellH": 2,
+    "col": 2
+  },
+  {
+    "id": "57",
+    "file": "bookcase_narrow_spritesheet.png",
+    "layer": "objects",
+    "mode": "manual",
+    "cellH": 2
+  },
+  {
+    "id": "58",
+    "file": "bookcase_narrow_spritesheet.png",
+    "layer": "objects",
+    "mode": "manual",
+    "cellH": 2,
+    "col": 1
+  },
+  {
+    "id": "59",
+    "file": "bookcase_tall_spritesheet.png",
+    "layer": "objects",
+    "mode": "manual",
+    "cellW": 2,
+    "cellH": 4
+  },
+  {
+    "id": "5A",
+    "file": "bookcase_tall_spritesheet.png",
+    "layer": "objects",
+    "mode": "manual",
+    "cellW": 2,
+    "cellH": 4,
+    "col": 1
+  },
+  {
+    "id": "5B",
+    "file": "bookcase_tall_spritesheet.png",
+    "layer": "objects",
+    "mode": "manual",
+    "cellW": 2,
+    "cellH": 4,
+    "col": 2
+  },
+  {
+    "id": "5C",
+    "file": "paintings_spritesheet.png",
+    "layer": "objects",
+    "mode": "manual"
+  },
+  {
+    "id": "5D",
+    "file": "paintings_spritesheet.png",
+    "layer": "objects",
+    "mode": "manual",
+    "col": 1
+  },
+  {
+    "id": "5E",
+    "file": "paintings_spritesheet.png",
+    "layer": "objects",
+    "mode": "manual",
+    "col": 2
+  },
+  {
+    "id": "5F",
+    "file": "paintings_spritesheet.png",
+    "layer": "objects",
+    "mode": "manual",
+    "col": 3
+  },
+  {
+    "id": "5G",
+    "file": "paintings_wide_spritesheet.png",
+    "layer": "objects",
+    "mode": "manual",
+    "cellW": 2
+  },
+  {
+    "id": "5H",
+    "file": "paintings_wide_spritesheet.png",
+    "layer": "objects",
+    "mode": "manual",
+    "cellW": 2,
+    "col": 1
+  },
+  {
+    "id": "5I",
+    "file": "paintings_wide_spritesheet.png",
+    "layer": "objects",
+    "mode": "manual",
+    "cellW": 2,
+    "col": 2
+  },
+  {
+    "id": "5J",
+    "file": "paintings_wide_spritesheet.png",
+    "layer": "objects",
+    "mode": "manual",
+    "cellW": 2,
+    "col": 3
+  },
+  {
+    "id": "5K",
+    "file": "minecart.png",
+    "layer": "entities",
+    "mode": "manual"
+  },
+  {
+    "id": "5L",
+    "file": "minecart.png",
+    "layer": "entities",
+    "mode": "manual",
+    "col": 1
+  },
+  {
+    "id": "5M",
+    "file": "statue_spritesheet.png",
+    "layer": "objects",
+    "mode": "manual",
+    "cellH": 2
+  },
+  {
+    "id": "5N",
+    "file": "statue_spritesheet.png",
+    "layer": "objects",
+    "mode": "manual",
+    "cellH": 2,
+    "col": 1
+  },
+  {
+    "id": "5O",
+    "file": "statue_spritesheet.png",
+    "layer": "objects",
+    "mode": "manual",
+    "col": 2,
+    "row": 1
+  },
+  {
+    "id": "5P",
+    "file": "crates_spritesheet.png",
+    "layer": "objects",
+    "mode": "manual",
+    "cellH": 2
+  },
+  {
+    "id": "5Q",
+    "file": "crates_spritesheet.png",
+    "layer": "objects",
+    "mode": "manual",
+    "cellH": 2,
+    "col": 1
+  },
+  {
+    "id": "5R",
+    "file": "crates_spritesheet.png",
+    "layer": "objects",
+    "mode": "manual",
+    "cellH": 2,
+    "col": 2
+  },
+  {
+    "id": "5S",
+    "file": "banner_spritesheet.png",
+    "layer": "objects",
+    "mode": "manual"
+  },
+  {
+    "id": "5T",
+    "file": "banner_spritesheet.png",
+    "layer": "objects",
+    "mode": "manual",
+    "cellH": 2,
+    "col": 1
+  },
+  {
+    "id": "5U",
+    "file": "banner_spritesheet.png",
+    "layer": "objects",
+    "mode": "manual",
+    "col": 2
+  },
+  {
+    "id": "5V",
+    "file": "banner_spritesheet.png",
+    "layer": "objects",
+    "mode": "manual",
+    "col": 3
+  },
+  {
+    "id": "5W",
+    "file": "banner_spritesheet.png",
+    "layer": "objects",
+    "mode": "manual",
+    "cellH": 2,
+    "col": 4
+  },
+  {
+    "id": "5X",
+    "file": "fancy_banner_spritesheet.png",
+    "layer": "objects",
+    "mode": "manual"
+  },
+  {
+    "id": "5Y",
+    "file": "fancy_banner_spritesheet.png",
+    "layer": "objects",
+    "mode": "manual",
+    "cellH": 2,
+    "col": 1
+  },
+  {
+    "id": "5Z",
+    "file": "fancy_banner_spritesheet.png",
+    "layer": "objects",
+    "mode": "manual",
+    "col": 2
+  },
+  {
+    "id": "60",
+    "file": "fancy_banner_spritesheet.png",
+    "layer": "objects",
+    "mode": "manual",
+    "col": 3
+  },
+  {
+    "id": "61",
+    "file": "fancy_banner_spritesheet.png",
+    "layer": "objects",
+    "mode": "manual",
+    "cellH": 2,
+    "col": 4
+  },
+  {
+    "id": "62",
+    "file": "coffin_horizontal_closed.png",
+    "layer": "objects",
+    "mode": "manual",
+    "cellW": 2
+  },
+  {
+    "id": "63",
+    "file": "coffin_horizontal_opened.png",
+    "layer": "objects",
     "mode": "manual",
     "cellW": 2,
     "cellH": 2
   },
   {
-    "id": "57",
+    "id": "64",
+    "file": "coffin_vertical_closed.png",
+    "layer": "objects",
+    "mode": "manual",
+    "cellH": 2
+  },
+  {
+    "id": "65",
+    "file": "coffin_vertical_opened.png",
+    "layer": "objects",
+    "mode": "manual",
+    "cellW": 2,
+    "cellH": 2
+  },
+  {
+    "id": "66",
+    "file": "altar.png",
+    "layer": "objects",
+    "mode": "manual"
+  },
+  {
+    "id": "67",
+    "file": "sign.png",
+    "layer": "objects",
+    "mode": "manual"
+  },
+  {
+    "id": "68",
+    "file": "cobblestone_floor.png",
+    "layer": "ground",
+    "mode": "manual"
+  },
+  {
+    "id": "69",
+    "file": "parquet_square.png",
+    "layer": "ground",
+    "mode": "manual"
+  },
+  {
+    "id": "6A",
+    "file": "fancy_tiles.png",
+    "layer": "ground",
+    "mode": "manual"
+  },
+  {
+    "id": "6B",
+    "file": "bench.png",
+    "layer": "objects",
+    "mode": "manual",
+    "cellW": 2
+  },
+  {
+    "id": "6C",
+    "file": "table.png",
+    "layer": "objects",
+    "mode": "manual",
+    "cellW": 2
+  },
+  {
+    "id": "6D",
+    "file": "fireplace.png",
+    "layer": "objects",
+    "mode": "manual",
+    "cellH": 2
+  },
+  {
+    "id": "6E",
+    "file": "column.png",
+    "layer": "objects",
+    "mode": "manual",
+    "cellH": 3
+  },
+  {
+    "id": "6F",
+    "file": "skeleton.png",
+    "layer": "objects",
+    "mode": "manual",
+    "cellH": 3
+  },
+  {
+    "id": "6G",
+    "file": "bush.png",
+    "layer": "objects",
+    "mode": "manual",
+    "cellW": 2,
+    "cellH": 2
+  },
+  {
+    "id": "6H",
+    "file": "brick_wall.png",
+    "layer": "ground",
+    "mode": "manual",
+    "cellH": 2
+  },
+  {
+    "id": "6I",
+    "file": "brick_wall.png",
+    "layer": "ground",
+    "mode": "manual",
+    "cellH": 2,
+    "col": 1
+  },
+  {
+    "id": "6J",
+    "file": "cobblestone_wall.png",
+    "layer": "ground",
+    "mode": "manual",
+    "cellH": 2
+  },
+  {
+    "id": "6K",
+    "file": "cobblestone_wall.png",
+    "layer": "ground",
+    "mode": "manual",
+    "cellH": 2,
+    "col": 1
+  },
+  {
+    "id": "6L",
     "file": "memorial.png",
     "layer": "objects",
     "mode": "manual",
@@ -1752,7 +1835,7 @@
     "cellH": 4
   },
   {
-    "id": "58",
+    "id": "6M",
     "file": "birch.png",
     "layer": "objects",
     "mode": "manual",
@@ -1760,7 +1843,7 @@
     "cellH": 7
   },
   {
-    "id": "59",
+    "id": "6N",
     "file": "birch_double.png",
     "layer": "objects",
     "mode": "manual",
@@ -1768,7 +1851,7 @@
     "cellH": 7
   },
   {
-    "id": "5A",
+    "id": "6O",
     "file": "birch_small.png",
     "layer": "objects",
     "mode": "manual",
@@ -1776,7 +1859,7 @@
     "cellH": 5
   },
   {
-    "id": "5B",
+    "id": "6P",
     "file": "dead_tree.png",
     "layer": "objects",
     "mode": "manual",
@@ -1784,7 +1867,7 @@
     "cellH": 6
   },
   {
-    "id": "5C",
+    "id": "6Q",
     "file": "bunk.png",
     "layer": "objects",
     "mode": "manual",
@@ -1792,7 +1875,7 @@
     "cellH": 2
   },
   {
-    "id": "5D",
+    "id": "6R",
     "file": "bunk.png",
     "layer": "objects",
     "mode": "manual",
@@ -1801,14 +1884,14 @@
     "col": 1
   },
   {
-    "id": "5E",
+    "id": "6S",
     "file": "stairs.png",
     "layer": "objects",
     "mode": "manual",
     "group": "stairs"
   },
   {
-    "id": "5F",
+    "id": "6T",
     "file": "stairs.png",
     "layer": "objects",
     "mode": "manual",
@@ -1816,7 +1899,7 @@
     "group": "stairs"
   },
   {
-    "id": "5G",
+    "id": "6U",
     "file": "stairs.png",
     "layer": "objects",
     "mode": "manual",
@@ -1824,7 +1907,7 @@
     "group": "stairs"
   },
   {
-    "id": "5H",
+    "id": "6V",
     "file": "stairs.png",
     "layer": "objects",
     "mode": "manual",
@@ -1833,7 +1916,7 @@
     "group": "stairs"
   },
   {
-    "id": "5I",
+    "id": "6W",
     "file": "stairs.png",
     "layer": "objects",
     "mode": "manual",
@@ -1841,7 +1924,7 @@
     "group": "stairs"
   },
   {
-    "id": "5J",
+    "id": "6X",
     "file": "stairs.png",
     "layer": "objects",
     "mode": "manual",
@@ -1850,7 +1933,7 @@
     "group": "stairs"
   },
   {
-    "id": "5K",
+    "id": "6Y",
     "file": "stairs.png",
     "layer": "objects",
     "mode": "manual",
@@ -1858,7 +1941,7 @@
     "group": "stairs"
   },
   {
-    "id": "5L",
+    "id": "6Z",
     "file": "stairs.png",
     "layer": "objects",
     "mode": "manual",
@@ -1867,14 +1950,14 @@
     "group": "stairs"
   },
   {
-    "id": "5M",
+    "id": "70",
     "file": "barrel.png",
     "layer": "objects",
     "mode": "interactive",
     "object": "barrel"
   },
   {
-    "id": "5N",
+    "id": "71",
     "file": "barrel.png",
     "layer": "objects",
     "mode": "interactive",
@@ -1883,7 +1966,7 @@
     "paletteVisible": false
   },
   {
-    "id": "5O",
+    "id": "72",
     "file": "barrel.png",
     "layer": "objects",
     "mode": "interactive",
@@ -1892,14 +1975,14 @@
     "paletteVisible": false
   },
   {
-    "id": "5P",
+    "id": "73",
     "file": "vase.png",
     "layer": "objects",
     "mode": "interactive",
     "object": "vase"
   },
   {
-    "id": "5Q",
+    "id": "74",
     "file": "vase.png",
     "layer": "objects",
     "mode": "interactive",
@@ -1908,14 +1991,14 @@
     "paletteVisible": false
   },
   {
-    "id": "5R",
+    "id": "75",
     "file": "vase_small.png",
     "layer": "objects",
     "mode": "interactive",
     "object": "vase_small"
   },
   {
-    "id": "5S",
+    "id": "76",
     "file": "vase_small.png",
     "layer": "objects",
     "mode": "interactive",
@@ -1924,14 +2007,14 @@
     "paletteVisible": false
   },
   {
-    "id": "5T",
+    "id": "77",
     "file": "cabinet.png",
     "layer": "objects",
     "mode": "interactive",
     "object": "cabinet"
   },
   {
-    "id": "5U",
+    "id": "78",
     "file": "cabinet.png",
     "layer": "objects",
     "mode": "interactive",
@@ -1940,14 +2023,14 @@
     "paletteVisible": false
   },
   {
-    "id": "5V",
+    "id": "79",
     "file": "nightstand.png",
     "layer": "objects",
     "mode": "interactive",
     "object": "nightstand"
   },
   {
-    "id": "5W",
+    "id": "7A",
     "file": "nightstand.png",
     "layer": "objects",
     "mode": "interactive",
@@ -1956,14 +2039,14 @@
     "paletteVisible": false
   },
   {
-    "id": "5X",
+    "id": "7B",
     "file": "trap.png",
     "layer": "objects",
     "mode": "interactive",
     "object": "trap"
   },
   {
-    "id": "5Y",
+    "id": "7C",
     "file": "trap.png",
     "layer": "objects",
     "mode": "interactive",
@@ -1972,7 +2055,7 @@
     "paletteVisible": false
   },
   {
-    "id": "5Z",
+    "id": "7D",
     "file": "shrine.png",
     "layer": "objects",
     "mode": "interactive",
@@ -1980,7 +2063,7 @@
     "object": "shrine"
   },
   {
-    "id": "60",
+    "id": "7E",
     "file": "shrine.png",
     "layer": "objects",
     "mode": "interactive",
@@ -1990,7 +2073,7 @@
     "paletteVisible": false
   },
   {
-    "id": "61",
+    "id": "7F",
     "file": "wardrobe.png",
     "layer": "objects",
     "mode": "interactive",
@@ -1998,7 +2081,7 @@
     "object": "wardrobe"
   },
   {
-    "id": "62",
+    "id": "7G",
     "file": "wardrobe.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2008,14 +2091,14 @@
     "paletteVisible": false
   },
   {
-    "id": "63",
+    "id": "7H",
     "file": "chest_tier1.png",
     "layer": "objects",
     "mode": "interactive",
     "object": "chest"
   },
   {
-    "id": "64",
+    "id": "7I",
     "file": "chest_tier1.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2024,7 +2107,7 @@
     "paletteVisible": false
   },
   {
-    "id": "65",
+    "id": "7J",
     "file": "chest_tier1.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2033,7 +2116,7 @@
     "paletteVisible": false
   },
   {
-    "id": "66",
+    "id": "7K",
     "file": "chest_tier1.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2042,7 +2125,7 @@
     "paletteVisible": false
   },
   {
-    "id": "67",
+    "id": "7L",
     "file": "chest_tier2.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2050,7 +2133,7 @@
     "tier": 2
   },
   {
-    "id": "68",
+    "id": "7M",
     "file": "chest_tier2.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2060,7 +2143,7 @@
     "paletteVisible": false
   },
   {
-    "id": "69",
+    "id": "7N",
     "file": "chest_tier2.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2070,7 +2153,7 @@
     "paletteVisible": false
   },
   {
-    "id": "6A",
+    "id": "7O",
     "file": "chest_tier2.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2080,7 +2163,7 @@
     "paletteVisible": false
   },
   {
-    "id": "6B",
+    "id": "7P",
     "file": "chest_tier3.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2088,7 +2171,7 @@
     "tier": 3
   },
   {
-    "id": "6C",
+    "id": "7Q",
     "file": "chest_tier3.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2098,7 +2181,7 @@
     "paletteVisible": false
   },
   {
-    "id": "6D",
+    "id": "7R",
     "file": "chest_tier3.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2108,7 +2191,7 @@
     "paletteVisible": false
   },
   {
-    "id": "6E",
+    "id": "7S",
     "file": "chest_tier3.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2118,7 +2201,7 @@
     "paletteVisible": false
   },
   {
-    "id": "6F",
+    "id": "7T",
     "file": "chest_tier4.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2126,7 +2209,7 @@
     "tier": 4
   },
   {
-    "id": "6G",
+    "id": "7U",
     "file": "chest_tier4.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2136,7 +2219,7 @@
     "paletteVisible": false
   },
   {
-    "id": "6H",
+    "id": "7V",
     "file": "chest_tier4.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2146,7 +2229,7 @@
     "paletteVisible": false
   },
   {
-    "id": "6I",
+    "id": "7W",
     "file": "chest_tier4.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2156,7 +2239,7 @@
     "paletteVisible": false
   },
   {
-    "id": "6J",
+    "id": "7X",
     "file": "chest_tier5.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2164,7 +2247,7 @@
     "tier": 5
   },
   {
-    "id": "6K",
+    "id": "7Y",
     "file": "chest_tier5.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2174,7 +2257,7 @@
     "paletteVisible": false
   },
   {
-    "id": "6L",
+    "id": "7Z",
     "file": "chest_tier5.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2184,7 +2267,7 @@
     "paletteVisible": false
   },
   {
-    "id": "6M",
+    "id": "80",
     "file": "chest_tier5.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2194,7 +2277,7 @@
     "paletteVisible": false
   },
   {
-    "id": "6N",
+    "id": "81",
     "file": "chest_tier6.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2202,7 +2285,7 @@
     "tier": 6
   },
   {
-    "id": "6O",
+    "id": "82",
     "file": "chest_tier6.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2212,7 +2295,7 @@
     "paletteVisible": false
   },
   {
-    "id": "6P",
+    "id": "83",
     "file": "chest_tier6.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2222,7 +2305,7 @@
     "paletteVisible": false
   },
   {
-    "id": "6Q",
+    "id": "84",
     "file": "chest_tier6.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2232,7 +2315,7 @@
     "paletteVisible": false
   },
   {
-    "id": "6R",
+    "id": "85",
     "file": "chest_tier7.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2240,7 +2323,7 @@
     "tier": 7
   },
   {
-    "id": "6S",
+    "id": "86",
     "file": "chest_tier7.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2250,7 +2333,7 @@
     "paletteVisible": false
   },
   {
-    "id": "6T",
+    "id": "87",
     "file": "chest_tier7.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2260,7 +2343,7 @@
     "paletteVisible": false
   },
   {
-    "id": "6U",
+    "id": "88",
     "file": "chest_tier7.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2270,7 +2353,7 @@
     "paletteVisible": false
   },
   {
-    "id": "6V",
+    "id": "89",
     "file": "door_tier1.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2278,7 +2361,7 @@
     "object": "door"
   },
   {
-    "id": "6W",
+    "id": "8A",
     "file": "door_tier1.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2288,7 +2371,7 @@
     "paletteVisible": false
   },
   {
-    "id": "6X",
+    "id": "8B",
     "file": "door_tier1.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2298,7 +2381,7 @@
     "paletteVisible": false
   },
   {
-    "id": "6Y",
+    "id": "8C",
     "file": "door_tier1.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2308,7 +2391,7 @@
     "paletteVisible": false
   },
   {
-    "id": "6Z",
+    "id": "8D",
     "file": "door_tier2.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2317,7 +2400,7 @@
     "tier": 2
   },
   {
-    "id": "70",
+    "id": "8E",
     "file": "door_tier2.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2328,7 +2411,7 @@
     "paletteVisible": false
   },
   {
-    "id": "71",
+    "id": "8F",
     "file": "door_tier2.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2339,7 +2422,7 @@
     "paletteVisible": false
   },
   {
-    "id": "72",
+    "id": "8G",
     "file": "door_tier2.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2350,7 +2433,7 @@
     "paletteVisible": false
   },
   {
-    "id": "73",
+    "id": "8H",
     "file": "door_tier3.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2359,7 +2442,7 @@
     "tier": 3
   },
   {
-    "id": "74",
+    "id": "8I",
     "file": "door_tier3.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2370,7 +2453,7 @@
     "paletteVisible": false
   },
   {
-    "id": "75",
+    "id": "8J",
     "file": "door_tier3.png",
     "layer": "objects",
     "mode": "interactive",
@@ -2381,7 +2464,7 @@
     "paletteVisible": false
   },
   {
-    "id": "76",
+    "id": "8K",
     "file": "door_tier3.png",
     "layer": "objects",
     "mode": "interactive",

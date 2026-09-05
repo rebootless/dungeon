@@ -85,13 +85,17 @@ constexpr TileID CORNER_BORDER     = 0xFFF5;
 enum class LayerType : uint8_t { Ground, Objects, Entities };
 
 // How a tile's concrete TileID gets chosen. See assets/tiles/tiles.json's
-// "mode" field.
+// "mode" field. There is deliberately no blob/neighbour-bitmask mode:
+// that needs a sheet built to a known convention to resolve reliably,
+// which the wall/rail piece sheets aren't (see assets/tiles/tiles.json's
+// notes on brick_wall_autotile.png/cobblestone_wall_autotile.png/
+// rails_autotile.png) — those are plain "manual" entries instead, picked
+// by eye, same as the old spritesheet-based editor always did for walls.
 enum class TileMode : uint8_t {
     Manual,         // one independently palette-pickable tile
     Random,         // one of a group's members, picked uniformly at paint time
     Interactive,    // frame 0 of an object/tier's animation is the only one paletteVisible
-    AutotileBlend,  // one piece of a 3x3-plus-corners material blend
-    AutotileBlob,   // one cell of a neighbour-driven blob sheet (walls, rails)
+    AutotileBlend,  // one piece of a 3x3-plus-corners floor material blend
 };
 
 /*
@@ -115,6 +119,23 @@ struct TileMetadata {
 TileMetadata getTileMeta(TileID id);
 
 /*
+Same as getTileMeta, except for an autotile_blend representative id it
+reports the material's WHOLE base 3x3 sheet (w=3, h=3, srcCellX/Y at its
+top-left) instead of just the single "c" (fully-surrounded) piece that id
+actually resolves to when placed. Used only by the palette
+(editor/editor_mode.cpp's computePaletteLayout/onRender and the fragment
+editor's equivalent, via core/renderer.h's drawTilePreview) so a floor
+material's palette icon shows its real blended look — edges and corners
+included — instead of a single flat tile that doesn't read as "this is a
+blend material" at a glance. Placing one still only ever affects the one
+map cell clicked (see editor/editor_controls.cpp's placeTile, which keeps
+using plain getTileMeta for that); this is purely cosmetic. Falls back to
+getTileMeta(id) unchanged for anything that isn't an autotile_blend
+representative.
+*/
+TileMetadata getPalettePreviewMeta(TileID id);
+
+/*
 Loads assets/tiles/tiles.json into the registry. Must be called exactly
 once at startup (see core/app.cpp's App::run()), before any other
 function in this header is used. Aborts the process with a message on
@@ -129,19 +150,18 @@ Every palette-pickable TileID, in tiles.json's own order: every "manual"
 entry, one representative per "random" group (its first member), and the
 frame-0 entry of every "interactive" object/tier — but NOT the other
 frames of an interactive object (see TileMode::Interactive), and NOT the
-individual pieces of an autotile_blend/autotile_blob material (those are
-painted via their group's single representative — see
-getAutotilePaletteTiles()). Used by editor/editor_state.h's
-computePaletteLayout() and the fragment editor's equivalent.
+individual pieces of an autotile_blend material (those are painted via
+their group's single representative — see getAutotilePaletteTiles()).
+Used by editor/editor_state.h's computePaletteLayout() and the fragment
+editor's equivalent.
 */
 std::vector<TileID> getPaletteTiles();
 
 /*
-One representative TileID per autotile material (blend or blob), in
-tiles.json order — the single palette entry that stands in for the whole
-group. Painting with one of these picks the correct concrete piece for
-each affected cell automatically; see resolveAutotileBlend()/
-resolveAutotileBlob() below.
+One representative TileID per autotile_blend material, in tiles.json
+order — the single palette entry that stands in for the whole group.
+Painting with one of these picks the correct concrete piece for each
+affected cell automatically; see resolveAutotileBlend() below.
 */
 std::vector<TileID> getAutotilePaletteTiles();
 
@@ -183,32 +203,32 @@ TileID pickRandomVariant(TileID id);
 
 /*
 Autotile resolution
-Given the palette's representative id for an autotile_blend/autotile_blob
-material (or any already-placed member of the same material — re-running
-this on a neighbour after an edit uses that cell's own current id, not
-the palette selection) and which of its 8 neighbours currently belong to
-the SAME material, returns the correct concrete piece to store there.
-Called by editor_controls.cpp's placeTile/eraseTile on the edited cell and
-every orthogonal neighbour that also belongs to the material, exactly
-like a classic paint-time autotiler (Tiled/RPG Maker) — GameMode never
-needs to know autotiling exists at all, since by the time a level reaches
-disk every cell already holds its final, concrete TileID.
+Given the palette's representative id for an autotile_blend material (or
+any already-placed member of the same material — re-running this on a
+neighbour after an edit uses that cell's own current id, not the palette
+selection) and which of its 8 neighbours currently belong to the SAME
+material, returns the correct concrete piece to store there. Called by
+editor_controls.cpp's placeTile/eraseTile on the edited cell and all 8
+surrounding cells that also belong to the material (a full 3x3
+neighbourhood, not just the 4 orthogonal ones — a diagonal neighbour's
+own concave-corner piece can change too), exactly like a classic
+paint-time autotiler (Tiled/RPG Maker) — GameMode never needs to know
+autotiling exists at all, since by the time a level reaches disk every
+cell already holds its final, concrete TileID.
+
+There is no blob/bitmask equivalent of this — see TileMode's doc comment
+for why walls and rails are plain manual tiles instead.
 */
 TileID resolveAutotileBlend(TileID id, bool n, bool s, bool e, bool w,
                              bool ne, bool nw, bool se, bool sw);
-TileID resolveAutotileBlob(TileID id, bool n, bool s, bool e, bool w);
 
-// True if `id` belongs to an autotile_blend/autotile_blob material at
-// all — editor_controls.cpp uses this to decide whether placing/erasing a
-// tile needs the neighbour re-evaluation dance above. The Blend/Blob
-// variants tell it which of resolveAutotileBlend/resolveAutotileBlob to
-// call for that cell.
+// True if `id` belongs to an autotile_blend material — editor_controls.cpp
+// uses this to decide whether placing/erasing a tile needs the 3x3
+// neighbour re-evaluation dance above.
 bool isAutotileTile(TileID id);
-bool isAutotileBlend(TileID id);
-bool isAutotileBlob(TileID id);
 
 // True if `a` and `b` belong to the same autotile/random group — the
-// neighbour test resolveAutotileBlend/Blob and pickRandomVariant need.
+// neighbour test resolveAutotileBlend and pickRandomVariant need.
 bool sameTileGroup(TileID a, TileID b);
 
 /*
