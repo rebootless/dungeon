@@ -2,40 +2,48 @@
 
 ### Trees+
 
-- Author: SciGho
-- Source: https://ninjikin.itch.io/trees
-- License: CC BY 4.0
-- Modified: Yes
-- Retrieved: 2026-07-05
+* Author: SciGho
+* Source: https://ninjikin.itch.io/trees
+* License: CC BY 4.0
+* Modified: Yes
+* Retrieved: 2026-07-05
 
 ### Medieval Death Asset Pack
 
-- Author: SteelSoldier
-- Source: https://steelsoldier.itch.io/medieval-death-tileset
-- License: Custom license
-- Modified: Yes
-- Retrieved: 2026-07-05
+* Author: SteelSoldier
+* Source: https://steelsoldier.itch.io/medieval-death-tileset
+* License: Custom license
+* Modified: Yes
+* Retrieved: 2026-07-05
 
 ### Pixel Art Rocks Pack!
 
-- Author: Pixel Overload
-- Source: https://pixeloverload.itch.io/pixel-art-rocks
-- License: Custom license
-- Modified: Yes
-- Retrieved: 2026-07-05
+* Author: Pixel Overload
+* Source: https://pixeloverload.itch.io/pixel-art-rocks
+* License: Custom license
+* Modified: Yes
+* Retrieved: 2026-07-05
 
 ### Hexany's Monster Menagerie
 
-- Author: Hexany Ives
-- Source: https://hexany-ives.itch.io/hexanys-monster-menagerie
-- License: CC0 1.0 Universal
-- Modified: No
-- Retrieved: 2026-07-05
+* Author: Hexany Ives
+* Source: https://hexany-ives.itch.io/hexanys-monster-menagerie
+* License: CC0 1.0 Universal
+* Modified: No
+* Retrieved: 2026-07-05
 
 ### Hexany's Roguelike Tiles
 
-- Author: Hexany Ives
-- Source: https://hexany-ives.itch.io/hexanys-roguelike-tiles
-- License: CC0 1.0 Universal
-- Modified: No
-- Retrieved: 2026-07-05
+* Author: Hexany Ives
+* Source: https://hexany-ives.itch.io/hexanys-roguelike-tiles
+* License: CC0 1.0 Universal
+* Modified: No
+* Retrieved: 2026-07-05
+
+### Hexany's 1-bit UI Panels
+
+* Author: Hexany Ives
+* Source: https://hexany-ives.itch.io/hexanys-1-bit-ui-panels
+* License: CC0 1.0 Universal
+* Modified: No
+* Retrieved: 2026-07-05
