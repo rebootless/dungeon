@@ -1257,6 +1257,87 @@
     "paletteVisible": false
   },
   {
+    "id": "9A",
+    "file": "grass_spritesheet.png",
+    "layer": "ground",
+    "mode": "random",
+    "col": 8,
+    "group": "grass_variants",
+    "paletteVisible": false
+  },
+  {
+    "id": "9B",
+    "file": "grass_spritesheet.png",
+    "layer": "ground",
+    "mode": "random",
+    "col": 9,
+    "group": "grass_variants",
+    "paletteVisible": false
+  },
+  {
+    "id": "9C",
+    "file": "grass_spritesheet.png",
+    "layer": "ground",
+    "mode": "random",
+    "col": 10,
+    "group": "grass_variants",
+    "paletteVisible": false
+  },
+  {
+    "id": "9D",
+    "file": "grass_spritesheet.png",
+    "layer": "ground",
+    "mode": "random",
+    "col": 11,
+    "group": "grass_variants",
+    "paletteVisible": false
+  },
+  {
+    "id": "9E",
+    "file": "grass_spritesheet.png",
+    "layer": "ground",
+    "mode": "random",
+    "col": 12,
+    "group": "grass_variants",
+    "paletteVisible": false
+  },
+  {
+    "id": "9F",
+    "file": "grass_spritesheet.png",
+    "layer": "ground",
+    "mode": "random",
+    "col": 13,
+    "group": "grass_variants",
+    "paletteVisible": false
+  },
+  {
+    "id": "9G",
+    "file": "grass_spritesheet.png",
+    "layer": "ground",
+    "mode": "random",
+    "col": 14,
+    "group": "grass_variants",
+    "paletteVisible": false
+  },
+  {
+    "id": "9H",
+    "file": "grass_spritesheet.png",
+    "layer": "ground",
+    "mode": "random",
+    "col": 15,
+    "group": "grass_variants",
+    "paletteVisible": false
+  },
+  {
+    "id": "9J",
+    "file": "grass_spritesheet.png",
+    "layer": "ground",
+    "mode": "random",
+    "col": 16,
+    "group": "grass_variants",
+    "paletteVisible": false
+  },
+  {
     "id": "4J",
     "file": "stone_tiles_spritesheet.png",
     "layer": "ground",
