@@ -8,7 +8,10 @@
 #include "display.h"
 #include "layout.h"
 #include "level.h"
+#include "palette.h"
+#include "panel.h"
 #include "renderer.h"
+#include "settings_store.h"
 #include "tiles.h"
 
 #include "../editor/editor_mode.h"
@@ -209,6 +212,13 @@ void App::handleEvent(const SDL_Event& e) {
 void App::run() {
     initSDL();
     /*
+    Must happen before any tile texture is ever drawn — core/renderer.cpp's
+    getTileTexture() recolors each tile surface against whichever palette
+    is active as soon as it first loads it.
+    */
+    loadPaletteRegistry();
+    loadPanelRegistry();
+    /*
     Must happen before initLevels()/initFragments() load any saved map —
     a level/fragment file's TileIDs are only meaningful once
     assets/tiles/tiles.json has been parsed into the registry those ids
@@ -220,17 +230,35 @@ void App::run() {
     initFragments();
 
     /*
-    A fresh launch starts on the settings screen at the smallest named
-    resolution preset, so there's always a real (named, re-selectable)
-    resolution active before the player ever sees the map — rather than
-    the raw MIN_WINDOW_W x MIN_WINDOW_H floor initSDL() sizes the window
-    to, which isn't itself one of the /mode settings options. ESC from
-    here (see SettingsMode::onEvent) is what actually gets the player
-    into GameMode.
+    Layers storage/settings.json (if the player has ever changed anything)
+    on top of assets/settings_defaults.json — see core/settings_store.h.
+    A value that doesn't match anything actually loaded (a stale palette
+    or panel theme, an unrecognized resolution label) is simply ignored
+    here: setActivePalette()/setActivePanel() return false and leave
+    loadPaletteRegistry()/loadPanelRegistry()'s own first-entry default
+    active, and the resolution fallback below covers the same case for
+    Resolution.
+    */
+    Settings settings = loadSettings();
+    setActivePalette(settings.palette);
+    setActivePanel(settings.panel);
+
+    /*
+    A fresh launch starts on the settings screen at whichever resolution
+    was saved (or the smallest named preset, on a first run/if the saved
+    value no longer matches one), so there's always a real (named,
+    re-selectable) resolution active before the player ever sees the map —
+    rather than the raw MIN_WINDOW_W x MIN_WINDOW_H floor initSDL() sizes
+    the window to, which isn't itself one of the /mode settings options.
+    ESC from here (see SettingsMode::onEvent) is what actually gets the
+    player into GameMode.
     */
     const std::vector<Resolution>& presets = displayResolutionPresets();
-    if (!presets.empty()) {
-        SDL_SetWindowSize(getWindow(), presets.front().w, presets.front().h);
+    Resolution startupRes{};
+    if (!displayFindResolution(settings.resolution, startupRes) && !presets.empty())
+        startupRes = presets.front();
+    if (startupRes.w > 0 && startupRes.h > 0) {
+        SDL_SetWindowSize(getWindow(), startupRes.w, startupRes.h);
         SDL_SetWindowPosition(getWindow(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
     }
     switchMode(std::make_unique<SettingsMode>());

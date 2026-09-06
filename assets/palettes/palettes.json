@@ -1,0 +1,14 @@
+[
+    { "file": "abanboned_blue.png",   "name": "Abanboned Blue" },
+    { "file": "abyss.png",            "name": "Abyss" },
+    { "file": "bestiary.png",         "name": "Bestiary" }
+    { "file": "celestial_halo.png",         "name": "Celestial Halo" }
+    { "file": "cloud.png",         "name": "Cloud" }
+    { "file": "deuterospill.png",         "name": "Deuterospill" }
+    { "file": "eerie_blurple.png",         "name": "Eerie Blurple" }
+    { "file": "escape.png",         "name": "Escape" }
+    { "file": "grayscale.png",         "name": "Grayscale" }
+    { "file": "magic_waters.png",         "name": "Magic Waters" }
+    { "file": "oil.png",         "name": "Oil" }
+    { "file": "spoozy.png",         "name": "Spoozy" }
+]

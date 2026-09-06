@@ -246,7 +246,7 @@ void saveEditorToLocation(const LevelCoord& coord) {
     level.locX   = coord.x;
     level.locY   = coord.y;
     if (strcmp(level.name, "New Location") == 0)
-        snprintf(level.name, sizeof(level.name), "Location %d/%d/%d", coord.floor, coord.x, coord.y);
+        snprintf(level.name, sizeof(level.name), "%d/%d/%d", coord.floor, coord.x, coord.y);
 
     bool ok = saveLevelToFile(level, levelFileName(coord.floor, coord.x, coord.y).c_str());
 

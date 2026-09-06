@@ -3,6 +3,7 @@
 #include <SDL2/SDL_ttf.h>
 
 #include <algorithm>
+#include <climits>
 #include <iostream>
 #include <string>
 #include <unordered_map>
@@ -10,6 +11,8 @@
 #include "renderer.h"
 #include "layout.h"
 #include "display.h"
+#include "palette.h"
+#include "panel.h"
 
 // SDL globals
 static SDL_Window*   window        = nullptr;
@@ -22,16 +25,24 @@ static int           canvasH_      = 0;
 
 /*
 Special-sprite textures
-The five images tiles.h's "Special sprites" section reserves TileID
+The two images tiles.h's "Special sprites" section reserves TileID
 constants for — never looked up through the tiles.json registry, loaded
 once here by their fixed, hardcoded path instead. See resolveTile() below
 for where these get matched against a TileID.
 */
-static SDL_Texture* borderHTex      = nullptr;
-static SDL_Texture* borderVTex      = nullptr;
-static SDL_Texture* borderCornerTex = nullptr;
 static SDL_Texture* playerTex       = nullptr;
 static SDL_Texture* cursorTex       = nullptr;
+
+/*
+Panel theme texture
+The active theme (core/panel.h's getActivePanelFile()) is the only one
+ever needed at once, unlike tileTextureCache's many-files-at-once cache —
+so this is just a single slot, reloaded whenever the active file no
+longer matches panelTexFile (on first use, and after
+settings/settings_mode.cpp calls reloadPanelTexture() post-selection).
+*/
+static SDL_Texture* panelTex     = nullptr;
+static std::string  panelTexFile;
 
 /*
 Per-file tile texture cache
@@ -44,23 +55,80 @@ retrying (and re-logging) every single frame.
 */
 static std::unordered_map<std::string, SDL_Texture*> tileTextureCache;
 
+/*
+Loaded as a surface rather than IMG_LoadTexture's usual direct-to-texture
+path, so core/palette.h's applyActivePalette() gets a chance to remap the
+tile art's gray shades to the active palette's colors before the pixels
+ever reach the GPU.
+*/
 static SDL_Texture* getTileTexture(const std::string& file) {
     auto it = tileTextureCache.find(file);
     if (it != tileTextureCache.end()) return it->second;
 
     std::string path = "assets/tiles/" + file;
-    SDL_Texture* tex = IMG_LoadTexture(renderer, path.c_str());
-    if (!tex) std::cerr << "Failed to load tile texture: " << path << " (" << IMG_GetError() << ")\n";
+    SDL_Texture* tex = nullptr;
+
+    SDL_Surface* raw = IMG_Load(path.c_str());
+    if (!raw) {
+        std::cerr << "Failed to load tile texture: " << path << " (" << IMG_GetError() << ")\n";
+    } else {
+        SDL_Surface* surf = SDL_ConvertSurfaceFormat(raw, SDL_PIXELFORMAT_RGBA32, 0);
+        SDL_FreeSurface(raw);
+        if (surf) {
+            applyActivePalette(surf);
+            tex = SDL_CreateTextureFromSurface(renderer, surf);
+            SDL_FreeSurface(surf);
+        }
+    }
+
     tileTextureCache[file] = tex;
     return tex;
+}
+
+void reloadTileTextures() {
+    for (auto& [file, tex] : tileTextureCache) if (tex) SDL_DestroyTexture(tex);
+    tileTextureCache.clear();
+}
+
+/*
+Not palette-recolored, unlike getTileTexture() above — panel art is
+themed cream/line-art already, not one of the gray-shade tile assets
+core/palette.h's LUT knows how to remap, so a plain IMG_LoadTexture is
+enough.
+*/
+static SDL_Texture* getPanelTexture() {
+    const std::string& file = getActivePanelFile();
+    if (panelTex && panelTexFile == file) return panelTex;
+
+    if (panelTex) { SDL_DestroyTexture(panelTex); panelTex = nullptr; }
+    panelTexFile = file;
+
+    std::string path = "assets/panels/" + file;
+    panelTex = IMG_LoadTexture(renderer, path.c_str());
+    if (!panelTex) std::cerr << "Failed to load panel texture: " << path << " (" << IMG_GetError() << ")\n";
+    return panelTex;
+}
+
+void reloadPanelTexture() {
+    if (panelTex) { SDL_DestroyTexture(panelTex); panelTex = nullptr; }
+    panelTexFile.clear();
+}
+
+void drawPanelCell(int cellX, int cellY, SDL_Rect dst) {
+    SDL_Texture* tex = getPanelTexture();
+    if (!tex) return;
+
+    SDL_Rect src = { cellX * CELL_SIZE, cellY * CELL_SIZE, CELL_SIZE, CELL_SIZE };
+    SDL_RenderCopy(renderer, tex, &src, &dst);
 }
 
 /*
 Used for both the canvas clear (beginFrame) and the letterbox fill
 (endFrame) — sharing one constant means leftover window space always
-blends into the canvas instead of showing a seam or a black bar.
+blends into the canvas instead of showing a seam or a black bar. Black
+across every mode, game and editors alike.
 */
-static const SDL_Color kBackgroundColor = {13, 43, 69, 255};
+static const SDL_Color kBackgroundColor = {0, 0, 0, 255};
 
 // Zoom & camera state
 static int zoomLevel = 1;
@@ -113,17 +181,16 @@ void initSDL() {
     if (!renderer) exit(1);
 
     /*
-    The five special sprites are mandatory — unlike a missing tiles.json
-    entry (which just draws nothing), a missing border/player/cursor
-    asset means the interface itself can't be drawn, so this aborts
-    startup exactly like a missing window/renderer would.
+    Player/cursor are mandatory — unlike a missing tiles.json entry (which
+    just draws nothing), a missing one means the interface itself can't be
+    drawn, so this aborts startup exactly like a missing window/renderer
+    would. The panel theme sheet is loaded lazily by getPanelTexture()
+    instead, the same as any tiles.json-backed texture — a bad/missing
+    theme there just logs once and draws nothing, same as a bad tile.
     */
-    borderHTex      = IMG_LoadTexture(renderer, "assets/border_horizontal.png");
-    borderVTex      = IMG_LoadTexture(renderer, "assets/border_vertical.png");
-    borderCornerTex = IMG_LoadTexture(renderer, "assets/border_corner.png");
     playerTex       = IMG_LoadTexture(renderer, "assets/player.png");
     cursorTex       = IMG_LoadTexture(renderer, "assets/cursor.png");
-    if (!borderHTex || !borderVTex || !borderCornerTex || !playerTex || !cursorTex) {
+    if (!playerTex || !cursorTex) {
         std::cerr << "Failed to load a special sprite: " << IMG_GetError() << "\n";
         exit(1);
     }
@@ -135,7 +202,7 @@ void initSDL() {
     */
     canvasBgTex = IMG_LoadTexture(renderer, "assets/canvas.png");
 
-    font = TTF_OpenFont("assets/BigBlueTermPlusNerdFontMono-Regular.ttf", 16);
+    font = TTF_OpenFont("assets/ProggyCleanSZNerdFontMono-Regular.ttf", 18);
 
     /*
     logicalTarget is allocated lazily by the first beginFrame() call —
@@ -149,11 +216,9 @@ void cleanupSDL() {
     if (font)     { TTF_CloseFont(font);            font     = nullptr; }
     for (auto& [file, tex] : tileTextureCache) if (tex) SDL_DestroyTexture(tex);
     tileTextureCache.clear();
-    if (borderHTex)      { SDL_DestroyTexture(borderHTex);      borderHTex      = nullptr; }
-    if (borderVTex)      { SDL_DestroyTexture(borderVTex);      borderVTex      = nullptr; }
-    if (borderCornerTex) { SDL_DestroyTexture(borderCornerTex); borderCornerTex = nullptr; }
     if (playerTex)       { SDL_DestroyTexture(playerTex);       playerTex       = nullptr; }
     if (cursorTex)       { SDL_DestroyTexture(cursorTex);       cursorTex       = nullptr; }
+    if (panelTex)        { SDL_DestroyTexture(panelTex);        panelTex        = nullptr; }
     if (canvasBgTex) { SDL_DestroyTexture(canvasBgTex); canvasBgTex = nullptr; }
     if (renderer) { SDL_DestroyRenderer(renderer);  renderer = nullptr; }
     if (window)   { SDL_DestroyWindow(window);      window   = nullptr; }
@@ -215,9 +280,6 @@ struct ResolvedTile { SDL_Texture* tex; int srcCellX, srcCellY, cellW, cellH; };
 bool resolveTile(TileID c, ResolvedTile& out) {
     if (c == EMPTY_ID) return false;
 
-    if (c == HORIZONTAL_BORDER) { out = {borderHTex,      0, 0, 1, 1}; return true; }
-    if (c == VERTICAL_BORDER)   { out = {borderVTex,      0, 0, 1, 1}; return true; }
-    if (c == CORNER_BORDER)     { out = {borderCornerTex, 0, 0, 1, 1}; return true; }
     if (c == PLAYER)            { out = {playerTex,       0, 0, 1, 1}; return true; }
     if (c == FACING_INDICATOR)  { out = {cursorTex,       0, 0, 1, 1}; return true; }
 
@@ -396,21 +458,183 @@ void FrameBuilder::markCol(int px, int pyFrom, int pyTo) {
     for (int py = pyFrom; py < pyTo; py += CELL_SIZE) cells_.insert(key(px, py));
 }
 
+namespace {
+
+/*
+Which of the active panel theme's 6x6 grid cells a marked FrameBuilder
+cell reads from — see renderer.h's "Frame system" comment for the full
+picture. A corner role always sources the sheet's own matching corner
+(no runtime flip needed, the art is pre-oriented); HorizEdge/VertEdge
+still need a nearby-corner lookup (frameWalkToCorner() below) to know
+which row/column of the sheet to read and whether they're the cell
+immediately next to a corner or one of the tileable ones in between.
+*/
+enum class FrameCellRole { CornerTL, CornerTR, CornerBL, CornerBR, HorizEdge, VertEdge };
+
+bool frameIsCorner(FrameCellRole r) {
+    return r != FrameCellRole::HorizEdge && r != FrameCellRole::VertEdge;
+}
+
+// The theme sheet's own corner cell for a given corner role, in grid
+// (not pixel) units — see panel.h's file comment: 6x6 grid, corners at
+// its own four corners.
+SDL_Point frameCornerCell(FrameCellRole r) {
+    switch (r) {
+        case FrameCellRole::CornerTL: return {0, 0};
+        case FrameCellRole::CornerTR: return {5, 0};
+        case FrameCellRole::CornerBL: return {0, 5};
+        default:                      return {5, 5}; // CornerBR
+    }
+}
+
+/*
+Classifies every marked cell from cells_ purely by which of its 4
+neighbours are also marked — same rule FrameBuilder always used for the
+2-opposite-neighbours straight-edge cases, generalized to pick a specific
+corner orientation (rather than one universal corner sprite) for
+everything else, including cases a fixed neighbour-pattern lookup can't
+resolve on its own:
+
+- A T-junction or a cross has 3 or 4 marked neighbours, so both e and w
+  end up set (a T sitting on a horizontal run) or both n and s do (a T on
+  a vertical run) — local info alone can't tell a left-side T from a
+  right-side one, or a top one from a bottom one, since they look
+  identical up close.
+- A divider's own end cell can also land with only 1 marked neighbour
+  rather than the 2 a real corner has, whenever that divider's own fixed
+  coordinate isn't itself a multiple of CELL_SIZE relative to the run
+  it's meeting (e.g. a side panel width that doesn't divide evenly) — the
+  two runs still meet visually, but never share one literal marked cell,
+  so neither of the other 3 neighbours besides the one continuing along
+  the divider itself is ever marked.
+
+Both cases are resolved the same way: `bounds` (this FrameBuilder's own
+overall bounding box, computed once in draw()) breaks the tie by
+position — closer to the top of the whole frame reads as a top-flavoured
+corner, closer to the left reads as a left-flavoured one — which is what
+makes a left and right divider's T-junctions against the same row render
+as mirror images of each other instead of identical copies, and gives an
+unaligned divider's end cell a sensible single corner instead of always
+defaulting the same way regardless of which side it's actually on.
+*/
+struct FrameBounds { int minX, maxX, minY, maxY; };
+
+FrameCellRole frameClassify(const std::unordered_set<long long>& cells, int px, int py,
+                             const FrameBounds& bounds) {
+    bool n = cells.count(FrameBuilder::key(px, py - CELL_SIZE)) != 0;
+    bool s = cells.count(FrameBuilder::key(px, py + CELL_SIZE)) != 0;
+    bool e = cells.count(FrameBuilder::key(px + CELL_SIZE, py)) != 0;
+    bool w = cells.count(FrameBuilder::key(px - CELL_SIZE, py)) != 0;
+
+    if (e && w && !n && !s) return FrameCellRole::HorizEdge;
+    if (n && s && !e && !w) return FrameCellRole::VertEdge;
+
+    bool nearLeft = (px - bounds.minX) <= (bounds.maxX - px);
+    bool nearTop  = (py - bounds.minY) <= (bounds.maxY - py);
+
+    // topFlavored/leftFlavored: whichever single direction is actually
+    // marked wins outright; a tie (both marked, as at a T/cross, or
+    // neither marked, as at an unaligned divider's end cell) falls back
+    // to nearTop/nearLeft.
+    bool topFlavored;
+    if (s && !n)      topFlavored = true;
+    else if (n && !s) topFlavored = false;
+    else              topFlavored = nearTop;
+
+    bool leftFlavored;
+    if (e && !w)      leftFlavored = true;
+    else if (w && !e) leftFlavored = false;
+    else              leftFlavored = nearLeft;
+
+    if (topFlavored) return leftFlavored ? FrameCellRole::CornerTL : FrameCellRole::CornerTR;
+    return leftFlavored ? FrameCellRole::CornerBL : FrameCellRole::CornerBR;
+}
+
+/*
+For a HorizEdge/VertEdge cell, walks toward each end of its straight run
+until it hits a corner-classified cell, so draw() knows both how far this
+cell sits from either end (0 steps = the run's own corner, 1 step = the
+cell right next to it, i.e. an "adjacent" cell) and which corner is
+there (its row/column tells a horizontal/vertical run which side of the
+sheet — top or bottom, left or right — to read from). Capped at cells_'s
+own size so a malformed/never-terminating run (which markRow/markCol
+can't actually produce) can't loop forever.
+*/
+struct FrameRunEnd { int dist; FrameCellRole corner; };
+
+FrameRunEnd frameWalkToCorner(const std::unordered_map<long long, FrameCellRole>& roles,
+                              int px, int py, int stepX, int stepY, size_t maxSteps) {
+    int dist = 0;
+    while (dist < (int)maxSteps) {
+        auto it = roles.find(FrameBuilder::key(px, py));
+        if (it == roles.end()) return {dist, FrameCellRole::CornerTL}; // ran off the marked set — shouldn't happen, safe default
+        if (frameIsCorner(it->second)) return {dist, it->second};
+
+        px += stepX;
+        py += stepY;
+        ++dist;
+    }
+    return {dist, FrameCellRole::CornerTL};
+}
+
+bool frameIsTopCorner(FrameCellRole r)  { return r == FrameCellRole::CornerTL || r == FrameCellRole::CornerTR; }
+bool frameIsLeftCorner(FrameCellRole r) { return r == FrameCellRole::CornerTL || r == FrameCellRole::CornerBL; }
+
+// Sheet index (a column for a HorizEdge cell, a row for a VertEdge one)
+// `steps` away from its nearer corner (0 doesn't occur — that's the
+// corner cell itself), alternating between the sheet's two "middle"
+// cells once it's more than one step in.
+int frameEdgeMiddleIndex(int steps) { return (steps % 2 == 0) ? 2 : 3; }
+
+} // namespace
+
 void FrameBuilder::draw() const {
+    if (cells_.empty()) return;
+
+    FrameBounds bounds{ INT_MAX, INT_MIN, INT_MAX, INT_MIN };
     for (long long k : cells_) {
         int px = static_cast<int>(k & 0xFFFFFFFFLL);
         int py = static_cast<int>(k >> 32);
+        bounds.minX = std::min(bounds.minX, px);
+        bounds.maxX = std::max(bounds.maxX, px);
+        bounds.minY = std::min(bounds.minY, py);
+        bounds.maxY = std::max(bounds.maxY, py);
+    }
 
-        bool left  = cells_.count(key(px - CELL_SIZE, py)) != 0;
-        bool right = cells_.count(key(px + CELL_SIZE, py)) != 0;
-        bool up    = cells_.count(key(px, py - CELL_SIZE)) != 0;
-        bool down  = cells_.count(key(px, py + CELL_SIZE)) != 0;
+    std::unordered_map<long long, FrameCellRole> roles;
+    roles.reserve(cells_.size());
+    for (long long k : cells_) {
+        int px = static_cast<int>(k & 0xFFFFFFFFLL);
+        int py = static_cast<int>(k >> 32);
+        roles[k] = frameClassify(cells_, px, py, bounds);
+    }
 
-        TileID tile;
-        if (left && right && !up && !down)      tile = HORIZONTAL_BORDER;
-        else if (up && down && !left && !right) tile = VERTICAL_BORDER;
-        else                                    tile = CORNER_BORDER; // corner, T-junction, or cross
+    for (long long k : cells_) {
+        int px = static_cast<int>(k & 0xFFFFFFFFLL);
+        int py = static_cast<int>(k >> 32);
+        FrameCellRole role = roles[k];
 
-        drawTileRect(tile, SDL_Rect{ px, py, CELL_SIZE, CELL_SIZE });
+        SDL_Point cell;
+        if (frameIsCorner(role)) {
+            cell = frameCornerCell(role);
+        } else if (role == FrameCellRole::HorizEdge) {
+            FrameRunEnd left  = frameWalkToCorner(roles, px, py, -CELL_SIZE, 0, cells_.size());
+            FrameRunEnd right = frameWalkToCorner(roles, px, py,  CELL_SIZE, 0, cells_.size());
+            int row = frameIsTopCorner(left.corner) ? 0 : 5;
+
+            if (left.dist == 1)       cell = {1, row}; // adjacent to the left corner
+            else if (right.dist == 1) cell = {4, row}; // adjacent to the right corner
+            else                      cell = {frameEdgeMiddleIndex(std::min(left.dist, right.dist)), row};
+        } else { // VertEdge
+            FrameRunEnd up   = frameWalkToCorner(roles, px, py, 0, -CELL_SIZE, cells_.size());
+            FrameRunEnd down = frameWalkToCorner(roles, px, py, 0,  CELL_SIZE, cells_.size());
+            int col = frameIsLeftCorner(up.corner) ? 0 : 5;
+
+            if (up.dist == 1)        cell = {col, 1}; // adjacent to the top corner
+            else if (down.dist == 1) cell = {col, 4}; // adjacent to the bottom corner
+            else                     cell = {col, frameEdgeMiddleIndex(std::min(up.dist, down.dist))};
+        }
+
+        drawPanelCell(cell.x, cell.y, SDL_Rect{ px, py, CELL_SIZE, CELL_SIZE });
     }
 }

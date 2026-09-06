@@ -5,7 +5,10 @@
 
 #include "../core/display.h"
 #include "../core/layout.h"
+#include "../core/palette.h"
+#include "../core/panel.h"
 #include "../core/renderer.h"
+#include "../core/settings_store.h"
 #include "../editor/editor_mode.h"
 #include "../game/game_mode.h"
 #include "../generator/fragment_editor_mode.h"
@@ -16,15 +19,18 @@ namespace {
 
 /*
 Categories
-Only "Resolution" actually does anything. "Volume" is listed (per the
-request to leave room for it) but has no audio system behind it yet —
-see onEvent's SPACE handling below. A real category is added by
-appending here and giving it its own branch in the two switch-like
-blocks in onEvent()/onRender() — index-matched, so nothing else changes.
+"Resolution", "Palettes" and "Panels" all actually do something; "Volume"
+is listed (per the request to leave room for it) but has no audio system
+behind it yet — see onEvent's SPACE handling below. A real category is
+added by appending here and giving it its own branch in the two
+switch-like blocks in onEvent()/onRender() — index-matched, so nothing
+else changes.
 */
-const std::vector<std::string> kCategories = { "Resolution", "Volume" };
+const std::vector<std::string> kCategories = { "Resolution", "Palettes", "Panels", "Volume" };
 constexpr int kCategoryResolution = 0;
-constexpr int kCategoryVolume     = 1;
+constexpr int kCategoryPalette    = 1;
+constexpr int kCategoryPanel      = 2;
+constexpr int kCategoryVolume     = 3;
 
 /*
 0 = left column (categories) has keyboard focus, 1 = right column (that
@@ -61,19 +67,56 @@ std::vector<std::string> resolutionOptions() {
     return displayResolutionNames();
 }
 
+std::vector<std::string> paletteOptions() {
+    std::vector<std::string> names;
+    for (const PaletteInfo& p : getPalettes()) names.push_back(p.name);
+    return names;
+}
+
+std::vector<std::string> panelOptions() {
+    std::vector<std::string> names;
+    for (const PanelInfo& p : getPanels()) names.push_back(p.name);
+    return names;
+}
+
 /*
 Options list for whichever category is currently selected. Returned by
 value (these lists are tiny) so callers don't need to care that Volume's
-is a single static placeholder while Resolution's is computed fresh.
+is a single static placeholder while Resolution's, Palettes' and Panels'
+are computed fresh.
 */
 std::vector<std::string> optionsForCategory(int category) {
     if (category == kCategoryResolution) return resolutionOptions();
+    if (category == kCategoryPalette)    return paletteOptions();
+    if (category == kCategoryPanel)      return panelOptions();
     return { SettingsPanel::VOLUME_PLACEHOLDER };
 }
 
 int clampIndex(int index, int count) {
     if (count <= 0) return 0;
     return std::max(0, std::min(index, count - 1));
+}
+
+/*
+Writes the full effective settings state out to storage/settings.json —
+called after Resolution, Palettes or Panels actually applies a change, so
+a fresh launch (core/app.cpp's loadSettings()) picks up wherever the
+player left off rather than always resetting to assets/settings_defaults.json.
+Resolution itself isn't tracked as its own piece of state anywhere else,
+so it's read back off the window the same way onEnter() does.
+*/
+void persistCurrentSettings() {
+    Settings s;
+
+    int winW = 0, winH = 0;
+    SDL_GetWindowSize(getWindow(), &winW, &winH);
+    for (const Resolution& r : displayResolutionPresets()) {
+        if (r.w == winW && r.h == winH) { s.resolution = r.label; break; }
+    }
+
+    s.palette = getActivePaletteFile();
+    s.panel   = getActivePanelFile();
+    saveSettings(s);
 }
 
 } // namespace
@@ -97,6 +140,27 @@ void SettingsMode::onEnter() {
         Resolution r;
         if (displayFindResolution(names[i], r) && r.w == winW && r.h == winH) {
             optionIndex_[kCategoryResolution] = (int)i;
+            break;
+        }
+    }
+
+    /*
+    Same idea for Palettes — land on whichever entry is currently active
+    rather than always resetting to the first one loaded.
+    */
+    const std::vector<PaletteInfo>& palettes = getPalettes();
+    for (size_t i = 0; i < palettes.size(); ++i) {
+        if (palettes[i].file == getActivePaletteFile()) {
+            optionIndex_[kCategoryPalette] = (int)i;
+            break;
+        }
+    }
+
+    // Same idea again for Panels.
+    const std::vector<PanelInfo>& panels = getPanels();
+    for (size_t i = 0; i < panels.size(); ++i) {
+        if (panels[i].file == getActivePanelFile()) {
+            optionIndex_[kCategoryPanel] = (int)i;
             break;
         }
     }
@@ -188,6 +252,27 @@ void SettingsMode::onEvent(const SDL_Event& e) {
                 SDL_SetWindowPosition(getWindow(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
                 statusText_ = " Resolution set to " + names[idx];
                 statusTTL_  = 150;
+                persistCurrentSettings();
+            } else if (categoryIndex_ == kCategoryPalette) {
+                const std::vector<PaletteInfo>& palettes = getPalettes();
+                int idx = clampIndex(optionIndex_[categoryIndex_], (int)palettes.size());
+                if (palettes.empty()) return;
+
+                setActivePalette(palettes[idx].file);
+                reloadTileTextures(); // re-recolor every cached tile against the new palette
+                statusText_ = " Palette set to " + palettes[idx].name;
+                statusTTL_  = 150;
+                persistCurrentSettings();
+            } else if (categoryIndex_ == kCategoryPanel) {
+                const std::vector<PanelInfo>& panels = getPanels();
+                int idx = clampIndex(optionIndex_[categoryIndex_], (int)panels.size());
+                if (panels.empty()) return;
+
+                setActivePanel(panels[idx].file);
+                reloadPanelTexture(); // draw the new theme's own texture on the next frame
+                statusText_ = " Panel set to " + panels[idx].name;
+                statusTTL_  = 150;
+                persistCurrentSettings();
             } else {
                 statusText_ = SettingsPanel::VOLUME_STATUS;
                 statusTTL_  = 150;

@@ -191,7 +191,7 @@ void initLevels() {
             level.width  = MAX_WIDTH;
             level.height = MAX_HEIGHT;
             level.isStatic = true;
-            snprintf(level.name, sizeof(level.name), "Location %d/%d/%d", floor, x, y);
+            snprintf(level.name, sizeof(level.name), "%d/%d/%d", floor, x, y);
 
             if (loadLevelFromFile(level, entry.path().string().c_str())) {
                 /*

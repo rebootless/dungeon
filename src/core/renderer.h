@@ -14,6 +14,15 @@ void initSDL();
 // Destroy all SDL resources and shut down subsystems.
 void cleanupSDL();
 
+/*
+Drops every cached tile texture (core/palette.h's applyActivePalette()
+already ran on the ones being dropped) so the next drawChar/drawTileRect
+call for a given file reloads and recolors it from disk against whichever
+palette is active NOW. Called by settings/settings_mode.cpp right after
+setActivePalette() picks a new one.
+*/
+void reloadTileTextures();
+
 // The single SDL_Window owned by the app. Needed by core/app.cpp to call
 // SDL_SetWindowSize when the /set resolution command runs.
 SDL_Window* getWindow();
@@ -134,26 +143,52 @@ void setMapClip(bool enable);
 
 
 /*
+Destroys the currently loaded panel theme texture (if any), so the next
+FrameBuilder::draw() call reloads it from disk under whichever theme
+core/panel.h's setActivePanel() just switched to. Called by
+settings/settings_mode.cpp right after setActivePanel() picks a new one —
+same idea as reloadTileTextures() above, just for the one shared panel
+sheet instead of a per-file cache.
+*/
+void reloadPanelTexture();
+
+// Blits the 16x16 cell at (cellX, cellY) of the active panel theme's
+// sheet (see core/panel.h) to `dst`. FrameBuilder::draw() is the only
+// caller — see this header's "Frame system" comment for how cellX/cellY
+// get chosen.
+void drawPanelCell(int cellX, int cellY, SDL_Rect dst);
+
+/*
 Frame system
 FrameBuilder draws panel and divider borders without each mode having to
 hand-derive "corner vs edge" itself, and without special-casing where a
 panel divider meets the outer border. Mark every cell that should carry
 border art (outer edges, plus any interior divider lines), then draw()
-decides the correct tile for each marked cell purely from how many of its
-4 neighbours are also marked:
+decides the correct cell of the active panel theme's 96x96 sheet
+(assets/panels/*.png, core/panel.h) for each marked cell purely from how
+many of its 4 neighbours are also marked:
 
-  2 opposite neighbours (left+right)  -> HORIZONTAL_BORDER
-  2 opposite neighbours (up+down)     -> VERTICAL_BORDER
-  anything else (a corner, a T where
-  a divider meets the outer edge, or
-  a cross where two dividers meet)    -> CORNER_BORDER
+  2 opposite neighbours (left+right) -> a horizontal edge cell
+  2 opposite neighbours (up+down)    -> a vertical edge cell
+  anything else (a real corner, a T
+  where a divider meets the outer
+  edge, or a cross where two
+  dividers meet)                     -> a corner cell
 
-CORNER_BORDER's sprite (assets/border_corner.png — one of the five
-special sprites hardcoded in this file, never part of tiles.json; see
-core/tiles.h's "Special sprites" section) is a full 4-way connector:
-drawn as both a horizontal AND a vertical bar through the same cell — the
-exact same tile therefore reads correctly as a corner, a T-junction, or a
-full cross, so one sprite is all this needs.
+There are no T-junction or cross pieces in the theme art — a T or a cross
+just resolves to whichever corner orientation its own two "inner" marked
+neighbours match (see renderer.cpp's frameClassify()), the same as a real
+corner would. Every theme sheet is a 6x6 grid of CELL_SIZE cells: the 4
+true corners at the sheet's own 4 corners (already drawn facing inward,
+so no runtime flip/rotate is needed — a cell classified as e.g. top-right
+always sources the sheet's own top-right corner cell), the 2 cells next
+to each corner along every side ("adjacent" cells, used for the edge
+cell immediately touching a corner), and the 2 cells between those
+("middle" cells, alternated to fill however much straight run is left).
+A horizontal run reads its edge cells off the sheet's top row if its
+bounding corners are top corners, its bottom row if they're bottom
+corners — vertical runs read the left or right column the same way off
+which side their bounding corners are on.
 
 Cells are addressed by raw canvas pixel position, not grid index, so a
 frame can be docked anywhere.
@@ -174,7 +209,15 @@ public:
     // Computes each marked cell's tile per the rule above and draws it.
     void draw() const;
 
-private:
+    /*
+    Packs a cell's raw canvas pixel position into cells_'s key space.
+    Public so renderer.cpp's free classification/walk functions (which
+    need to look cells up by neighbour position, not just iterate them)
+    can use the exact same packing draw() and markRow()/markCol() do,
+    without duplicating it.
+    */
     static long long key(int px, int py);
+
+private:
     std::unordered_set<long long> cells_;
 };

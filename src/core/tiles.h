@@ -63,20 +63,21 @@ constexpr TileID CONNECTOR_MARKER = 0xFFFA;
 
 /*
 Special sprites
-Five images (assets/border_horizontal.png, assets/border_vertical.png,
-assets/border_corner.png, assets/player.png, assets/cursor.png) are
-deliberately NOT part of the tiles.json registry: they are not
-user-placeable content, so there is nothing to look up for them. They get
-their own reserved TileID constants instead, resolved directly against
-hardcoded textures in core/renderer.cpp rather than through
-getTileMeta()/the registry. Placed just below CONNECTOR_MARKER, still
-nowhere near the [0x3030, 0x5A5A] range makeTileId can ever produce.
+Two images (assets/player.png, assets/cursor.png) are deliberately NOT
+part of the tiles.json registry: they are not user-placeable content, so
+there is nothing to look up for them. They get their own reserved TileID
+constants instead, resolved directly against hardcoded textures in
+core/renderer.cpp rather than through getTileMeta()/the registry. Placed
+just below CONNECTOR_MARKER, still nowhere near the [0x3030, 0x5A5A]
+range makeTileId can ever produce.
+
+FrameBuilder's border art used to be a third pair of hardcoded sprites
+here too — it now sources every frame cell straight from the active
+panel theme's 96x96 sheet (core/panel.h, core/renderer.cpp's
+drawPanelCell()) instead, so there's nothing to reserve a TileID for.
 */
 constexpr TileID PLAYER            = 0xFFF9; // Entities-layer spawn marker
 constexpr TileID FACING_INDICATOR  = 0xFFF8; // Overlay drawn on the cell the player faces
-constexpr TileID HORIZONTAL_BORDER = 0xFFF7; // FrameBuilder — see core/renderer.h
-constexpr TileID VERTICAL_BORDER   = 0xFFF6;
-constexpr TileID CORNER_BORDER     = 0xFFF5;
 
 // Which of the five layers a tile belongs to. Collision markers/occlusion
 // markers are sentinels, not registry entries, so they have no LayerType

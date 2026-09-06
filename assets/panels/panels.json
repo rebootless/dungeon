@@ -1,0 +1,14 @@
+[
+    { "file": "assembly.png",         "name": "Assembly" },
+    { "file": "bone_breakers.png",    "name": "Bone Breakers" },
+    { "file": "line.png",             "name": "Line" },
+    { "file": "northern_wastes.png",  "name": "Northern Wastes" },
+    { "file": "polis_sanctuary.png",  "name": "Polis Sanctuary" },
+    { "file": "simple.png",           "name": "Simple" },
+    { "file": "spacing_guild.png",    "name": "Spacing Guild" },
+    { "file": "spikecore.png",        "name": "Spikecore" },
+    { "file": "star_fleet.png",       "name": "Star Fleet" },
+    { "file": "thorny_growth.png",    "name": "Thorny Growth" },
+    { "file": "weathered_temple.png", "name": "Weathered Temple" },
+    { "file": "ziggurat.png",         "name": "Ziggurat" }
+]

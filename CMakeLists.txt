@@ -12,6 +12,9 @@ add_executable(dungeon
     src/core/console.cpp
     src/core/app.cpp
     src/core/tiles.cpp
+    src/core/palette.cpp
+    src/core/panel.cpp
+    src/core/settings_store.cpp
     src/game/game_mode.cpp
     src/game/game_controls.cpp
     src/game/game_panel.cpp
