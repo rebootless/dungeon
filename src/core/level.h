@@ -11,7 +11,14 @@
 
 // Grid dimensions
 const int MAX_WIDTH  = 49;
-const int MAX_HEIGHT = 37;
+/*
+One cell shorter on each end than the map actually renders — see
+layout.h's MAP_ORIGIN_Y / MAP_BOTTOM_Y: the frame's own top wall and the
+map/info-box divider each get a dedicated row of their own outside this
+grid entirely, so every row a level stores is genuinely walkable/visible
+map, not a wasted border row a level author has to leave blank.
+*/
+const int MAX_HEIGHT = 35;
 
 /*
 World directory

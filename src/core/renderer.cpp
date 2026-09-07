@@ -423,12 +423,12 @@ void drawMapChar(TileID c, int x, int y) {
 
     if (zoomLevel == 1) {
         screenX = mapOriginX + x * CELL_SIZE;
-        screenY = y * CELL_SIZE;
+        screenY = MAP_ORIGIN_Y + y * CELL_SIZE;
     } else {
         int camPx = camX * CELL_SIZE + CELL_SIZE / 2;
         int camPy = camY * CELL_SIZE + CELL_SIZE / 2;
         screenX = mapOriginX + (x * CELL_SIZE - camPx) * zoomLevel + MAP_PIXEL_W / 2;
-        screenY = (y * CELL_SIZE - camPy) * zoomLevel + MAP_PIXEL_H / 2;
+        screenY = MAP_ORIGIN_Y + (y * CELL_SIZE - camPy) * zoomLevel + MAP_PIXEL_H / 2;
     }
 
     SDL_Rect dst = { screenX, screenY, tileSize, tileSize };
@@ -436,9 +436,14 @@ void drawMapChar(TileID c, int x, int y) {
 }
 
 void setMapClip(bool enable) {
-    if (enable) setClipRect(mapOriginX, 0, MAP_PIXEL_W, MAP_PIXEL_H);
+    if (enable) setClipRect(mapOriginX, MAP_ORIGIN_Y, MAP_PIXEL_W, MAP_PIXEL_H);
     else        clearClipRect();
 }
+
+// Global border visibility toggle — see renderer.h.
+static bool bordersVisible = true;
+void toggleBordersVisible() { bordersVisible = !bordersVisible; }
+bool areBordersVisible() { return bordersVisible; }
 
 // FrameBuilder
 long long FrameBuilder::key(int px, int py) {
@@ -450,12 +455,12 @@ long long FrameBuilder::key(int px, int py) {
     return (static_cast<long long>(py) << 32) | static_cast<unsigned int>(px);
 }
 
-void FrameBuilder::markRow(int py, int pxFrom, int pxTo) {
-    for (int px = pxFrom; px < pxTo; px += CELL_SIZE) cells_.insert(key(px, py));
+void FrameBuilder::markRow(int py, int pxFrom, int pxTo, int layer) {
+    for (int px = pxFrom; px < pxTo; px += CELL_SIZE) cells_[key(px, py)] = layer;
 }
 
-void FrameBuilder::markCol(int px, int pyFrom, int pyTo) {
-    for (int py = pyFrom; py < pyTo; py += CELL_SIZE) cells_.insert(key(px, py));
+void FrameBuilder::markCol(int px, int pyFrom, int pyTo, int layer) {
+    for (int py = pyFrom; py < pyTo; py += CELL_SIZE) cells_[key(px, py)] = layer;
 }
 
 namespace {
@@ -519,7 +524,7 @@ defaulting the same way regardless of which side it's actually on.
 */
 struct FrameBounds { int minX, maxX, minY, maxY; };
 
-FrameCellRole frameClassify(const std::unordered_set<long long>& cells, int px, int py,
+FrameCellRole frameClassify(const std::unordered_map<long long, int>& cells, int px, int py,
                              const FrameBounds& bounds) {
     bool n = cells.count(FrameBuilder::key(px, py - CELL_SIZE)) != 0;
     bool s = cells.count(FrameBuilder::key(px, py + CELL_SIZE)) != 0;
@@ -588,11 +593,11 @@ int frameEdgeMiddleIndex(int steps) { return (steps % 2 == 0) ? 2 : 3; }
 
 } // namespace
 
-void FrameBuilder::draw() const {
-    if (cells_.empty()) return;
+void FrameBuilder::draw(int layer) const {
+    if (cells_.empty() || !areBordersVisible()) return;
 
     FrameBounds bounds{ INT_MAX, INT_MIN, INT_MAX, INT_MIN };
-    for (long long k : cells_) {
+    for (const auto& [k, cellLayer] : cells_) {
         int px = static_cast<int>(k & 0xFFFFFFFFLL);
         int py = static_cast<int>(k >> 32);
         bounds.minX = std::min(bounds.minX, px);
@@ -601,15 +606,20 @@ void FrameBuilder::draw() const {
         bounds.maxY = std::max(bounds.maxY, py);
     }
 
+    // Classification always runs over every marked cell, regardless of
+    // layer, so a layer's own T-junctions still read correctly against
+    // cells another layer owns (e.g. a divider meeting the outer edge).
     std::unordered_map<long long, FrameCellRole> roles;
     roles.reserve(cells_.size());
-    for (long long k : cells_) {
+    for (const auto& [k, cellLayer] : cells_) {
         int px = static_cast<int>(k & 0xFFFFFFFFLL);
         int py = static_cast<int>(k >> 32);
         roles[k] = frameClassify(cells_, px, py, bounds);
     }
 
-    for (long long k : cells_) {
+    for (const auto& [k, cellLayer] : cells_) {
+        if (layer != -1 && cellLayer != layer) continue;
+
         int px = static_cast<int>(k & 0xFFFFFFFFLL);
         int py = static_cast<int>(k >> 32);
         FrameCellRole role = roles[k];

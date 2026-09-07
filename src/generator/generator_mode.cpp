@@ -71,6 +71,30 @@ void GeneratorMode::onRender() {
     const int totalW        = CANVAS_W;
     const int totalH        = CANVAS_H;
 
+    /*
+    Frame
+    Marked once, up front, so every layer's draw() call classifies corners
+    and T-junctions against the whole frame regardless of which piece it's
+    actually drawing this pass — identical geometry to GameMode's/
+    EditorMode's. See game_mode.cpp's render() for the full rationale.
+    */
+    FrameBuilder fb;
+    fb.markRow(0, 0, totalW, FRAME_LAYER_WINDOW);
+    fb.markRow(totalH - CELL_SIZE, 0, totalW, FRAME_LAYER_WINDOW);
+    fb.markCol(0, 0, totalH, FRAME_LAYER_WINDOW);
+    fb.markCol(totalW - CELL_SIZE, 0, totalH, FRAME_LAYER_WINDOW);
+    fb.markCol(leftDividerX, 0, totalH, FRAME_LAYER_PANELS);
+    fb.markCol(mapRightEdgeX, 0, totalH, FRAME_LAYER_PANELS);
+    fb.markRow(MAP_BOTTOM_Y, mapOriginX, mapRightEdgeX, FRAME_LAYER_MAP);
+
+    // Layer 1: window edges.
+    fb.draw(FRAME_LAYER_WINDOW);
+
+    // Layer 2: side panels — left blank, same as the info box; only the
+    // dividers themselves need drawing.
+    fb.draw(FRAME_LAYER_PANELS);
+
+    // Layer 3: game panel
     setMapOrigin(mapOriginX);
     setMapClip(true);
 
@@ -94,16 +118,11 @@ void GeneratorMode::onRender() {
 
     setMapClip(false);
 
-    // Frame — identical geometry to GameMode's/EditorMode's.
-    {
-        FrameBuilder fb;
-        fb.markRow(0, 0, totalW);
-        fb.markRow(totalH - CELL_SIZE, 0, totalW);
-        fb.markCol(0, 0, totalH);
-        fb.markCol(totalW - CELL_SIZE, 0, totalH);
-        fb.markCol(leftDividerX, 0, totalH);
-        fb.markCol(mapRightEdgeX, 0, totalH);
-        fb.markRow((MAX_HEIGHT - 1) * CELL_SIZE, mapOriginX, mapRightEdgeX);
-        fb.draw();
-    }
+    // Map/info-box divider — sits in its own dedicated row below the map
+    // (layout.h's MAP_BOTTOM_Y), so drawing it here rather than up front
+    // with the outer edges is purely for consistency with the other
+    // modes, not because it needs to overlap anything.
+    fb.draw(FRAME_LAYER_MAP);
+
+    // Layer 4: text panel — left blank, nothing to draw.
 }

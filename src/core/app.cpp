@@ -205,6 +205,18 @@ void App::handleEvent(const SDL_Event& e) {
 
     if (console_.onEvent(e)) { needsRender_ = true; return; }
 
+    /*
+    G toggles border visibility across every mode — handled here rather
+    than in each mode's onEvent so no mode needs to know the toggle
+    exists; FrameBuilder::draw() (core/renderer.cpp) is what actually
+    honors it.
+    */
+    if (e.type == SDL_KEYDOWN && e.key.keysym.scancode == SDL_SCANCODE_G) {
+        toggleBordersVisible();
+        needsRender_ = true;
+        return;
+    }
+
     if (mode_) mode_->onEvent(e);
     needsRender_ = true;
 }

@@ -308,6 +308,44 @@ void EditorMode::onRender() {
     const int totalH = CANVAS_H; // == panelH — the info box below the map fills all the way down to it too
 
     /*
+    Frame
+    Marked once, up front, so every layer's draw() call classifies corners
+    and T-junctions against the whole frame regardless of which piece it's
+    actually drawing this pass (see renderer.h's FrameBuilder::draw(int)).
+    The top and bottom are each a SINGLE continuous row spanning the entire
+    canvas width — palette, gap, map, gap, reserved panel, all in one line —
+    rather than separate per-region segments. This needs no special-casing
+    to avoid corners: FrameBuilder's neighbor detection renders a cell as a
+    corner only where a vertical wall also meets it (the real corners of
+    the palette/map/reserved-panel boxes), and as plain horizontal
+    everywhere else — including the cell bridging each gap, since nothing
+    vertical is ever marked there.
+    */
+    FrameBuilder fb;
+    fb.markRow(0, 0, totalW, FRAME_LAYER_WINDOW);
+    fb.markRow(totalH - CELL_SIZE, 0, totalW, FRAME_LAYER_WINDOW);
+    fb.markCol(0, 0, totalH, FRAME_LAYER_WINDOW);
+    fb.markCol(totalW - CELL_SIZE, 0, totalH, FRAME_LAYER_WINDOW);
+    fb.markCol(leftDividerX, 0, totalH, FRAME_LAYER_PANELS);
+    fb.markCol(mapRightEdgeX, 0, totalH, FRAME_LAYER_PANELS);
+    /*
+    Separates the map viewport from the info box below it — only
+    spans the map's own width (mapOriginX..mapRightEdgeX), not the
+    full canvas, since the left/right panels keep running uninterrupted
+    top to bottom. Sits in its own dedicated row directly below the
+    map's last row (layout.h's MAP_BOTTOM_Y) rather than overlapping it —
+    the map itself starts one row below the outer frame's own top wall
+    for the same reason (MAP_ORIGIN_Y), so neither edge shares a row the
+    map actually draws into.
+    */
+    fb.markRow(MAP_BOTTOM_Y, mapOriginX, mapRightEdgeX, FRAME_LAYER_MAP);
+
+    // Layer 1: window edges — the very first thing drawn, before any panel
+    // or map content exists to sit on top of it.
+    fb.draw(FRAME_LAYER_WINDOW);
+
+    /*
+    Layer 2: side panels
     Palette
     The entire left panel, top to bottom — no category bar or preview box
     carving out space above it anymore. Starts at cell (1,1): a one-cell
@@ -374,7 +412,11 @@ void EditorMode::onRender() {
         clearClipRect();
     }
 
+    // Left/right panel dividers, now that the panels themselves are drawn.
+    fb.draw(FRAME_LAYER_PANELS);
+
     /*
+    Layer 3: game panel
     Checkerboard background
     Same convention as FragmentEditorMode's canvas.png swatch (see
     generator/fragment_editor_mode.cpp) — drawn under the whole map,
@@ -386,7 +428,7 @@ void EditorMode::onRender() {
     for (int y = 0; y < MAX_HEIGHT; ++y) {
         for (int x = 0; x < MAX_WIDTH; ++x) {
             int px = mapOriginX + x * CELL_SIZE;
-            int py = y * CELL_SIZE;
+            int py = MAP_ORIGIN_Y + y * CELL_SIZE;
             drawCanvasTile(SDL_Rect{px, py, CELL_SIZE, CELL_SIZE});
         }
     }
@@ -395,7 +437,7 @@ void EditorMode::onRender() {
     for (int y = 0; y < MAX_HEIGHT; ++y) {
         for (int x = 0; x < MAX_WIDTH; ++x) {
             int px = mapOriginX + x * CELL_SIZE;
-            int py = y * CELL_SIZE;
+            int py = MAP_ORIGIN_Y + y * CELL_SIZE;
 
             drawTileRect(edGroundMap[y][x], SDL_Rect{px, py, CELL_SIZE, CELL_SIZE});
             drawTileRect(edObjectMap[y][x], SDL_Rect{px, py, CELL_SIZE, CELL_SIZE});
@@ -418,7 +460,7 @@ void EditorMode::onRender() {
             else if (marker == STAIRS_DOWN_MARKER) color = SDL_Color{230, 90, 255, 200};
             else continue;
 
-            drawRectOutline(mapOriginX + x * CELL_SIZE, y * CELL_SIZE,
+            drawRectOutline(mapOriginX + x * CELL_SIZE, MAP_ORIGIN_Y + y * CELL_SIZE,
                              CELL_SIZE, CELL_SIZE, color);
         }
     }
@@ -432,56 +474,25 @@ void EditorMode::onRender() {
     for (int y = 0; y < MAX_HEIGHT; ++y) {
         for (int x = 0; x < MAX_WIDTH; ++x) {
             if (edOcclusionMap[y][x] != OCCLUSION_MARKER) continue;
-            drawRectOutline(mapOriginX + x * CELL_SIZE, y * CELL_SIZE,
+            drawRectOutline(mapOriginX + x * CELL_SIZE, MAP_ORIGIN_Y + y * CELL_SIZE,
                              CELL_SIZE, CELL_SIZE, SDL_Color{170, 100, 255, 200});
         }
     }
 
-    /*
-    Frame
-    The map's info box (the text area below the tile grid) is not a
-    separately-boxed, fixed-height region — it fills the rest of the
-    canvas, exactly like the side panels do, so there is no divider row
-    between the map and the info box: the map's own left/right walls run
-    the full canvas height.
-
-    The top and bottom are each a SINGLE continuous row spanning the entire
-    canvas width — palette, gap, map, gap, reserved panel, all in one line —
-    rather than separate per-region segments. This needs no special-casing
-    to avoid corners: FrameBuilder's neighbor detection renders a cell as a
-    corner only where a vertical wall also meets it (the real corners of
-    the palette/map/reserved-panel boxes), and as plain horizontal
-    everywhere else — including the cell bridging each gap, since nothing
-    vertical is ever marked there.
-    */
-    {
-        FrameBuilder fb;
-        fb.markRow(0, 0, totalW);
-        fb.markRow(totalH - CELL_SIZE, 0, totalW);
-        fb.markCol(0, 0, totalH);
-        fb.markCol(totalW - CELL_SIZE, 0, totalH);
-        fb.markCol(leftDividerX, 0, totalH);
-        fb.markCol(mapRightEdgeX, 0, totalH);
-        /*
-        Separates the map viewport from the info box below it — only
-        spans the map's own width (mapOriginX..mapRightEdgeX), not the
-        full canvas, since the left/right panels keep running uninterrupted
-        top to bottom. Deliberately drawn one row up (MAX_HEIGHT - 1, not
-        MAX_HEIGHT), so it overlaps the map's own last row rather than
-        sitting flush below it — intentional, not an off-by-one.
-        */
-        fb.markRow((MAX_HEIGHT - 1) * CELL_SIZE, mapOriginX, mapRightEdgeX);
-        fb.draw();
-    }
+    // Map/info-box divider — sits in its own dedicated row below the map
+    // (layout.h's MAP_BOTTOM_Y), so drawing it here rather than up front
+    // with the outer edges is purely for consistency with the other
+    // layers, not because it needs to overlap anything.
+    fb.draw(FRAME_LAYER_MAP);
 
     /*
-    Info box text
+    Layer 4: text panel
     Just the transient save/load status now — the control legend that used
     to fill the rest of this box lives in help/help_panel.cpp
     (HelpPanel::EDITOR_WORLD_*), the single centralized place all control
     text is edited from — reachable in-app with [H].
     */
-    const int boxStartY = MAX_HEIGHT + 2;
+    const int boxStartY = MAX_HEIGHT + 4;
     {
         if (editorStatusTTL > 0) {
             drawInfoStr(editorStatus, 1, boxStartY + EditorPanel::ROW_STATUS, mapOriginX);

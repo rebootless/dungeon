@@ -41,6 +41,7 @@ namespace HelpPanel {
         { "SPACE",            "Attack" },
         { "+",                "Zoom In" },
         { "-",                "Zoom Out" },
+        { "G",                "Toggle Borders" },
         { "ESC",              "Settings" },
         { "Q",                "Quit" },
         { "H",                "Help" },
@@ -57,6 +58,7 @@ namespace HelpPanel {
         { "4",                "Occlusion" },
         { "F5",               "Save" },
         { "F9",               "Load" },
+        { "G",                "Toggle Borders" },
         { "ESC",              "Settings" },
         { "Q",                "Quit" },
         { "H",                "Help" },
@@ -74,6 +76,7 @@ namespace HelpPanel {
         { "5",                "Connector" },
         { "F5",               "Save" },
         { "F9",               "Load" },
+        { "G",                "Toggle Borders" },
         { "ESC",              "Settings" },
         { "Q",                "Quit" },
         { "H",                "Help" },
@@ -81,6 +84,7 @@ namespace HelpPanel {
 
     const std::vector<HelpControl> GENERATOR_CONTROLS = {
         { "R", "Regenerate" },
+        { "G", "Toggle Borders" },
         { "Q", "Quit" },
         { "H", "Help" },
     };
@@ -89,6 +93,7 @@ namespace HelpPanel {
         { "W / S", "Navigate" },
         { "A / D", "Change Column" },
         { "SPACE", "Select" },
+        { "G",     "Toggle Borders" },
         { "ESC",   "Close" },
         { "Q",     "Quit" },
     };

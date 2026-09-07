@@ -251,8 +251,38 @@ void GameMode::render() {
     const int totalW = CANVAS_W;
     const int totalH = CANVAS_H;
 
+    const int mapRows = gCurrentLevel ? gCurrentLevel->height : MAX_HEIGHT;
+
     /*
-    Side panels
+    Frame
+    Marked once, up front, so every layer's draw() call classifies corners
+    and T-junctions against the whole frame regardless of which piece it's
+    actually drawing this pass (see renderer.h's FrameBuilder::draw(int)).
+    Shape is pixel-for-pixel EditorMode's: one continuous outer frame from
+    the top of the canvas to the bottom, with a vertical wall wherever the
+    left panel, the map, or the right panel begins/ends, plus one
+    horizontal divider — only as wide as the map itself — separating the
+    map viewport from the info box below it. The map itself starts one
+    row below the outer frame's own top wall (MAP_ORIGIN_Y, layout.h) and
+    the divider sits in its own row directly below the map's last row —
+    neither is shared with a row the map actually draws into, so there's
+    nothing left for a level to accidentally paint over the frame with.
+    */
+    FrameBuilder fb;
+    fb.markRow(0, 0, totalW, FRAME_LAYER_WINDOW);
+    fb.markRow(totalH - CELL_SIZE, 0, totalW, FRAME_LAYER_WINDOW);
+    fb.markCol(0, 0, totalH, FRAME_LAYER_WINDOW);
+    fb.markCol(totalW - CELL_SIZE, 0, totalH, FRAME_LAYER_WINDOW);
+    fb.markCol(leftDividerX, 0, totalH, FRAME_LAYER_PANELS);
+    fb.markCol(mapRightEdgeX, 0, totalH, FRAME_LAYER_PANELS);
+    fb.markRow(MAP_ORIGIN_Y + mapRows * CELL_SIZE, mapOriginX, mapRightEdgeX, FRAME_LAYER_MAP);
+
+    // Layer 1: window edges — the very first thing drawn, before any panel
+    // or map content exists to sit on top of it.
+    fb.draw(FRAME_LAYER_WINDOW);
+
+    /*
+    Layer 2: side panels
     Left holds location + the stat block (see GamePanel::buildLeftPanelLines);
     right is still plain placeholder content (GamePanel::RIGHT_PANEL_LINES).
     Drawn unconditionally, same as the frame below — a missing location (no
@@ -284,8 +314,11 @@ void GameMode::render() {
         clearClipRect();
     }
 
+    // Left/right panel dividers, now that the panels themselves are drawn.
+    fb.draw(FRAME_LAYER_PANELS);
+
     /*
-    Map
+    Layer 3: game panel
     Nothing to draw if no location is loaded (see onEnter(): there's no
     placeholder fallback any more) — the map area is simply left empty,
     same as a freshly-opened EditorMode with nothing saved yet.
@@ -336,61 +369,37 @@ void GameMode::render() {
 
         /*
         Facing cursor — drawn last so it sits on top of everything else,
-        marking whichever cell the E key will act on this frame.
-        Horizontally, fx == -1 / fx == level.width are the only excluded
-        values — column 0 and column width - 1 are genuine walkable tiles
-        (see game_controls.cpp's edge-crossing bounds), not covered by any
-        frame chrome. Vertically it's the opposite: row 0 sits exactly
-        under the outer frame's top row, and row height - 1 sits exactly
-        under the map/info-box divider row (see the Frame section below —
-        both deliberately overlap those tile rows rather than sitting
-        flush outside them), so the facing indicator would silently
-        vanish under the border there. Row 0 and row height - 1 are
-        excluded here for that reason, even though they're valid array
-        indices — the player never actually stands there either (see
-        game_controls.cpp: the vertical edge-crossing ring is exactly one
-        cell in from the array bounds, unlike the horizontal one).
+        marking whichever cell the E key will act on this frame. Every
+        array index is a genuine visible map cell now — see layout.h's
+        MAP_ORIGIN_Y / MAP_BOTTOM_Y — so the only bounds that matter here
+        are the array's own.
         */
         int fx, fy;
         facingCell(fx, fy);
-        if (fx >= 0 && fx < level.width && fy >= 1 && fy < level.height - 1)
+        if (fx >= 0 && fx < level.width && fy >= 0 && fy < level.height)
             drawMapChar(FACING_INDICATOR, fx, fy);
     }
 
     setMapClip(false);
 
-    const int mapRows = gCurrentLevel ? gCurrentLevel->height : MAX_HEIGHT;
+    // Map/info-box divider — sits in its own dedicated row below the map
+    // (layout.h's MAP_BOTTOM_Y), so drawing it here rather than up front
+    // with the outer edges is purely for consistency with the other
+    // layers, not because it needs to overlap anything.
+    fb.draw(FRAME_LAYER_MAP);
 
     /*
-    Frame
-    Pixel-for-pixel the same shape as EditorMode's: one continuous outer
-    frame from the top of the canvas to the bottom, with a vertical wall
-    wherever the left panel, the map, or the right panel begins/ends, PLUS
-    one horizontal divider — only as wide as the map itself — separating
-    the map viewport from the info box below it. Deliberately drawn one
-    row up (mapRows - 1, not mapRows), so it overlaps the map's own last
-    row rather than sitting flush below it — intentional, not an off-by-one.
-    */
-    {
-        FrameBuilder fb;
-        fb.markRow(0, 0, totalW);
-        fb.markRow(totalH - CELL_SIZE, 0, totalW);
-        fb.markCol(0, 0, totalH);
-        fb.markCol(totalW - CELL_SIZE, 0, totalH);
-        fb.markCol(leftDividerX, 0, totalH);
-        fb.markCol(mapRightEdgeX, 0, totalH);
-        fb.markRow((mapRows - 1) * CELL_SIZE, mapOriginX, mapRightEdgeX);
-        fb.draw();
-    }
-
-    /*
-    Info box text
+    Layer 4: text panel
     Falls back to MAX_HEIGHT (the map's normal height) when nothing is
     loaded, purely so the info box still sits in its usual place rather
     than jumping around. Location/stats/zoom live on the left panel (see
     above) — the info box just shows the last interaction message.
     */
-    const int boxStartY = mapRows + 1; // one row below the map/info-box divider drawn above
+    // 1 (the map's own top divider row) + mapRows (the map itself) + 1
+    // (the map/info-box divider) + 1 (a margin row, matching
+    // drawPanelLines' own startRow convention) reaches the info box's
+    // own first line of text.
+    const int boxStartY = mapRows + 3;
 
     std::vector<std::string> infoLines = GamePanel::buildInfoBoxLines(gGameMessage);
 

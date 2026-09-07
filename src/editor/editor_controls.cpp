@@ -211,17 +211,9 @@ static void handlePointerAction(int mx, int my, int panelContentW, int mapOrigin
     }
     else if (mx >= mapOriginX && mx < mapRightEdgeX) {
         int gx = (mx - mapOriginX) / CELL_SIZE;
-        int gy = my / CELL_SIZE;
+        int gy = (my - MAP_ORIGIN_Y) / CELL_SIZE;
 
-        /*
-        Top and bottom rows (gy == 0 and gy == MAX_HEIGHT - 1) are
-        excluded from painting — the editable play area is 16px shorter
-        on each vertical edge than the full MAX_HEIGHT grid it's stored
-        as. The grid itself is unchanged; this is purely a placement
-        restriction (see handlePointerAction's caller for the matching
-        horizontal bounds, which are NOT restricted).
-        */
-        if (gx >= 0 && gx < MAX_WIDTH && gy >= 1 && gy < MAX_HEIGHT - 1) {
+        if (gx >= 0 && gx < MAX_WIDTH && gy >= 0 && gy < MAX_HEIGHT) {
             if (rightMouseDown_) eraseTile(gx, gy);
             else                 placeTile(gx, gy);
         }

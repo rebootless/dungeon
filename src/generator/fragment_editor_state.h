@@ -34,26 +34,13 @@ margin on its top and left, same convention as EditorMode's.
 constexpr int PALETTE_MARGIN = CELL_SIZE;
 
 /*
-Row offset
-Canvas row 0 sits exactly under the outer Frame's own top wall, and the
-map's last row sits exactly under the map/info-box divider row — both
-drawn last, after everything else, in every mode that shares this layout
-(see fragment_editor_mode.cpp's Frame section, and layout.h's row-budget
-comment). GameMode/EditorMode never notice, since world levels are
-authored with those two rows treated as permanent border wall — but a
-fragment is anchored at its OWN (0,0) by design (arrow keys grow it from
-the top-left corner), so without this offset its top edge — tiles and
-the red border overlay alike — would always render invisible, no matter
-what's actually painted there.
-
-Shifting every fr*Map cell down by one before drawing clears the top
-wall; MAX_FRAGMENT_HEIGHT below then keeps the new bottom-most visible
-row clear of the divider in turn. Purely a render/hit-test offset — the
-buffers underneath still start at row 0, and fragment.h's Fragment JSON
-format is completely unaffected.
+Fragment anchoring
+A fragment is anchored at its OWN (0,0) — arrow keys grow it from the
+top-left corner — which lines up directly with the map's own origin
+(layout.h's MAP_ORIGIN_Y/MAP_ORIGIN_X): fr*Map's row/column 0 is drawn at
+the map's own first visible row/column, no extra offset needed. Fragment
+height is capped at MAX_HEIGHT, same as the map itself.
 */
-constexpr int FRAGMENT_ROW_OFFSET = CELL_SIZE;
-constexpr int MAX_FRAGMENT_HEIGHT = MAX_HEIGHT - 2;
 
 // Fragment-editor map state — same five layers as EditorMode, plus a
 // sixth connector layer marking candidate stitching points.
@@ -115,8 +102,7 @@ The intended footprint, grown/shrunk from the fixed top-left corner
 descriptive, exactly like Fragment::width/height (fragment.h) —
 painting is never restricted to it; it only affects where the
 checkerboard background is drawn in FragmentEditorMode::onRender().
-fragmentHeight is capped at MAX_FRAGMENT_HEIGHT, not MAX_HEIGHT — see
-that constant's comment above for why.
+Capped at MAX_HEIGHT/MAX_WIDTH, same as the map itself.
 */
 extern int fragmentWidth;
 extern int fragmentHeight;

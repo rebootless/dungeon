@@ -208,7 +208,7 @@ void loadFragmentIntoEditor(int id) {
         }
     }
     fragmentWidth  = fragment->width;
-    fragmentHeight = std::min(fragment->height, MAX_FRAGMENT_HEIGHT);
+    fragmentHeight = std::min(fragment->height, MAX_HEIGHT);
     rebuildFragmentMultiTileOccupancy();
 
     frEditorStatus    = std::string("Loaded \"") + fragment->name + "\"";
@@ -280,7 +280,26 @@ void FragmentEditorMode::onRender() {
     const int totalW = CANVAS_W;
     const int totalH = CANVAS_H;
 
-    // Palette — identical layout to EditorMode's
+    /*
+    Frame
+    Marked once, up front, so every layer's draw() call classifies corners
+    and T-junctions against the whole frame regardless of which piece it's
+    actually drawing this pass — identical geometry to EditorMode's. See
+    game/game_mode.cpp's render() for the full rationale.
+    */
+    FrameBuilder fb;
+    fb.markRow(0, 0, totalW, FRAME_LAYER_WINDOW);
+    fb.markRow(totalH - CELL_SIZE, 0, totalW, FRAME_LAYER_WINDOW);
+    fb.markCol(0, 0, totalH, FRAME_LAYER_WINDOW);
+    fb.markCol(totalW - CELL_SIZE, 0, totalH, FRAME_LAYER_WINDOW);
+    fb.markCol(leftDividerX, 0, totalH, FRAME_LAYER_PANELS);
+    fb.markCol(mapRightEdgeX, 0, totalH, FRAME_LAYER_PANELS);
+    fb.markRow(MAP_BOTTOM_Y, mapOriginX, mapRightEdgeX, FRAME_LAYER_MAP);
+
+    // Layer 1: window edges.
+    fb.draw(FRAME_LAYER_WINDOW);
+
+    // Layer 2: side panels — palette, identical layout to EditorMode's.
     {
         setClipRect(0, 0, panelContentW, panelH);
 
@@ -337,15 +356,16 @@ void FragmentEditorMode::onRender() {
         clearClipRect();
     }
 
+    // Left/right panel dividers, now that the panels themselves are drawn.
+    fb.draw(FRAME_LAYER_PANELS);
+
+    // Layer 3: game panel
     /*
     Everything drawn on the map itself — checkerboard through the
-    connector overlay — is clipped to the map viewport. Without this,
-    content painted past MAX_FRAGMENT_HEIGHT (still reachable — see
-    fragment_editor_controls.cpp's frPlaceTile, which never restricted
-    painting to width x height) would bleed FRAGMENT_ROW_OFFSET pixels
-    into the info box below once shifted.
+    connector overlay — is clipped to the map viewport, same as every
+    other mode (see layout.h's MAP_ORIGIN_Y/MAP_PIXEL_H).
     */
-    setClipRect(mapOriginX, 0, MAP_PIXEL_W, MAP_PIXEL_H);
+    setClipRect(mapOriginX, MAP_ORIGIN_Y, MAP_PIXEL_W, MAP_PIXEL_H);
 
     /*
     Checkerboard background
@@ -357,7 +377,7 @@ void FragmentEditorMode::onRender() {
     for (int y = 0; y < fragmentHeight && y < MAX_HEIGHT; ++y) {
         for (int x = 0; x < fragmentWidth && x < MAX_WIDTH; ++x) {
             int px = mapOriginX + x * CELL_SIZE;
-            int py = FRAGMENT_ROW_OFFSET + y * CELL_SIZE;
+            int py = MAP_ORIGIN_Y + y * CELL_SIZE;
             drawCanvasTile(SDL_Rect{px, py, CELL_SIZE, CELL_SIZE});
         }
     }
@@ -366,7 +386,7 @@ void FragmentEditorMode::onRender() {
     for (int y = 0; y < MAX_HEIGHT; ++y) {
         for (int x = 0; x < MAX_WIDTH; ++x) {
             int px = mapOriginX + x * CELL_SIZE;
-            int py = FRAGMENT_ROW_OFFSET + y * CELL_SIZE;
+            int py = MAP_ORIGIN_Y + y * CELL_SIZE;
 
             drawTileRect(frGroundMap[y][x], SDL_Rect{px, py, CELL_SIZE, CELL_SIZE});
             drawTileRect(frObjectMap[y][x], SDL_Rect{px, py, CELL_SIZE, CELL_SIZE});
@@ -386,7 +406,7 @@ void FragmentEditorMode::onRender() {
             else if (marker == STAIRS_DOWN_MARKER) color = SDL_Color{230, 90, 255, 200};
             else continue;
 
-            drawRectOutline(mapOriginX + x * CELL_SIZE, FRAGMENT_ROW_OFFSET + y * CELL_SIZE,
+            drawRectOutline(mapOriginX + x * CELL_SIZE, MAP_ORIGIN_Y + y * CELL_SIZE,
                              CELL_SIZE, CELL_SIZE, color);
         }
     }
@@ -395,7 +415,7 @@ void FragmentEditorMode::onRender() {
     for (int y = 0; y < MAX_HEIGHT; ++y) {
         for (int x = 0; x < MAX_WIDTH; ++x) {
             if (frOcclusionMap[y][x] != OCCLUSION_MARKER) continue;
-            drawRectOutline(mapOriginX + x * CELL_SIZE, FRAGMENT_ROW_OFFSET + y * CELL_SIZE,
+            drawRectOutline(mapOriginX + x * CELL_SIZE, MAP_ORIGIN_Y + y * CELL_SIZE,
                              CELL_SIZE, CELL_SIZE, SDL_Color{170, 100, 255, 200});
         }
     }
@@ -410,15 +430,15 @@ void FragmentEditorMode::onRender() {
     along this edge, never overlap inside it.
     */
     for (int x = 0; x < fragmentWidth && x < MAX_WIDTH; ++x) {
-        drawRectOutline(mapOriginX + x * CELL_SIZE, FRAGMENT_ROW_OFFSET,
+        drawRectOutline(mapOriginX + x * CELL_SIZE, MAP_ORIGIN_Y,
                          CELL_SIZE, CELL_SIZE, SDL_Color{255, 60, 60, 200});
-        drawRectOutline(mapOriginX + x * CELL_SIZE, FRAGMENT_ROW_OFFSET + (fragmentHeight - 1) * CELL_SIZE,
+        drawRectOutline(mapOriginX + x * CELL_SIZE, MAP_ORIGIN_Y + (fragmentHeight - 1) * CELL_SIZE,
                          CELL_SIZE, CELL_SIZE, SDL_Color{255, 60, 60, 200});
     }
     for (int y = 0; y < fragmentHeight && y < MAX_HEIGHT; ++y) {
-        drawRectOutline(mapOriginX, FRAGMENT_ROW_OFFSET + y * CELL_SIZE,
+        drawRectOutline(mapOriginX, MAP_ORIGIN_Y + y * CELL_SIZE,
                          CELL_SIZE, CELL_SIZE, SDL_Color{255, 60, 60, 200});
-        drawRectOutline(mapOriginX + (fragmentWidth - 1) * CELL_SIZE, FRAGMENT_ROW_OFFSET + y * CELL_SIZE,
+        drawRectOutline(mapOriginX + (fragmentWidth - 1) * CELL_SIZE, MAP_ORIGIN_Y + y * CELL_SIZE,
                          CELL_SIZE, CELL_SIZE, SDL_Color{255, 60, 60, 200});
     }
 
@@ -431,34 +451,27 @@ void FragmentEditorMode::onRender() {
     for (int y = 0; y < MAX_HEIGHT; ++y) {
         for (int x = 0; x < MAX_WIDTH; ++x) {
             if (frConnectorMap[y][x] != CONNECTOR_MARKER) continue;
-            drawRectOutline(mapOriginX + x * CELL_SIZE, FRAGMENT_ROW_OFFSET + y * CELL_SIZE,
+            drawRectOutline(mapOriginX + x * CELL_SIZE, MAP_ORIGIN_Y + y * CELL_SIZE,
                              CELL_SIZE, CELL_SIZE, SDL_Color{60, 255, 120, 200});
         }
     }
 
     clearClipRect();
 
-    // Frame — identical geometry to EditorMode's.
-    {
-        FrameBuilder fb;
-        fb.markRow(0, 0, totalW);
-        fb.markRow(totalH - CELL_SIZE, 0, totalW);
-        fb.markCol(0, 0, totalH);
-        fb.markCol(totalW - CELL_SIZE, 0, totalH);
-        fb.markCol(leftDividerX, 0, totalH);
-        fb.markCol(mapRightEdgeX, 0, totalH);
-        fb.markRow((MAX_HEIGHT - 1) * CELL_SIZE, mapOriginX, mapRightEdgeX);
-        fb.draw();
-    }
+    // Map/info-box divider — sits in its own dedicated row below the map
+    // (layout.h's MAP_BOTTOM_Y), so drawing it here rather than up front
+    // with the outer edges is purely for consistency with the other
+    // layers, not because it needs to overlap anything.
+    fb.draw(FRAME_LAYER_MAP);
 
     /*
-    Info box text
+    Layer 4: text panel
     Just the transient save/load status now — the control legend that used
     to fill the rest of this box lives in help/help_panel.cpp
     (HelpPanel::EDITOR_GENERATOR_*), the single centralized place all
     control text is edited from — reachable in-app with [H].
     */
-    const int boxStartY = MAX_HEIGHT + 2;
+    const int boxStartY = MAX_HEIGHT + 4;
     {
         if (frEditorStatusTTL > 0) {
             drawInfoStr(frEditorStatus, 1, boxStartY + FragmentEditorPanel::ROW_STATUS, mapOriginX);

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <unordered_set>
+#include <unordered_map>
 
 #include <SDL2/SDL.h>
 
@@ -159,6 +159,15 @@ void reloadPanelTexture();
 void drawPanelCell(int cellX, int cellY, SDL_Rect dst);
 
 /*
+Global border visibility toggle. When off, FrameBuilder::draw() draws
+nothing at all — used by the "G" key (see core/app.cpp) to let borders be
+hidden across every mode without each mode's onRender() having to know
+about the toggle itself.
+*/
+void toggleBordersVisible();
+bool areBordersVisible();
+
+/*
 Frame system
 FrameBuilder draws panel and divider borders without each mode having to
 hand-derive "corner vs edge" itself, and without special-casing where a
@@ -193,6 +202,20 @@ which side their bounding corners are on.
 Cells are addressed by raw canvas pixel position, not grid index, so a
 frame can be docked anywhere.
 */
+/*
+Shared layer ids for the three-column mode layout that GameMode,
+EditorMode, FragmentEditorMode, and GeneratorMode all use: the outer
+window edges, the dividers that wall off the left/right panels from the
+map, and the divider that walls off the map from the info box below it.
+Each of those modes marks its whole frame up front under these layers,
+then interleaves fb.draw(layer) calls with its own panel/map/info-box
+content so the interface builds up in the same four visual stages every
+time: window edges, side panels, map, info box.
+*/
+constexpr int FRAME_LAYER_WINDOW = 0; // outer canvas edges
+constexpr int FRAME_LAYER_PANELS = 1; // left/right panel dividers
+constexpr int FRAME_LAYER_MAP    = 2; // map / info-box divider
+
 class FrameBuilder {
 public:
     /*
@@ -200,14 +223,26 @@ public:
     [pxFrom, pxTo) at height py. pxFrom/pxTo need not be CELL_SIZE-aligned
     themselves — cells are stepped from pxFrom, so a non-aligned run just
     loses its last partial cell rather than throwing off later runs.
+
+    `layer` tags the cell for the draw(int) overload below — it plays no
+    part in corner/edge classification, which always considers every
+    marked cell regardless of layer.
     */
-    void markRow(int py, int pxFrom, int pxTo);
+    void markRow(int py, int pxFrom, int pxTo, int layer = 0);
 
     // Same as markRow, but a vertical run at a fixed px across [pyFrom, pyTo).
-    void markCol(int px, int pyFrom, int pyTo);
+    void markCol(int px, int pyFrom, int pyTo, int layer = 0);
 
-    // Computes each marked cell's tile per the rule above and draws it.
-    void draw() const;
+    /*
+    Computes every marked cell's tile per the rule above and draws it.
+    Passing a layer draws only cells marked with that layer — letting a
+    mode interleave its own content between two draw() calls (e.g. side
+    panels before the map, the map before its info box) while still
+    classifying corners and T-junctions against the whole frame, not just
+    the cells belonging to that one layer. The default (-1) draws every
+    marked cell in one pass, layer or no layer.
+    */
+    void draw(int layer = -1) const;
 
     /*
     Packs a cell's raw canvas pixel position into cells_'s key space.
@@ -219,5 +254,5 @@ public:
     static long long key(int px, int py);
 
 private:
-    std::unordered_set<long long> cells_;
+    std::unordered_map<long long, int> cells_;
 };
