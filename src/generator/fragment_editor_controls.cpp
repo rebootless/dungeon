@@ -61,6 +61,11 @@ void frPlaceTile(int gx, int gy) {
         return;
     }
 
+    if (frActiveLayer == FragmentEditLayer::LIGHT) {
+        frLightMarkerMap[gy][gx] = LIGHT_MARKER;
+        return;
+    }
+
     TileID stampId = pickRandomVariant(frSelectedTile);
     TileMetadata meta = getTileMeta(stampId);
 
@@ -113,6 +118,11 @@ void frEraseTile(int gx, int gy) {
 
     if (frActiveLayer == FragmentEditLayer::CONNECTOR) {
         frConnectorMap[gy][gx] = EMPTY_ID;
+        return;
+    }
+
+    if (frActiveLayer == FragmentEditLayer::LIGHT) {
+        frLightMarkerMap[gy][gx] = EMPTY_ID;
         return;
     }
 
@@ -258,6 +268,17 @@ void FragmentEditorMode::onEvent(const SDL_Event& e) {
                 break;
 
             case SDL_SCANCODE_5:
+                frActiveLayer     = FragmentEditLayer::LIGHT;
+                frEditorStatus    = " Placing: Light marker";
+                frEditorStatusTTL = 90;
+                break;
+
+            /*
+            0 selects Connector — kept off the 1-4 run above so it lines
+            up with EditorMode's own key for the same concept elsewhere,
+            and to leave 5 for Light.
+            */
+            case SDL_SCANCODE_0:
                 frActiveLayer     = FragmentEditLayer::CONNECTOR;
                 frEditorStatus    = " Placing: Connector marker";
                 frEditorStatusTTL = 90;

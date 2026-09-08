@@ -16,6 +16,7 @@
 
 #include "../editor/editor_mode.h"
 #include "../game/game_mode.h"
+#include "../game/game_state.h"
 #include "../generator/fragment.h"
 #include "../generator/fragment_editor_mode.h"
 #include "../generator/generator_mode.h"
@@ -65,6 +66,8 @@ void App::registerConsoleCommands() {
             return names;
           } },
         { "exit", {}, nullptr },
+        { "borderMap", {}, nullptr },
+        { "lightMap", {}, nullptr },
     };
 
     console_.setSubmitHandler([this](const std::string& line) { dispatchCommand(line); });
@@ -87,6 +90,37 @@ void App::dispatchCommand(const std::string& line) {
 
     if (tokens[0] == "/exit") {
         requestQuit();
+        return;
+    }
+
+    /*
+    Replaces the old G-key global toggle — same effect (FrameBuilder::draw()
+    in core/renderer.cpp is what actually honors bordersVisible), just
+    reachable from the console instead of a dedicated key so G is free for
+    other bindings.
+    */
+    if (tokens[0] == "/borderMap") {
+        toggleBordersVisible();
+        needsRender_ = true;
+        console_.setStatusLine(std::string(" Border map ") + (areBordersVisible() ? "ON" : "OFF"), kOk);
+        return;
+    }
+
+    /*
+    Toggles the CURRENT location's lighting on/off live, purely visual —
+    it flips gCurrentLevel->lightMap directly rather than the saved copy
+    on disk, so it's a quick way to compare a location lit vs. unlit
+    without going into the editor. F5 in the editor would persist it as a
+    genuine authoring change; this command never touches world/ itself.
+    */
+    if (tokens[0] == "/lightMap") {
+        if (!gCurrentLevel) {
+            console_.setStatusLine(" No location loaded", kErr);
+            return;
+        }
+        gCurrentLevel->lightMap = !gCurrentLevel->lightMap;
+        needsRender_ = true;
+        console_.setStatusLine(std::string(" Light map ") + (gCurrentLevel->lightMap ? "ON" : "OFF"), kOk);
         return;
     }
 
@@ -205,18 +239,6 @@ void App::handleEvent(const SDL_Event& e) {
 
     if (console_.onEvent(e)) { needsRender_ = true; return; }
 
-    /*
-    G toggles border visibility across every mode — handled here rather
-    than in each mode's onEvent so no mode needs to know the toggle
-    exists; FrameBuilder::draw() (core/renderer.cpp) is what actually
-    honors it.
-    */
-    if (e.type == SDL_KEYDOWN && e.key.keysym.scancode == SDL_SCANCODE_G) {
-        toggleBordersVisible();
-        needsRender_ = true;
-        return;
-    }
-
     if (mode_) mode_->onEvent(e);
     needsRender_ = true;
 }
@@ -266,12 +288,16 @@ void App::run() {
     player into GameMode.
     */
     const std::vector<Resolution>& presets = displayResolutionPresets();
-    Resolution startupRes{};
-    if (!displayFindResolution(settings.resolution, startupRes) && !presets.empty())
-        startupRes = presets.front();
-    if (startupRes.w > 0 && startupRes.h > 0) {
-        SDL_SetWindowSize(getWindow(), startupRes.w, startupRes.h);
-        SDL_SetWindowPosition(getWindow(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+    if (settings.resolution == FULLSCREEN_LABEL) {
+        SDL_SetWindowFullscreen(getWindow(), SDL_WINDOW_FULLSCREEN_DESKTOP);
+    } else {
+        Resolution startupRes{};
+        if (!displayFindResolution(settings.resolution, startupRes) && !presets.empty())
+            startupRes = presets.front();
+        if (startupRes.w > 0 && startupRes.h > 0) {
+            SDL_SetWindowSize(getWindow(), startupRes.w, startupRes.h);
+            SDL_SetWindowPosition(getWindow(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+        }
     }
     switchMode(std::make_unique<SettingsMode>());
 

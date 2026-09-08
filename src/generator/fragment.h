@@ -28,18 +28,20 @@ std::string fragmentFileName(int id);
 Fragment data
 A hand-authored dungeon piece (room, corridor, hall, ...) meant to be
 stitched together later by the procedural generator. Same five layers as
-Level, plus a sixth connector layer marking candidate stitching points
-(see core/tiles.h's CONNECTOR_MARKER). Unlike Level, a fragment carries
-no world position — it's identified purely by a numeric id, since there
-is no coordinate grid to place it on ahead of time.
+Level, plus a connector layer marking candidate stitching points (see
+core/tiles.h's CONNECTOR_MARKER) and a light layer marking light sources
+(LIGHT_MARKER — see core/lighting.h). Unlike Level, a fragment carries no
+world position — it's identified purely by a numeric id, since there is
+no coordinate grid to place it on ahead of time.
 */
 struct Fragment {
-    TileID tileMap     [MAX_HEIGHT][MAX_WIDTH]; // Layer 1: Ground
-    TileID objectMap   [MAX_HEIGHT][MAX_WIDTH]; // Layer 2: Objects
-    TileID entityMap   [MAX_HEIGHT][MAX_WIDTH]; // Layer 3: Entities
-    TileID collisionMap[MAX_HEIGHT][MAX_WIDTH]; // Layer 4: Collision markers
-    TileID occlusionMap[MAX_HEIGHT][MAX_WIDTH]; // Layer 5: Occlusion markers
-    TileID connectorMap[MAX_HEIGHT][MAX_WIDTH]; // Layer 6: Connector markers
+    TileID tileMap       [MAX_HEIGHT][MAX_WIDTH]; // Layer 1: Ground
+    TileID objectMap     [MAX_HEIGHT][MAX_WIDTH]; // Layer 2: Objects
+    TileID entityMap     [MAX_HEIGHT][MAX_WIDTH]; // Layer 3: Entities
+    TileID collisionMap  [MAX_HEIGHT][MAX_WIDTH]; // Layer 4: Collision markers
+    TileID occlusionMap  [MAX_HEIGHT][MAX_WIDTH]; // Layer 5: Occlusion markers
+    TileID connectorMap  [MAX_HEIGHT][MAX_WIDTH]; // Layer 6: Connector markers
+    TileID lightMarkerMap[MAX_HEIGHT][MAX_WIDTH]; // Layer 7: Light source markers
 
     /*
     Intended footprint of the fragment, grown/shrunk from the fixed

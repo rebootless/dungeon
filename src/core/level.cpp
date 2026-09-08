@@ -49,6 +49,7 @@ static void fillEmpty(Level& level) {
             level.entityMap[y][x]    = EMPTY_ID;
             level.objectMap[y][x]    = EMPTY_ID;
             level.occlusionMap[y][x] = EMPTY_ID;
+            level.lightMarkerMap[y][x] = EMPTY_ID;
         }
 }
 
@@ -80,12 +81,14 @@ bool loadLevelFromFile(Level& level, const char* path) {
         else if (strcmp(key, "width")        == 0) { long long v; p = jInt(p, &v); level.width  = (int)v; }
         else if (strcmp(key, "height")       == 0) { long long v; p = jInt(p, &v); level.height = (int)v; }
         else if (strcmp(key, "isStatic")     == 0) { p = jBool(p, &level.isStatic); }
-        else if (strcmp(key, "tileMap")      == 0) { p = j2DArray(p, level.tileMap); }
-        else if (strcmp(key, "collisionMap") == 0) { p = j2DArray(p, level.collisionMap); }
-        else if (strcmp(key, "entityMap")    == 0) { p = j2DArray(p, level.entityMap); }
-        else if (strcmp(key, "objectMap")    == 0) { p = j2DArray(p, level.objectMap); }
-        else if (strcmp(key, "occlusionMap") == 0) { p = j2DArray(p, level.occlusionMap); }
-        else                                        { p = jSkipValue(p); } // ignore unknown keys
+        else if (strcmp(key, "lightMap")       == 0) { p = jBool(p, &level.lightMap); }
+        else if (strcmp(key, "tileMap")        == 0) { p = j2DArray(p, level.tileMap); }
+        else if (strcmp(key, "collisionMap")   == 0) { p = j2DArray(p, level.collisionMap); }
+        else if (strcmp(key, "entityMap")      == 0) { p = j2DArray(p, level.entityMap); }
+        else if (strcmp(key, "objectMap")      == 0) { p = j2DArray(p, level.objectMap); }
+        else if (strcmp(key, "occlusionMap")   == 0) { p = j2DArray(p, level.occlusionMap); }
+        else if (strcmp(key, "lightMarkerMap") == 0) { p = j2DArray(p, level.lightMarkerMap); }
+        else                                          { p = jSkipValue(p); } // ignore unknown keys
 
         p = jSkip(p);
         if (p && *p == ',') ++p; // skip key-value separator
@@ -111,11 +114,13 @@ bool saveLevelToFile(const Level& level, const char* path) {
     fprintf(f, "  \"width\": %d,\n", level.width);
     fprintf(f, "  \"height\": %d,\n", level.height);
     fprintf(f, "  \"isStatic\": %s,\n", level.isStatic ? "true" : "false");
-    fprintf(f, "  \"tileMap\": ");      jWrite2DArray(f, level.tileMap);      fprintf(f, ",\n");
-    fprintf(f, "  \"objectMap\": ");    jWrite2DArray(f, level.objectMap);    fprintf(f, ",\n");
-    fprintf(f, "  \"entityMap\": ");    jWrite2DArray(f, level.entityMap);    fprintf(f, ",\n");
-    fprintf(f, "  \"collisionMap\": "); jWrite2DArray(f, level.collisionMap); fprintf(f, ",\n");
-    fprintf(f, "  \"occlusionMap\": "); jWrite2DArray(f, level.occlusionMap); fprintf(f, "\n");
+    fprintf(f, "  \"lightMap\": %s,\n", level.lightMap ? "true" : "false");
+    fprintf(f, "  \"tileMap\": ");        jWrite2DArray(f, level.tileMap);        fprintf(f, ",\n");
+    fprintf(f, "  \"objectMap\": ");      jWrite2DArray(f, level.objectMap);      fprintf(f, ",\n");
+    fprintf(f, "  \"entityMap\": ");      jWrite2DArray(f, level.entityMap);      fprintf(f, ",\n");
+    fprintf(f, "  \"collisionMap\": ");   jWrite2DArray(f, level.collisionMap);   fprintf(f, ",\n");
+    fprintf(f, "  \"occlusionMap\": ");   jWrite2DArray(f, level.occlusionMap);   fprintf(f, ",\n");
+    fprintf(f, "  \"lightMarkerMap\": "); jWrite2DArray(f, level.lightMarkerMap); fprintf(f, "\n");
     fprintf(f, "}\n");
 
     fclose(f);

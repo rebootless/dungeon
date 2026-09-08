@@ -33,6 +33,7 @@ void clearCanvas(GeneratedDungeon& out) {
             out.entityMap[y][x]    = EMPTY_ID;
             out.collisionMap[y][x] = EMPTY_ID;
             out.occlusionMap[y][x] = EMPTY_ID;
+            out.lightMarkerMap[y][x] = EMPTY_ID;
         }
     }
 }
@@ -51,6 +52,7 @@ void blitFragment(const Fragment& fragment, int ox, int oy, GeneratedDungeon& ou
             out.entityMap[cy][cx]    = fragment.entityMap[y][x];
             out.collisionMap[cy][cx] = fragment.collisionMap[y][x];
             out.occlusionMap[cy][cx] = fragment.occlusionMap[y][x];
+            out.lightMarkerMap[cy][cx] = fragment.lightMarkerMap[y][x];
         }
     }
 }

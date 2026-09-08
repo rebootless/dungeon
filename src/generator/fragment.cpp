@@ -35,7 +35,8 @@ static void fillEmpty(Fragment& fragment) {
             fragment.entityMap[y][x]    = EMPTY_ID;
             fragment.collisionMap[y][x] = EMPTY_ID;
             fragment.occlusionMap[y][x] = EMPTY_ID;
-            fragment.connectorMap[y][x] = EMPTY_ID;
+            fragment.connectorMap[y][x]   = EMPTY_ID;
+            fragment.lightMarkerMap[y][x] = EMPTY_ID;
         }
 }
 
@@ -67,8 +68,9 @@ bool loadFragmentFromFile(Fragment& fragment, const char* path) {
         else if (strcmp(key, "entityMap")    == 0) { p = j2DArray(p, fragment.entityMap); }
         else if (strcmp(key, "collisionMap") == 0) { p = j2DArray(p, fragment.collisionMap); }
         else if (strcmp(key, "occlusionMap") == 0) { p = j2DArray(p, fragment.occlusionMap); }
-        else if (strcmp(key, "connectorMap") == 0) { p = j2DArray(p, fragment.connectorMap); }
-        else                                        { p = jSkipValue(p); } // ignore unknown keys
+        else if (strcmp(key, "connectorMap")   == 0) { p = j2DArray(p, fragment.connectorMap); }
+        else if (strcmp(key, "lightMarkerMap") == 0) { p = j2DArray(p, fragment.lightMarkerMap); }
+        else                                          { p = jSkipValue(p); } // ignore unknown keys
 
         p = jSkip(p);
         if (p && *p == ',') ++p; // skip key-value separator
@@ -95,7 +97,8 @@ bool saveFragmentToFile(const Fragment& fragment, const char* path) {
     fprintf(f, "  \"entityMap\": ");    jWrite2DArray(f, fragment.entityMap);    fprintf(f, ",\n");
     fprintf(f, "  \"collisionMap\": "); jWrite2DArray(f, fragment.collisionMap); fprintf(f, ",\n");
     fprintf(f, "  \"occlusionMap\": "); jWrite2DArray(f, fragment.occlusionMap); fprintf(f, ",\n");
-    fprintf(f, "  \"connectorMap\": "); jWrite2DArray(f, fragment.connectorMap); fprintf(f, "\n");
+    fprintf(f, "  \"connectorMap\": ");   jWrite2DArray(f, fragment.connectorMap);   fprintf(f, ",\n");
+    fprintf(f, "  \"lightMarkerMap\": "); jWrite2DArray(f, fragment.lightMarkerMap); fprintf(f, "\n");
     fprintf(f, "}\n");
 
     fclose(f);

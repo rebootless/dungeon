@@ -24,6 +24,7 @@ struct GeneratedDungeon {
     TileID entityMap    [MAX_HEIGHT][MAX_WIDTH];
     TileID collisionMap [MAX_HEIGHT][MAX_WIDTH];
     TileID occlusionMap [MAX_HEIGHT][MAX_WIDTH];
+    TileID lightMarkerMap[MAX_HEIGHT][MAX_WIDTH];
     int fragmentCount = 0; // how many fragments actually got placed
 };
 

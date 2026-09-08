@@ -40,6 +40,7 @@ extern TileID edObjectMap   [MAX_HEIGHT][MAX_WIDTH];
 extern TileID edEntityMap   [MAX_HEIGHT][MAX_WIDTH];
 extern TileID edCollisionMap[MAX_HEIGHT][MAX_WIDTH];
 extern TileID edOcclusionMap[MAX_HEIGHT][MAX_WIDTH];
+extern TileID edLightMarkerMap    [MAX_HEIGHT][MAX_WIDTH];
 
 // Multitile occupancy tracking
 struct MultiTileCell {
@@ -55,7 +56,7 @@ extern std::vector<TileID> availableTiles;
 extern TileID               selectedTile;
 
 // Layer management
-enum class EditLayer { GROUND = 1, OBJECTS = 2, ENTITIES = 3, COLLISION = 4, OCCLUSION = 5 };
+enum class EditLayer { GROUND = 1, OBJECTS = 2, ENTITIES = 3, COLLISION = 4, OCCLUSION = 5, LIGHT = 6 };
 extern EditLayer activeLayer;
 
 TileID (*getLayerMap(EditLayer layer))[MAX_WIDTH];
@@ -95,6 +96,11 @@ doorway occlusion zone is 3 separate clicks. Entirely invisible in
 GameMode; the editor draws a translucent outline over marked cells so
 they're still something to aim at — see editor_mode.cpp's collision/
 occlusion overlay and editor_controls.cpp's placeTile/eraseTile.
+
+5 selects the Light layer (see tiles.h's LIGHT_MARKER) — same one-marker-
+per-click behavior. Read by core/lighting.h whenever the location's
+lightMap flag is set; independent of whatever tile is actually drawn on
+Ground/Objects at that cell.
 */
 
 /*

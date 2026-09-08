@@ -18,6 +18,10 @@
 static SDL_Window*   window        = nullptr;
 static SDL_Renderer* renderer      = nullptr;
 static SDL_Texture*  canvasBgTex   = nullptr; // checkerboard swatch for FragmentEditorMode's "transparent" background
+// One persistent streaming texture for core/lighting.h's dithered light
+// mask (see drawLightMask() below) — declared here, alongside the other
+// long-lived textures, since cleanupSDL() needs to reach it too.
+static SDL_Texture*  lightMaskTex  = nullptr;
 static TTF_Font*     font          = nullptr;
 static SDL_Texture*  logicalTarget = nullptr; // pixel-perfect canvas; blitted to the real window in endFrame()
 static int           canvasW_      = 0;       // size logicalTarget is currently allocated at
@@ -220,6 +224,7 @@ void cleanupSDL() {
     if (cursorTex)       { SDL_DestroyTexture(cursorTex);       cursorTex       = nullptr; }
     if (panelTex)        { SDL_DestroyTexture(panelTex);        panelTex        = nullptr; }
     if (canvasBgTex) { SDL_DestroyTexture(canvasBgTex); canvasBgTex = nullptr; }
+    if (lightMaskTex) { SDL_DestroyTexture(lightMaskTex); lightMaskTex = nullptr; }
     if (renderer) { SDL_DestroyRenderer(renderer);  renderer = nullptr; }
     if (window)   { SDL_DestroyWindow(window);      window   = nullptr; }
     TTF_Quit();
@@ -438,6 +443,51 @@ void drawMapChar(TileID c, int x, int y) {
 void setMapClip(bool enable) {
     if (enable) setClipRect(mapOriginX, MAP_ORIGIN_Y, MAP_PIXEL_W, MAP_PIXEL_H);
     else        clearClipRect();
+}
+
+/*
+Light mask overlay
+Nearest-neighbor sampling comes for free from the SDL_HINT_RENDER_SCALE_QUALITY
+hint set in initSDL(), which is exactly what the mask's own hard-edged
+dither rings want; no per-texture scale-mode override needed. The
+texture itself (lightMaskTex) is allocated lazily on first use, same
+pattern as logicalTarget in beginFrame() — see its declaration up top
+alongside the other long-lived textures.
+*/
+void drawLightMask(const uint8_t* pixels) {
+    if (!lightMaskTex) {
+        lightMaskTex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32,
+                                          SDL_TEXTUREACCESS_STREAMING,
+                                          MAP_PIXEL_W, MAP_PIXEL_H);
+        if (!lightMaskTex) return;
+        SDL_SetTextureBlendMode(lightMaskTex, SDL_BLENDMODE_MOD);
+    }
+
+    SDL_UpdateTexture(lightMaskTex, nullptr, pixels, MAP_PIXEL_W * 4);
+
+    /*
+    Same screen transform drawMapChar uses for a single cell, applied here
+    to the whole map at once: at zoom 1 the mask lines up with
+    (mapOriginX, MAP_ORIGIN_Y) directly; at higher zoom it's centered on
+    the camera the same way, just scaled as one quad instead of per-cell.
+    setMapClip(true) (already active while the map itself is being drawn)
+    confines this to the visible map area exactly like it does the tiles.
+    */
+    SDL_Rect dst;
+    if (zoomLevel == 1) {
+        dst = { mapOriginX, MAP_ORIGIN_Y, MAP_PIXEL_W, MAP_PIXEL_H };
+    } else {
+        int camPx = camX * CELL_SIZE + CELL_SIZE / 2;
+        int camPy = camY * CELL_SIZE + CELL_SIZE / 2;
+        dst = {
+            mapOriginX + (0 - camPx) * zoomLevel + MAP_PIXEL_W / 2,
+            MAP_ORIGIN_Y + (0 - camPy) * zoomLevel + MAP_PIXEL_H / 2,
+            MAP_PIXEL_W * zoomLevel,
+            MAP_PIXEL_H * zoomLevel
+        };
+    }
+
+    SDL_RenderCopy(renderer, lightMaskTex, nullptr, &dst);
 }
 
 // Global border visibility toggle — see renderer.h.

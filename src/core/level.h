@@ -80,12 +80,23 @@ struct Level {
     TileID collisionMap[MAX_HEIGHT][MAX_WIDTH];  // Layer 4: Collision markers (COLLISION_MARKER / STAIRS_*_MARKER)
     TileID entityMap   [MAX_HEIGHT][MAX_WIDTH];  // Layer 3: Entities — player, NPCs, monsters
     TileID objectMap   [MAX_HEIGHT][MAX_WIDTH];  // Layer 2: Objects — furniture, decorations, static objects
-    TileID occlusionMap[MAX_HEIGHT][MAX_WIDTH];  // Layer 5: Occlusion markers (OCCLUSION_MARKER) — see tiles.h
+    TileID occlusionMap  [MAX_HEIGHT][MAX_WIDTH];  // Layer 5: Occlusion markers (OCCLUSION_MARKER) — see tiles.h
+    TileID lightMarkerMap[MAX_HEIGHT][MAX_WIDTH];  // Layer 6: Light source markers (LIGHT_MARKER) — see tiles.h
 
     int  width  = MAX_WIDTH;
     int  height = MAX_HEIGHT;
     char name[64] = "New Location"; // Display name shown in the UI info box
     bool isStatic = true;           // Reserved: true = hand-crafted, false = procedurally generated
+
+    /*
+    When true, GameMode darkens the map to black and lights only the
+    radius around the player and any LIGHT_MARKER cells in lightMarkerMap
+    (see core/lighting.h) — off by default so existing locations render
+    exactly as before until a level author opts in. Also flippable live,
+    purely visually, with the console's /lightMap command (core/app.cpp) —
+    that never touches the saved copy on disk, only this in-memory flag.
+    */
+    bool lightMap = false;
 
     /*
     Where this location lives in the world. Kept on the Level itself (as

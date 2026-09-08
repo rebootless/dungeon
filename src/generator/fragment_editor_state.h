@@ -42,14 +42,15 @@ the map's own first visible row/column, no extra offset needed. Fragment
 height is capped at MAX_HEIGHT, same as the map itself.
 */
 
-// Fragment-editor map state — same five layers as EditorMode, plus a
-// sixth connector layer marking candidate stitching points.
-extern TileID frGroundMap    [MAX_HEIGHT][MAX_WIDTH];
-extern TileID frObjectMap    [MAX_HEIGHT][MAX_WIDTH];
-extern TileID frEntityMap    [MAX_HEIGHT][MAX_WIDTH];
-extern TileID frCollisionMap [MAX_HEIGHT][MAX_WIDTH];
-extern TileID frOcclusionMap [MAX_HEIGHT][MAX_WIDTH];
-extern TileID frConnectorMap [MAX_HEIGHT][MAX_WIDTH];
+// Fragment-editor map state — same five layers as EditorMode, plus
+// connector and light-marker layers.
+extern TileID frGroundMap      [MAX_HEIGHT][MAX_WIDTH];
+extern TileID frObjectMap      [MAX_HEIGHT][MAX_WIDTH];
+extern TileID frEntityMap      [MAX_HEIGHT][MAX_WIDTH];
+extern TileID frCollisionMap   [MAX_HEIGHT][MAX_WIDTH];
+extern TileID frOcclusionMap   [MAX_HEIGHT][MAX_WIDTH];
+extern TileID frConnectorMap   [MAX_HEIGHT][MAX_WIDTH];
+extern TileID frLightMarkerMap [MAX_HEIGHT][MAX_WIDTH];
 
 // Multitile occupancy tracking — same shape as EditorMode's MultiTileCell.
 struct FragmentMultiTileCell {
@@ -65,11 +66,12 @@ extern TileID               frSelectedTile;
 
 /*
 Layer management
-CONNECTOR is the one addition over EditorMode's EditLayer — core/tiles.h
-has no sprite for it, only the CONNECTOR_MARKER sentinel (see frPlaceTile
-in fragment_editor_controls.cpp), same idea as COLLISION/OCCLUSION.
+CONNECTOR and LIGHT are the two additions over EditorMode's EditLayer —
+core/tiles.h has no sprite for either, only their own sentinels
+(CONNECTOR_MARKER / LIGHT_MARKER — see frPlaceTile in
+fragment_editor_controls.cpp), same idea as COLLISION/OCCLUSION.
 */
-enum class FragmentEditLayer { GROUND = 1, OBJECTS = 2, ENTITIES = 3, COLLISION = 4, OCCLUSION = 5, CONNECTOR = 6 };
+enum class FragmentEditLayer { GROUND = 1, OBJECTS = 2, ENTITIES = 3, COLLISION = 4, OCCLUSION = 5, CONNECTOR = 6, LIGHT = 7 };
 extern FragmentEditLayer frActiveLayer;
 
 TileID (*frGetLayerMap(FragmentEditLayer layer))[MAX_WIDTH];

@@ -22,6 +22,7 @@ extern TileID gObjectLayer   [MAX_HEIGHT][MAX_WIDTH]; // Layer 2: Objects — fu
 extern TileID gEntityLayer   [MAX_HEIGHT][MAX_WIDTH]; // Layer 3: Entities — player, NPCs
 extern TileID gCollisionLayer[MAX_HEIGHT][MAX_WIDTH]; // Layer 4: Collision markers (not rendered)
 extern TileID gOcclusionMap  [MAX_HEIGHT][MAX_WIDTH]; // Layer 5: Occlusion markers (not rendered)
+extern TileID gLightMarkerMap      [MAX_HEIGHT][MAX_WIDTH]; // Layer 6: Light source markers (see core/lighting.h)
 
 // Player state
 extern int gPlayerPosX;

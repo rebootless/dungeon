@@ -41,7 +41,6 @@ namespace HelpPanel {
         { "SPACE",            "Attack" },
         { "+",                "Zoom In" },
         { "-",                "Zoom Out" },
-        { "G",                "Toggle Borders" },
         { "ESC",              "Settings" },
         { "Q",                "Quit" },
         { "H",                "Help" },
@@ -56,9 +55,9 @@ namespace HelpPanel {
         { "2",                "Stairs Down" },
         { "3",                "Stairs Up" },
         { "4",                "Occlusion" },
+        { "5",                "Light" },
         { "F5",               "Save" },
         { "F9",               "Load" },
-        { "G",                "Toggle Borders" },
         { "ESC",              "Settings" },
         { "Q",                "Quit" },
         { "H",                "Help" },
@@ -73,10 +72,10 @@ namespace HelpPanel {
         { "2",                "Stairs Down" },
         { "3",                "Stairs Up" },
         { "4",                "Occlusion" },
-        { "5",                "Connector" },
+        { "5",                "Light" },
+        { "0",                "Connector" },
         { "F5",               "Save" },
         { "F9",               "Load" },
-        { "G",                "Toggle Borders" },
         { "ESC",              "Settings" },
         { "Q",                "Quit" },
         { "H",                "Help" },
@@ -84,7 +83,6 @@ namespace HelpPanel {
 
     const std::vector<HelpControl> GENERATOR_CONTROLS = {
         { "R", "Regenerate" },
-        { "G", "Toggle Borders" },
         { "Q", "Quit" },
         { "H", "Help" },
     };
@@ -93,7 +91,6 @@ namespace HelpPanel {
         { "W / S", "Navigate" },
         { "A / D", "Change Column" },
         { "SPACE", "Select" },
-        { "G",     "Toggle Borders" },
         { "ESC",   "Close" },
         { "Q",     "Quit" },
     };
@@ -116,6 +113,8 @@ namespace HelpPanel {
         "/mode help",
         "/zoom <1-4>",
         "/load <floor>-<x>-<y>",
+        "/borderMap",
+        "/lightMap",
         "/exit",
     };
 

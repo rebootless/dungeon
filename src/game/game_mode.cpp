@@ -1,12 +1,14 @@
 #include "game_mode.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <cstdio>
 #include <string>
 
 #include "../core/display.h"
 #include "../core/layout.h"
 #include "../core/level.h"
+#include "../core/lighting.h"
 #include "../core/renderer.h"
 #include "../core/tiles.h"
 #include "game_panel.h"
@@ -26,6 +28,7 @@ TileID gObjectLayer   [MAX_HEIGHT][MAX_WIDTH];
 TileID gEntityLayer   [MAX_HEIGHT][MAX_WIDTH];
 TileID gCollisionLayer[MAX_HEIGHT][MAX_WIDTH];
 TileID gOcclusionMap  [MAX_HEIGHT][MAX_WIDTH];
+TileID gLightMarkerMap      [MAX_HEIGHT][MAX_WIDTH];
 
 // Player state
 int    gPlayerPosX  = 0;
@@ -157,6 +160,7 @@ static void initMap(Level& level, const LevelEntry& entry) {
             gCollisionLayer[y][x] = col;
 
             gOcclusionMap[y][x] = level.occlusionMap[y][x];
+            gLightMarkerMap[y][x]     = level.lightMarkerMap[y][x];
 
             gEntityLayer[y][x] = level.entityMap[y][x];
 
@@ -366,6 +370,22 @@ void GameMode::render() {
                 drawMapChar(gTileLayer[y][x], x, y);
                 drawMapChar(gObjectLayer[y][x], x, y);
             }
+
+        /*
+        Light mask
+        Only ever built/drawn for a location whose author opted in (see
+        core/level.h's Level::lightMap) — every other location pays
+        nothing for this at all. Also flippable live from the console
+        (/lightMap — core/app.cpp), which just toggles this same flag in
+        memory. Sits after every map layer so it darkens Ground/Objects/
+        Entities alike, but before the facing cursor so that stays visible
+        regardless of how dark the cell it's on is.
+        */
+        if (level.lightMap) {
+            static uint8_t lightMaskPixels[MAP_PIXEL_W * MAP_PIXEL_H * 4];
+            buildLightMask(level, gPlayerPosX, gPlayerPosY, lightMaskPixels);
+            drawLightMask(lightMaskPixels);
+        }
 
         /*
         Facing cursor — drawn last so it sits on top of everything else,

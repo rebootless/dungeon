@@ -21,12 +21,13 @@ Defined here (the ONE translation unit that allocates them); declared
 `extern` in fragment_editor_state.h for fragment_editor_controls.cpp to
 reach.
 */
-TileID frGroundMap    [MAX_HEIGHT][MAX_WIDTH];
-TileID frObjectMap    [MAX_HEIGHT][MAX_WIDTH];
-TileID frEntityMap    [MAX_HEIGHT][MAX_WIDTH];
-TileID frCollisionMap [MAX_HEIGHT][MAX_WIDTH];
-TileID frOcclusionMap [MAX_HEIGHT][MAX_WIDTH];
-TileID frConnectorMap [MAX_HEIGHT][MAX_WIDTH];
+TileID frGroundMap      [MAX_HEIGHT][MAX_WIDTH];
+TileID frObjectMap      [MAX_HEIGHT][MAX_WIDTH];
+TileID frEntityMap      [MAX_HEIGHT][MAX_WIDTH];
+TileID frCollisionMap   [MAX_HEIGHT][MAX_WIDTH];
+TileID frOcclusionMap   [MAX_HEIGHT][MAX_WIDTH];
+TileID frConnectorMap   [MAX_HEIGHT][MAX_WIDTH];
+TileID frLightMarkerMap [MAX_HEIGHT][MAX_WIDTH];
 FragmentMultiTileCell frMtMap[MAX_HEIGHT][MAX_WIDTH];
 
 // Tile palette
@@ -44,6 +45,7 @@ TileID (*frGetLayerMap(FragmentEditLayer layer))[MAX_WIDTH] {
         case FragmentEditLayer::COLLISION: return frCollisionMap;
         case FragmentEditLayer::OCCLUSION: return frOcclusionMap;
         case FragmentEditLayer::CONNECTOR: return frConnectorMap;
+        case FragmentEditLayer::LIGHT:     return frLightMarkerMap;
     }
     return frGroundMap;
 }
@@ -54,6 +56,7 @@ FragmentEditLayer frLayerForTile(TileID id) {
     if (id == COLLISION_MARKER || id == STAIRS_UP_MARKER || id == STAIRS_DOWN_MARKER) return FragmentEditLayer::COLLISION;
     if (id == OCCLUSION_MARKER) return FragmentEditLayer::OCCLUSION;
     if (id == CONNECTOR_MARKER) return FragmentEditLayer::CONNECTOR;
+    if (id == LIGHT_MARKER) return FragmentEditLayer::LIGHT;
 
     switch (getTileMeta(id).layer) {
         case LayerType::Ground:   return FragmentEditLayer::GROUND;
@@ -140,6 +143,7 @@ static void clearFragmentEditorMaps() {
             frCollisionMap[y][x] = EMPTY_ID;
             frOcclusionMap[y][x] = EMPTY_ID;
             frConnectorMap[y][x] = EMPTY_ID;
+            frLightMarkerMap[y][x] = EMPTY_ID;
             frMtMap[y][x]        = { false, 0, 0 };
         }
     }
@@ -205,6 +209,7 @@ void loadFragmentIntoEditor(int id) {
             frCollisionMap[y][x] = fragment->collisionMap[y][x];
             frOcclusionMap[y][x] = fragment->occlusionMap[y][x];
             frConnectorMap[y][x] = fragment->connectorMap[y][x];
+            frLightMarkerMap[y][x] = fragment->lightMarkerMap[y][x];
         }
     }
     fragmentWidth  = fragment->width;
@@ -232,6 +237,7 @@ void saveFragmentEditorTo(int id) {
             fragment.collisionMap[y][x] = frCollisionMap[y][x];
             fragment.occlusionMap[y][x] = frOcclusionMap[y][x];
             fragment.connectorMap[y][x] = frConnectorMap[y][x];
+            fragment.lightMarkerMap[y][x] = frLightMarkerMap[y][x];
         }
     }
     fragment.width  = fragmentWidth;
@@ -453,6 +459,22 @@ void FragmentEditorMode::onRender() {
             if (frConnectorMap[y][x] != CONNECTOR_MARKER) continue;
             drawRectOutline(mapOriginX + x * CELL_SIZE, MAP_ORIGIN_Y + y * CELL_SIZE,
                              CELL_SIZE, CELL_SIZE, SDL_Color{60, 255, 120, 200});
+        }
+    }
+
+    /*
+    Light overlay
+    Same amber outline as EditorMode's world editor (editor_mode.cpp) —
+    purely something to aim at while placing/erasing LIGHT_MARKER cells;
+    the generator carries this layer through blitFragment() into
+    GeneratedDungeon, but neither that nor GeneratorMode's preview
+    actually lights anything yet.
+    */
+    for (int y = 0; y < MAX_HEIGHT; ++y) {
+        for (int x = 0; x < MAX_WIDTH; ++x) {
+            if (frLightMarkerMap[y][x] != LIGHT_MARKER) continue;
+            drawRectOutline(mapOriginX + x * CELL_SIZE, MAP_ORIGIN_Y + y * CELL_SIZE,
+                             CELL_SIZE, CELL_SIZE, SDL_Color{255, 190, 60, 200});
         }
     }
 

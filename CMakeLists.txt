@@ -8,6 +8,7 @@ add_executable(dungeon
     src/core/level.cpp
     src/core/json_min.cpp
     src/core/renderer.cpp
+    src/core/lighting.cpp
     src/core/display.cpp
     src/core/console.cpp
     src/core/app.cpp

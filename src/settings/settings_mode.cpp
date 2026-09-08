@@ -64,7 +64,9 @@ before onEvent() ever got a chance to read it.
 SettingsMode::ReturnMode returnMode_ = SettingsMode::ReturnMode::Game;
 
 std::vector<std::string> resolutionOptions() {
-    return displayResolutionNames();
+    std::vector<std::string> names = displayResolutionNames();
+    names.push_back(FULLSCREEN_LABEL);
+    return names;
 }
 
 std::vector<std::string> paletteOptions() {
@@ -108,10 +110,19 @@ so it's read back off the window the same way onEnter() does.
 void persistCurrentSettings() {
     Settings s;
 
-    int winW = 0, winH = 0;
-    SDL_GetWindowSize(getWindow(), &winW, &winH);
-    for (const Resolution& r : displayResolutionPresets()) {
-        if (r.w == winW && r.h == winH) { s.resolution = r.label; break; }
+    /*
+    Fullscreen has no w/h of its own to match against the preset table —
+    check the window's actual flag first and only fall back to matching
+    dimensions when it's genuinely windowed.
+    */
+    if (SDL_GetWindowFlags(getWindow()) & SDL_WINDOW_FULLSCREEN_DESKTOP) {
+        s.resolution = FULLSCREEN_LABEL;
+    } else {
+        int winW = 0, winH = 0;
+        SDL_GetWindowSize(getWindow(), &winW, &winH);
+        for (const Resolution& r : displayResolutionPresets()) {
+            if (r.w == winW && r.h == winH) { s.resolution = r.label; break; }
+        }
     }
 
     s.palette = getActivePaletteFile();
@@ -132,15 +143,22 @@ void SettingsMode::onEnter() {
     Nice-to-have: land on whichever preset matches the window's current
     size, so re-entering settings after already picking a resolution
     shows it highlighted instead of always resetting to the first preset.
+    Fullscreen is checked first since it has no w/h of its own to match.
     */
-    int winW = 0, winH = 0;
-    SDL_GetWindowSize(getWindow(), &winW, &winH);
     std::vector<std::string> names = resolutionOptions();
-    for (size_t i = 0; i < names.size(); ++i) {
-        Resolution r;
-        if (displayFindResolution(names[i], r) && r.w == winW && r.h == winH) {
-            optionIndex_[kCategoryResolution] = (int)i;
-            break;
+    if (SDL_GetWindowFlags(getWindow()) & SDL_WINDOW_FULLSCREEN_DESKTOP) {
+        for (size_t i = 0; i < names.size(); ++i) {
+            if (names[i] == FULLSCREEN_LABEL) { optionIndex_[kCategoryResolution] = (int)i; break; }
+        }
+    } else {
+        int winW = 0, winH = 0;
+        SDL_GetWindowSize(getWindow(), &winW, &winH);
+        for (size_t i = 0; i < names.size(); ++i) {
+            Resolution r;
+            if (displayFindResolution(names[i], r) && r.w == winW && r.h == winH) {
+                optionIndex_[kCategoryResolution] = (int)i;
+                break;
+            }
         }
     }
 
@@ -233,6 +251,15 @@ void SettingsMode::onEvent(const SDL_Event& e) {
             if (categoryIndex_ == kCategoryResolution) {
                 std::vector<std::string> names = resolutionOptions();
                 int idx = clampIndex(optionIndex_[categoryIndex_], (int)names.size());
+
+                if (names[idx] == FULLSCREEN_LABEL) {
+                    SDL_SetWindowFullscreen(getWindow(), SDL_WINDOW_FULLSCREEN_DESKTOP);
+                    statusText_ = " Resolution set to Fullscreen";
+                    statusTTL_  = 150;
+                    persistCurrentSettings();
+                    return;
+                }
+
                 Resolution res;
                 if (!displayFindResolution(names[idx], res)) return;
 
@@ -248,6 +275,9 @@ void SettingsMode::onEvent(const SDL_Event& e) {
                     return;
                 }
 
+                // Leaving Fullscreen for a fixed size needs the flag
+                // cleared first, or SDL_SetWindowSize has no visible effect.
+                SDL_SetWindowFullscreen(getWindow(), 0);
                 SDL_SetWindowSize(getWindow(), res.w, res.h);
                 SDL_SetWindowPosition(getWindow(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
                 statusText_ = " Resolution set to " + names[idx];

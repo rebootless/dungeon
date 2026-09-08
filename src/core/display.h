@@ -51,6 +51,15 @@ bool                            displayFindResolution(const std::string& name, R
 std::vector<std::string> displayResolutionNames();
 
 /*
+Extra resolution-list entry (not a Resolution preset — it has no fixed
+w/h of its own) that switches the window to desktop fullscreen instead of
+a fixed size. A single shared literal so SettingsMode's option list and
+App::run()'s startup-restore logic can't drift out of sync with each
+other over which string means "fullscreen".
+*/
+constexpr const char* FULLSCREEN_LABEL = "Fullscreen";
+
+/*
 True if windowW x windowH is at least MIN_WINDOW_W x MIN_WINDOW_H — the
 one floor SettingsMode's /resolution picker enforces before calling
 SDL_SetWindowSize. Unlike the old version, this is unrelated to the

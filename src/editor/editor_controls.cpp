@@ -66,6 +66,12 @@ void placeTile(int gx, int gy) {
         return;
     }
 
+    if (activeLayer == EditLayer::LIGHT) {
+        // Single-cell, same behavior as the other marker layers above.
+        edLightMarkerMap[gy][gx] = LIGHT_MARKER;
+        return;
+    }
+
     /*
     Random-fill groups (e.g. "grass") resolve to a concrete member here,
     once per stamp — everything below just sees a plain TileID and has no
@@ -125,6 +131,11 @@ void eraseTile(int gx, int gy) {
 
     if (activeLayer == EditLayer::OCCLUSION) {
         edOcclusionMap[gy][gx] = EMPTY_ID;
+        return;
+    }
+
+    if (activeLayer == EditLayer::LIGHT) {
+        edLightMarkerMap[gy][gx] = EMPTY_ID;
         return;
     }
 
@@ -311,6 +322,17 @@ void EditorMode::onEvent(const SDL_Event& e) {
             case SDL_SCANCODE_4:
                 activeLayer      = EditLayer::OCCLUSION;
                 editorStatus     = " Placing: Occlusion marker";
+                editorStatusTTL  = 90;
+                break;
+
+            /*
+            Light layer — same idea as 1-4: pick the tool, then left-click
+            paints one LIGHT_MARKER cell (right-click erases it). Read by
+            core/lighting.h whenever the location's lightMap flag is set.
+            */
+            case SDL_SCANCODE_5:
+                activeLayer      = EditLayer::LIGHT;
+                editorStatus     = " Placing: Light marker";
                 editorStatusTTL  = 90;
                 break;
 

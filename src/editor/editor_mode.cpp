@@ -24,6 +24,7 @@ TileID edObjectMap   [MAX_HEIGHT][MAX_WIDTH];
 TileID edEntityMap   [MAX_HEIGHT][MAX_WIDTH];
 TileID edCollisionMap[MAX_HEIGHT][MAX_WIDTH];
 TileID edOcclusionMap[MAX_HEIGHT][MAX_WIDTH];
+TileID edLightMarkerMap    [MAX_HEIGHT][MAX_WIDTH];
 MultiTileCell mtMap[MAX_HEIGHT][MAX_WIDTH];
 
 // Tile palette
@@ -40,6 +41,7 @@ TileID (*getLayerMap(EditLayer layer))[MAX_WIDTH] {
         case EditLayer::ENTITIES:  return edEntityMap;
         case EditLayer::COLLISION: return edCollisionMap;
         case EditLayer::OCCLUSION: return edOcclusionMap;
+        case EditLayer::LIGHT:     return edLightMarkerMap;
     }
     return edGroundMap;
 }
@@ -50,6 +52,7 @@ EditLayer layerForTile(TileID id) {
     // entry), but handled here too so the mapping stays total.
     if (id == COLLISION_MARKER || id == STAIRS_UP_MARKER || id == STAIRS_DOWN_MARKER) return EditLayer::COLLISION;
     if (id == OCCLUSION_MARKER) return EditLayer::OCCLUSION;
+    if (id == LIGHT_MARKER) return EditLayer::LIGHT;
 
     switch (getTileMeta(id).layer) {
         case LayerType::Ground:   return EditLayer::GROUND;
@@ -144,6 +147,7 @@ static void clearEditorMaps() {
             edEntityMap[y][x]    = EMPTY_ID;
             edCollisionMap[y][x] = EMPTY_ID;
             edOcclusionMap[y][x] = EMPTY_ID;
+            edLightMarkerMap[y][x]     = EMPTY_ID;
             mtMap[y][x]          = { false, 0, 0 };
         }
     }
@@ -213,6 +217,7 @@ void loadLocationIntoEditor(const LevelCoord& coord) {
             edEntityMap[y][x]    = level->entityMap[y][x];
             edCollisionMap[y][x] = level->collisionMap[y][x];
             edOcclusionMap[y][x] = level->occlusionMap[y][x];
+            edLightMarkerMap[y][x]     = level->lightMarkerMap[y][x];
         }
     }
     rebuildMultiTileOccupancy();
@@ -238,6 +243,7 @@ void saveEditorToLocation(const LevelCoord& coord) {
             level.entityMap[y][x]    = edEntityMap[y][x];
             level.collisionMap[y][x] = edCollisionMap[y][x];
             level.occlusionMap[y][x] = edOcclusionMap[y][x];
+            level.lightMarkerMap[y][x] = edLightMarkerMap[y][x];
         }
     }
     level.width  = MAX_WIDTH;
@@ -476,6 +482,21 @@ void EditorMode::onRender() {
             if (edOcclusionMap[y][x] != OCCLUSION_MARKER) continue;
             drawRectOutline(mapOriginX + x * CELL_SIZE, MAP_ORIGIN_Y + y * CELL_SIZE,
                              CELL_SIZE, CELL_SIZE, SDL_Color{170, 100, 255, 200});
+        }
+    }
+
+    /*
+    Light overlay
+    GameMode only renders this marker's effect (see core/lighting.h) when
+    the location's lightMap flag is set — drawn here as a translucent
+    amber outline, unconditionally, purely so there's something to aim at
+    while placing/erasing it (5 key — see editor_controls.cpp).
+    */
+    for (int y = 0; y < MAX_HEIGHT; ++y) {
+        for (int x = 0; x < MAX_WIDTH; ++x) {
+            if (edLightMarkerMap[y][x] != LIGHT_MARKER) continue;
+            drawRectOutline(mapOriginX + x * CELL_SIZE, MAP_ORIGIN_Y + y * CELL_SIZE,
+                             CELL_SIZE, CELL_SIZE, SDL_Color{255, 190, 60, 200});
         }
     }
 

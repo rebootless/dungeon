@@ -141,6 +141,19 @@ void drawMapChar(TileID c, int x, int y);
 // (mapOriginX, 0, MAP_PIXEL_W, MAP_PIXEL_H).
 void setMapClip(bool enable);
 
+/*
+Blits `pixels` (RGBA32, MAP_PIXEL_W x MAP_PIXEL_H, row-major, 4 bytes per
+pixel — see core/lighting.h's buildLightMask) over the currently-rendered
+map with SDL_BLENDMODE_MOD: a white pixel in the mask leaves the tile
+underneath unchanged, a black one crushes it toward black, matching
+whatever color the mask stamped in between. Uses the exact same
+mapOriginX/zoom/camera transform as drawMapChar, so the overlay lines up
+with the map pixel-for-pixel at any zoom level. Call after the map's own
+content is drawn and before anything (like the facing cursor) that should
+stay readable regardless of darkness.
+*/
+void drawLightMask(const uint8_t* pixels);
+
 
 /*
 Destroys the currently loaded panel theme texture (if any), so the next

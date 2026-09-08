@@ -58,6 +58,17 @@ outline in the editor, invisible in GameMode.
 */
 constexpr TileID OCCLUSION_MARKER = 0xFFFB;
 
+/*
+Sentinel stored in the light layer. Marks a cell as a light source for
+core/lighting.h's mask builder — decoupled from whatever tile actually
+sits on Ground/Objects at that cell, so a torch sprite can be placed
+purely for looks while the light itself is marked independently (or vice
+versa: a window, a lava pool, anything that should glow without needing
+its own tiles.json light metadata). Drawn as a translucent amber outline
+in the editor, invisible in GameMode.
+*/
+constexpr TileID LIGHT_MARKER = 0xFFF7;
+
 // Sentinel stored in a Fragment's connector layer — see generator/fragment.h.
 constexpr TileID CONNECTOR_MARKER = 0xFFFA;
 
