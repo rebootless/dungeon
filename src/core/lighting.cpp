@@ -20,12 +20,12 @@ struct LightSource {
 // Player's own light — fixed for now; a future item/spell system could
 // vary these per player state instead of this one constant pair.
 constexpr int        PLAYER_LIGHT_RADIUS_CELLS = 5;
-constexpr SDL_Color  PLAYER_LIGHT_COLOR        = {255, 235, 205, 255};
+constexpr SDL_Color  PLAYER_LIGHT_COLOR        = {255, 255, 255, 255};
 
 // Every LIGHT_MARKER cell emits an identical light for now — see
 // editor_state.h's comment on why only one marker flavor exists yet.
 constexpr int        MARKER_LIGHT_RADIUS_CELLS = 4;
-constexpr SDL_Color  MARKER_LIGHT_COLOR        = {255, 205, 130, 255};
+constexpr SDL_Color  MARKER_LIGHT_COLOR        = {255, 255, 255, 255};
 
 /*
 Ordered (Bayer) dithering, at native 1-pixel granularity everywhere —
