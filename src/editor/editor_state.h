@@ -93,9 +93,9 @@ extern CollisionTool activeCollisionTool;
 4 selects the Occlusion layer (see tiles.h's OCCLUSION_MARKER) — one
 marker per click, exactly like COLLISION_MARKER/STAIRS_*_MARKER; a 3-tall
 doorway occlusion zone is 3 separate clicks. Entirely invisible in
-GameMode; the editor draws a translucent outline over marked cells so
-they're still something to aim at — see editor_mode.cpp's collision/
-occlusion overlay and editor_controls.cpp's placeTile/eraseTile.
+GameMode; the editor draws a marker icon over marked cells so they're
+still something to aim at — see editor_mode.cpp's collision/occlusion
+overlay and editor_controls.cpp's placeTile/eraseTile.
 
 5 selects the Light layer (see tiles.h's LIGHT_MARKER) — same one-marker-
 per-click behavior. Read by core/lighting.h whenever the location's

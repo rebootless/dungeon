@@ -9,6 +9,7 @@
 #include "../core/display.h"
 #include "../core/layout.h"
 #include "../core/level.h"
+#include "../core/lighting.h"
 #include "../core/renderer.h"
 #include "../core/tiles.h"
 #include "fragment.h"
@@ -262,6 +263,16 @@ static void drawInfoStr(const std::string& text, int gx, int gy, int originX) {
 }
 
 /*
+Ephemeral light-map preview toggle — see mode.h's IMode::LightMapToggleResult
+for why this mode keeps its own flag instead of an authored Level::lightMap.
+File-local (not in fragment_editor_state.h) since nothing outside this file
+needs it. Reset to false in onEnter() below so leaving and coming back to
+this mode never carries a stale ON state into a fragment with no light
+markers of its own.
+*/
+static bool lightPreviewOn_ = false;
+
+/*
 IMode
 Tries to load fragment 0 — selectedFragmentId's initial value — and if
 nothing is saved there, leaves the canvas genuinely empty (same
@@ -271,6 +282,13 @@ void FragmentEditorMode::onEnter() {
     buildFragmentPalette();
     initFragments();
     loadFragmentIntoEditor(selectedFragmentId);
+    lightPreviewOn_ = false;
+}
+
+// Console's /lightMap command (core/app.cpp) delegates straight here.
+IMode::LightMapToggleResult FragmentEditorMode::toggleLightMapPreview() {
+    lightPreviewOn_ = !lightPreviewOn_;
+    return lightPreviewOn_ ? LightMapToggleResult::TurnedOn : LightMapToggleResult::TurnedOff;
 }
 
 void FragmentEditorMode::onRender() {
@@ -401,28 +419,26 @@ void FragmentEditorMode::onRender() {
     }
 
     /*
-    Collision overlay — same three marker colors as EditorMode.
+    Collision overlay — same three marker icons as EditorMode.
     */
     for (int y = 0; y < MAX_HEIGHT; ++y) {
         for (int x = 0; x < MAX_WIDTH; ++x) {
             TileID marker = frCollisionMap[y][x];
-            SDL_Color color;
-            if      (marker == COLLISION_MARKER)   color = SDL_Color{255, 220, 0, 200};
-            else if (marker == STAIRS_UP_MARKER)   color = SDL_Color{80, 220, 255, 200};
-            else if (marker == STAIRS_DOWN_MARKER) color = SDL_Color{230, 90, 255, 200};
+            MarkerIcon icon;
+            if      (marker == COLLISION_MARKER)   icon = MarkerIcon::Collision;
+            else if (marker == STAIRS_UP_MARKER)   icon = MarkerIcon::StairsUp;
+            else if (marker == STAIRS_DOWN_MARKER) icon = MarkerIcon::StairsDown;
             else continue;
 
-            drawRectOutline(mapOriginX + x * CELL_SIZE, MAP_ORIGIN_Y + y * CELL_SIZE,
-                             CELL_SIZE, CELL_SIZE, color);
+            drawMarkerIcon(icon, mapOriginX + x * CELL_SIZE, MAP_ORIGIN_Y + y * CELL_SIZE);
         }
     }
 
-    // Occlusion overlay — same translucent violet outline as EditorMode.
+    // Occlusion overlay — same marker icon as EditorMode.
     for (int y = 0; y < MAX_HEIGHT; ++y) {
         for (int x = 0; x < MAX_WIDTH; ++x) {
             if (frOcclusionMap[y][x] != OCCLUSION_MARKER) continue;
-            drawRectOutline(mapOriginX + x * CELL_SIZE, MAP_ORIGIN_Y + y * CELL_SIZE,
-                             CELL_SIZE, CELL_SIZE, SDL_Color{170, 100, 255, 200});
+            drawMarkerIcon(MarkerIcon::Occlusion, mapOriginX + x * CELL_SIZE, MAP_ORIGIN_Y + y * CELL_SIZE);
         }
     }
 
@@ -436,47 +452,66 @@ void FragmentEditorMode::onRender() {
     along this edge, never overlap inside it.
     */
     for (int x = 0; x < fragmentWidth && x < MAX_WIDTH; ++x) {
-        drawRectOutline(mapOriginX + x * CELL_SIZE, MAP_ORIGIN_Y,
-                         CELL_SIZE, CELL_SIZE, SDL_Color{255, 60, 60, 200});
-        drawRectOutline(mapOriginX + x * CELL_SIZE, MAP_ORIGIN_Y + (fragmentHeight - 1) * CELL_SIZE,
-                         CELL_SIZE, CELL_SIZE, SDL_Color{255, 60, 60, 200});
+        drawMarkerIcon(MarkerIcon::Border, mapOriginX + x * CELL_SIZE, MAP_ORIGIN_Y);
+        drawMarkerIcon(MarkerIcon::Border, mapOriginX + x * CELL_SIZE, MAP_ORIGIN_Y + (fragmentHeight - 1) * CELL_SIZE);
     }
     for (int y = 0; y < fragmentHeight && y < MAX_HEIGHT; ++y) {
-        drawRectOutline(mapOriginX, MAP_ORIGIN_Y + y * CELL_SIZE,
-                         CELL_SIZE, CELL_SIZE, SDL_Color{255, 60, 60, 200});
-        drawRectOutline(mapOriginX + (fragmentWidth - 1) * CELL_SIZE, MAP_ORIGIN_Y + y * CELL_SIZE,
-                         CELL_SIZE, CELL_SIZE, SDL_Color{255, 60, 60, 200});
+        drawMarkerIcon(MarkerIcon::Border, mapOriginX, MAP_ORIGIN_Y + y * CELL_SIZE);
+        drawMarkerIcon(MarkerIcon::Border, mapOriginX + (fragmentWidth - 1) * CELL_SIZE, MAP_ORIGIN_Y + y * CELL_SIZE);
     }
 
     /*
     Connector overlay
     Candidate stitching points for the procedural generator — a distinct
-    green outline, drawn after (so it wins over) the red border above,
-    since a connector cell normally sits exactly on that border.
+    icon, drawn after (so it wins over) the border above, since a
+    connector cell normally sits exactly on that border.
     */
     for (int y = 0; y < MAX_HEIGHT; ++y) {
         for (int x = 0; x < MAX_WIDTH; ++x) {
             if (frConnectorMap[y][x] != CONNECTOR_MARKER) continue;
-            drawRectOutline(mapOriginX + x * CELL_SIZE, MAP_ORIGIN_Y + y * CELL_SIZE,
-                             CELL_SIZE, CELL_SIZE, SDL_Color{60, 255, 120, 200});
+            drawMarkerIcon(MarkerIcon::Connector, mapOriginX + x * CELL_SIZE, MAP_ORIGIN_Y + y * CELL_SIZE);
         }
     }
 
     /*
     Light overlay
-    Same amber outline as EditorMode's world editor (editor_mode.cpp) —
-    purely something to aim at while placing/erasing LIGHT_MARKER cells;
-    the generator carries this layer through blitFragment() into
-    GeneratedDungeon, but neither that nor GeneratorMode's preview
-    actually lights anything yet.
+    Same marker icon as EditorMode's world editor (editor_mode.cpp) —
+    purely something to aim at while placing/erasing LIGHT_MARKER cells.
     */
     for (int y = 0; y < MAX_HEIGHT; ++y) {
         for (int x = 0; x < MAX_WIDTH; ++x) {
             if (frLightMarkerMap[y][x] != LIGHT_MARKER) continue;
-            drawRectOutline(mapOriginX + x * CELL_SIZE, MAP_ORIGIN_Y + y * CELL_SIZE,
-                             CELL_SIZE, CELL_SIZE, SDL_Color{255, 190, 60, 200});
+            drawMarkerIcon(MarkerIcon::Light, mapOriginX + x * CELL_SIZE, MAP_ORIGIN_Y + y * CELL_SIZE);
         }
     }
+
+    /*
+    Light mask preview (console's /lightMap — core/app.cpp)
+    No player/cursor position to center the "player's own light" on (see
+    core/lighting.h), so the fragment's own footprint center stands in for
+    it — good enough to eyeball how a placed LIGHT_MARKER will actually
+    look once stitched into a generated dungeon. Confined to the
+    fragment's own footprint (fragmentWidth x fragmentHeight), same as the
+    border/connector overlays above, not the full MAX_WIDTH x MAX_HEIGHT
+    canvas.
+    */
+    if (lightPreviewOn_) {
+        static uint8_t lightMaskPixels[MAP_PIXEL_W * MAP_PIXEL_H * 4];
+        buildLightMask(frLightMarkerMap, fragmentWidth, fragmentHeight,
+                       fragmentWidth / 2, fragmentHeight / 2, lightMaskPixels);
+        /*
+        setMapOrigin() below is what drawLightMask() actually reads
+        (renderer.cpp's own file-static mapOriginX, distinct from this
+        function's local variable of the same name) — this mode never
+        otherwise calls it, unlike GameMode/GeneratorMode which do every
+        frame, so it needs setting explicitly right before use rather
+        than being left to whatever the last mode to call it left behind.
+        */
+        setMapOrigin(mapOriginX);
+        drawLightMask(lightMaskPixels);
+    }
+
+    drawDebugGrid(mapOriginX, fragmentWidth, fragmentHeight);
 
     clearClipRect();
 

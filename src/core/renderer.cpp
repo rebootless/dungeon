@@ -23,6 +23,7 @@ static SDL_Texture*  canvasBgTex   = nullptr; // checkerboard swatch for Fragmen
 // long-lived textures, since cleanupSDL() needs to reach it too.
 static SDL_Texture*  lightMaskTex  = nullptr;
 static TTF_Font*     font          = nullptr;
+static TTF_Font*     debugGridFont = nullptr;
 static SDL_Texture*  logicalTarget = nullptr; // pixel-perfect canvas; blitted to the real window in endFrame()
 static int           canvasW_      = 0;       // size logicalTarget is currently allocated at
 static int           canvasH_      = 0;
@@ -36,6 +37,16 @@ for where these get matched against a TileID.
 */
 static SDL_Texture* playerTex       = nullptr;
 static SDL_Texture* cursorTex       = nullptr;
+
+/*
+Marker-icon textures
+Loaded lazily by drawMarkerIcon() below, one slot per MarkerIcon value,
+keyed by array index rather than a filename map since the set of marker
+icons is fixed and small. Not palette-recolored, same as the panel theme
+texture — these are already-colored icons under assets/markers/, not one
+of the gray-shade tile assets core/palette.h's LUT knows how to remap.
+*/
+static SDL_Texture* markerTex[7] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
 
 /*
 Panel theme texture
@@ -209,6 +220,15 @@ void initSDL() {
     font = TTF_OpenFont("assets/ProggyCleanSZNerdFontMono-Regular.ttf", 18);
 
     /*
+    Debug-grid coordinate labels need two lines ("X <x>" / "Y <y>") inside
+    a single CELL_SIZE (16px) cell, far smaller than the main UI font
+    above — a dedicated small point size, rather than scaling the main
+    font's texture down, keeps the pixel font's hinting crisp instead of
+    blurring it.
+    */
+    debugGridFont = TTF_OpenFont("assets/ProggyCleanSZNerdFontMono-Regular.ttf", 10);
+
+    /*
     logicalTarget is allocated lazily by the first beginFrame() call —
     simply deferred until then, since it needs `renderer` to already
     exist; its size is always exactly CANVAS_W x CANVAS_H (layout.h).
@@ -218,10 +238,12 @@ void initSDL() {
 void cleanupSDL() {
     if (logicalTarget) { SDL_DestroyTexture(logicalTarget); logicalTarget = nullptr; }
     if (font)     { TTF_CloseFont(font);            font     = nullptr; }
+    if (debugGridFont) { TTF_CloseFont(debugGridFont); debugGridFont = nullptr; }
     for (auto& [file, tex] : tileTextureCache) if (tex) SDL_DestroyTexture(tex);
     tileTextureCache.clear();
     if (playerTex)       { SDL_DestroyTexture(playerTex);       playerTex       = nullptr; }
     if (cursorTex)       { SDL_DestroyTexture(cursorTex);       cursorTex       = nullptr; }
+    for (auto& tex : markerTex) { if (tex) { SDL_DestroyTexture(tex); tex = nullptr; } }
     if (panelTex)        { SDL_DestroyTexture(panelTex);        panelTex        = nullptr; }
     if (canvasBgTex) { SDL_DestroyTexture(canvasBgTex); canvasBgTex = nullptr; }
     if (lightMaskTex) { SDL_DestroyTexture(lightMaskTex); lightMaskTex = nullptr; }
@@ -398,6 +420,36 @@ void drawRectOutline(int px, int py, int pw, int ph, SDL_Color color) {
     SDL_SetRenderDrawBlendMode(renderer, prevBlend);
 }
 
+// File under assets/markers/ for each MarkerIcon value — index matches
+// the enum's declaration order in renderer.h.
+static const char* kMarkerFile[7] = {
+    "collision_marker.png",
+    "stairs_up_marker.png",
+    "stairs_down_marker.png",
+    "occlusion_marker.png",
+    "light_marker.png",
+    "connector_marker.png",
+    "border_marker.png",
+};
+
+static SDL_Texture* getMarkerTexture(MarkerIcon icon) {
+    int i = static_cast<int>(icon);
+    if (markerTex[i]) return markerTex[i];
+
+    std::string path = std::string("assets/markers/") + kMarkerFile[i];
+    markerTex[i] = IMG_LoadTexture(renderer, path.c_str());
+    if (!markerTex[i]) std::cerr << "Failed to load marker texture: " << path << " (" << IMG_GetError() << ")\n";
+    return markerTex[i];
+}
+
+void drawMarkerIcon(MarkerIcon icon, int px, int py) {
+    SDL_Texture* tex = getMarkerTexture(icon);
+    if (!tex) return;
+
+    SDL_Rect dst = { px, py, CELL_SIZE, CELL_SIZE };
+    SDL_RenderCopy(renderer, tex, nullptr, &dst);
+}
+
 void setClipRect(int px, int py, int pw, int ph) {
     SDL_Rect clip = { px, py, pw, ph };
     SDL_RenderSetClipRect(renderer, &clip);
@@ -494,6 +546,51 @@ void drawLightMask(const uint8_t* pixels) {
 static bool bordersVisible = true;
 void toggleBordersVisible() { bordersVisible = !bordersVisible; }
 bool areBordersVisible() { return bordersVisible; }
+
+// Global debug-grid toggle — see renderer.h.
+static bool debugGridVisible = false;
+void toggleDebugGridVisible() { debugGridVisible = !debugGridVisible; }
+bool isDebugGridVisible() { return debugGridVisible; }
+
+// Renders `str` with debugGridFont at pixel position (px, py) — same
+// shape as drawStringPx, just against the small grid-label font instead
+// of the main UI one.
+static void drawDebugGridStringPx(const std::string& str, int px, int py, SDL_Color color) {
+    if (str.empty() || !debugGridFont) return;
+    SDL_Surface* surf = TTF_RenderUTF8_Solid(debugGridFont, str.c_str(), color);
+    if (!surf) return;
+
+    SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surf);
+    if (tex) {
+        SDL_Rect dst = { px, py, surf->w, surf->h };
+        SDL_RenderCopy(renderer, tex, nullptr, &dst);
+        SDL_DestroyTexture(tex);
+    }
+    SDL_FreeSurface(surf);
+}
+
+void drawDebugGrid(int mapOriginX, int width, int height) {
+    if (!debugGridVisible) return;
+
+    const SDL_Color kLabelColor = {255, 255, 0, 220};
+
+    /*
+    TTF_FontLineSkip, not a hardcoded half-CELL_SIZE, spaces the "X" line
+    from the "Y" line beneath it — debugGridFont's actual line height at
+    whatever point size it was opened with (renderer.cpp's initSDL), so
+    the two lines stay readable even if that point size ever changes.
+    */
+    int lineSkip = debugGridFont ? TTF_FontLineSkip(debugGridFont) : CELL_SIZE / 2;
+
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            int px = mapOriginX + x * CELL_SIZE;
+            int py = MAP_ORIGIN_Y + y * CELL_SIZE;
+            drawDebugGridStringPx(std::to_string(x), px, py, kLabelColor);
+            drawDebugGridStringPx(std::to_string(y), px, py + lineSkip, kLabelColor);
+        }
+    }
+}
 
 // FrameBuilder
 long long FrameBuilder::key(int px, int py) {

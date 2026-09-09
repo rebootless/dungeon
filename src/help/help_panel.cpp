@@ -115,6 +115,7 @@ namespace HelpPanel {
         "/load <floor>-<x>-<y>",
         "/borderMap",
         "/lightMap",
+        "/debugGrid",
         "/exit",
     };
 

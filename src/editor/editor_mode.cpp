@@ -9,6 +9,7 @@
 #include "../core/display.h"
 #include "../core/layout.h"
 #include "../core/level.h"
+#include "../core/lighting.h"
 #include "../core/renderer.h"
 #include "../core/tiles.h"
 #include "editor_panel.h"
@@ -272,6 +273,16 @@ static void drawInfoStr(const std::string& text, int gx, int gy, int originX) {
 }
 
 /*
+Ephemeral light-map preview toggle — see mode.h's IMode::LightMapToggleResult
+for why this mode keeps its own flag instead of an authored Level::lightMap.
+File-local (not in editor_state.h) since nothing outside this file needs
+it. Reset to false in onEnter() below so leaving and coming back to this
+mode never carries a stale ON state into a location with no light markers
+of its own (or, worse, one whose author never intended it lit at all).
+*/
+static bool lightPreviewOn_ = false;
+
+/*
 IMode
 Same default as GameMode::onEnter(): tries to load (floor=0, x=0, y=0) —
 selectedCoord's initial value — and if nothing is saved there, leaves the
@@ -281,6 +292,13 @@ with any placeholder/template content.
 void EditorMode::onEnter() {
     buildPalette();
     loadLocationIntoEditor(selectedCoord);
+    lightPreviewOn_ = false;
+}
+
+// Console's /lightMap command (core/app.cpp) delegates straight here.
+IMode::LightMapToggleResult EditorMode::toggleLightMapPreview() {
+    lightPreviewOn_ = !lightPreviewOn_;
+    return lightPreviewOn_ ? LightMapToggleResult::TurnedOn : LightMapToggleResult::TurnedOff;
 }
 
 void EditorMode::onRender() {
@@ -453,52 +471,75 @@ void EditorMode::onRender() {
 
     /*
     Collision overlay
-    Three distinct marker colors: yellow = blocking wall (TAB), cyan =
-    stairs up (5), magenta = stairs down (6) — matches whichever tool is
-    currently active, so what you're about to place is always visible.
+    Three distinct marker icons: a block for a blocking wall (TAB), an
+    up arrow for stairs up (5), a down arrow for stairs down (6) —
+    matches whichever tool is currently active, so what you're about to
+    place is always visible.
     */
     for (int y = 0; y < MAX_HEIGHT; ++y) {
         for (int x = 0; x < MAX_WIDTH; ++x) {
             TileID marker = edCollisionMap[y][x];
-            SDL_Color color;
-            if      (marker == COLLISION_MARKER)   color = SDL_Color{255, 220, 0, 200};
-            else if (marker == STAIRS_UP_MARKER)   color = SDL_Color{80, 220, 255, 200};
-            else if (marker == STAIRS_DOWN_MARKER) color = SDL_Color{230, 90, 255, 200};
+            MarkerIcon icon;
+            if      (marker == COLLISION_MARKER)   icon = MarkerIcon::Collision;
+            else if (marker == STAIRS_UP_MARKER)   icon = MarkerIcon::StairsUp;
+            else if (marker == STAIRS_DOWN_MARKER) icon = MarkerIcon::StairsDown;
             else continue;
 
-            drawRectOutline(mapOriginX + x * CELL_SIZE, MAP_ORIGIN_Y + y * CELL_SIZE,
-                             CELL_SIZE, CELL_SIZE, color);
+            drawMarkerIcon(icon, mapOriginX + x * CELL_SIZE, MAP_ORIGIN_Y + y * CELL_SIZE);
         }
     }
 
     /*
     Occlusion overlay
     Invisible in GameMode (see tiles.h's OCCLUSION_MARKER) — drawn here as
-    a translucent violet outline purely so there's something to aim at
-    while placing/erasing it (O key — see editor_controls.cpp).
+    a marker icon purely so there's something to aim at while placing/
+    erasing it (O key — see editor_controls.cpp).
     */
     for (int y = 0; y < MAX_HEIGHT; ++y) {
         for (int x = 0; x < MAX_WIDTH; ++x) {
             if (edOcclusionMap[y][x] != OCCLUSION_MARKER) continue;
-            drawRectOutline(mapOriginX + x * CELL_SIZE, MAP_ORIGIN_Y + y * CELL_SIZE,
-                             CELL_SIZE, CELL_SIZE, SDL_Color{170, 100, 255, 200});
+            drawMarkerIcon(MarkerIcon::Occlusion, mapOriginX + x * CELL_SIZE, MAP_ORIGIN_Y + y * CELL_SIZE);
         }
     }
 
     /*
     Light overlay
     GameMode only renders this marker's effect (see core/lighting.h) when
-    the location's lightMap flag is set — drawn here as a translucent
-    amber outline, unconditionally, purely so there's something to aim at
-    while placing/erasing it (5 key — see editor_controls.cpp).
+    the location's lightMap flag is set — drawn here as a marker icon,
+    unconditionally, purely so there's something to aim at while placing/
+    erasing it (5 key — see editor_controls.cpp).
     */
     for (int y = 0; y < MAX_HEIGHT; ++y) {
         for (int x = 0; x < MAX_WIDTH; ++x) {
             if (edLightMarkerMap[y][x] != LIGHT_MARKER) continue;
-            drawRectOutline(mapOriginX + x * CELL_SIZE, MAP_ORIGIN_Y + y * CELL_SIZE,
-                             CELL_SIZE, CELL_SIZE, SDL_Color{255, 190, 60, 200});
+            drawMarkerIcon(MarkerIcon::Light, mapOriginX + x * CELL_SIZE, MAP_ORIGIN_Y + y * CELL_SIZE);
         }
     }
+
+    /*
+    Light mask preview (console's /lightMap — core/app.cpp)
+    No player to center the "player's own light" on (see core/lighting.h),
+    so the map's own center stands in for it — good enough to eyeball how
+    a placed LIGHT_MARKER will actually look in GameMode without leaving
+    the editor.
+    */
+    if (lightPreviewOn_) {
+        static uint8_t lightMaskPixels[MAP_PIXEL_W * MAP_PIXEL_H * 4];
+        buildLightMask(edLightMarkerMap, MAX_WIDTH, MAX_HEIGHT,
+                       MAX_WIDTH / 2, MAX_HEIGHT / 2, lightMaskPixels);
+        /*
+        setMapOrigin() below is what drawLightMask() actually reads
+        (renderer.cpp's own file-static mapOriginX, distinct from this
+        function's local variable of the same name) — this mode never
+        otherwise calls it, unlike GameMode/GeneratorMode which do every
+        frame, so it needs setting explicitly right before use rather
+        than being left to whatever the last mode to call it left behind.
+        */
+        setMapOrigin(mapOriginX);
+        drawLightMask(lightMaskPixels);
+    }
+
+    drawDebugGrid(mapOriginX, MAX_WIDTH, MAX_HEIGHT);
 
     // Map/info-box divider — sits in its own dedicated row below the map
     // (layout.h's MAP_BOTTOM_Y), so drawing it here rather than up front

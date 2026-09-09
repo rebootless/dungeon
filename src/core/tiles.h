@@ -36,7 +36,8 @@ constexpr TileID makeTileId(char c0, char c1) {
 }
 
 // Sentinel stored in the collision layer to mark a cell as blocked.
-// Never rendered as a tile sprite; drawn as a yellow outline in the editor.
+// Never rendered as a tile sprite; drawn as a marker icon in the editor
+// (see core/renderer.h's MarkerIcon::Collision, assets/markers/collision_marker.png).
 constexpr TileID COLLISION_MARKER = 0xFFFE;
 
 /*
@@ -45,7 +46,8 @@ Same idea as COLLISION_MARKER — a logical marker, not a placeable tile.
 The decorative stairs sprites are placed on the Ground/Objects layer
 purely for visuals (plain "manual" tiles.json entries, like any other
 decoration); these markers are what GameMode actually reads to trigger a
-floor change. Drawn as a cyan/magenta outline in the editor.
+floor change. Drawn as an up/down arrow marker icon in the editor (see
+core/renderer.h's MarkerIcon::StairsUp/StairsDown).
 */
 constexpr TileID STAIRS_UP_MARKER   = 0xFFFD;
 constexpr TileID STAIRS_DOWN_MARKER = 0xFFFC;
@@ -53,8 +55,9 @@ constexpr TileID STAIRS_DOWN_MARKER = 0xFFFC;
 /*
 Sentinel stored in the occlusion layer. Purely a gameplay/rendering hint
 (e.g. "fade the roof over this cell when the player stands under it") —
-never rendered as a sprite of its own. Drawn as a translucent violet
-outline in the editor, invisible in GameMode.
+never rendered as a sprite of its own. Drawn as a marker icon in the
+editor (see core/renderer.h's MarkerIcon::Occlusion), invisible in
+GameMode.
 */
 constexpr TileID OCCLUSION_MARKER = 0xFFFB;
 
@@ -64,12 +67,14 @@ core/lighting.h's mask builder — decoupled from whatever tile actually
 sits on Ground/Objects at that cell, so a torch sprite can be placed
 purely for looks while the light itself is marked independently (or vice
 versa: a window, a lava pool, anything that should glow without needing
-its own tiles.json light metadata). Drawn as a translucent amber outline
-in the editor, invisible in GameMode.
+its own tiles.json light metadata). Drawn as a marker icon in the editor
+(see core/renderer.h's MarkerIcon::Light), invisible in GameMode.
 */
 constexpr TileID LIGHT_MARKER = 0xFFF7;
 
 // Sentinel stored in a Fragment's connector layer — see generator/fragment.h.
+// Drawn as a marker icon in the fragment editor (see core/renderer.h's
+// MarkerIcon::Connector).
 constexpr TileID CONNECTOR_MARKER = 0xFFFA;
 
 /*

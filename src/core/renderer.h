@@ -102,9 +102,30 @@ void drawStringPx(const std::string& str, int px, int py, SDL_Color color);
 // grid cells). Used for UI backgrounds such as the console overlay.
 void fillRect(int px, int py, int pw, int ph, SDL_Color color);
 
-// Outline (unfilled) variant of fillRect — used for selection highlights and
-// the editor's collision-marker overlay.
+// Outline (unfilled) variant of fillRect — used for selection highlights.
 void drawRectOutline(int px, int py, int pw, int ph, SDL_Color color);
+
+/*
+Logical-layer marker icons
+One CELL_SIZE icon per logical marker sentinel (tiles.h's COLLISION_MARKER,
+STAIRS_UP_MARKER, STAIRS_DOWN_MARKER, OCCLUSION_MARKER, LIGHT_MARKER,
+CONNECTOR_MARKER) plus the fragment editor's derived footprint border, each
+loaded from its own file under assets/markers/. Used by EditorMode and
+FragmentEditorMode to show where a logical marker sits on the map, since
+none of these are ever rendered as an actual tile sprite.
+*/
+enum class MarkerIcon {
+    Collision,
+    StairsUp,
+    StairsDown,
+    Occlusion,
+    Light,
+    Connector,
+    Border,
+};
+
+// Blits the CELL_SIZE icon for `icon` at pixel position (px, py).
+void drawMarkerIcon(MarkerIcon icon, int px, int py);
 
 // Clip subsequent drawing to an arbitrary pixel-space rect, or clear the
 // clip.
@@ -179,6 +200,26 @@ about the toggle itself.
 */
 void toggleBordersVisible();
 bool areBordersVisible();
+
+/*
+Global debug-grid toggle — console's /debugGrid command (core/app.cpp).
+Same shape as toggleBordersVisible/areBordersVisible: one flag, honored
+identically wherever it's drawn, so no mode needs its own copy of the
+on/off state.
+*/
+void toggleDebugGridVisible();
+bool isDebugGridVisible();
+
+/*
+Draws the cell's x coordinate over the y coordinate, in a tiny font, over
+every cell of a `width` x `height` grid anchored at pixel (mapOriginX,
+MAP_ORIGIN_Y) — i.e. exactly the cells drawMapChar(c, x, y) for x in
+[0, width) and y in [0, height) would land on. No-op unless
+isDebugGridVisible(), so callers can call this unconditionally at the end
+of their own render(). Shared by EditorMode, FragmentEditorMode, GameMode,
+and GeneratorMode so all four modes' grids read identically.
+*/
+void drawDebugGrid(int mapOriginX, int width, int height);
 
 /*
 Frame system

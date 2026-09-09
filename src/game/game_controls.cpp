@@ -169,23 +169,23 @@ void GameMode::onEvent(const SDL_Event& e) {
     /*
     Edge crossing
     Stepping past the current map's own outermost ring of cells hands the
-    player to the neighboring location on the same floor. Horizontally,
-    that ring sits a full cell beyond the map's actual array bounds
-    (nextX < 0 / nextX >= level.width), so the player can walk onto column
-    0 and column width - 1 before crossing over. This never touches array
-    bounds itself: every branch below returns before nextX is used as an
-    index, so nextX == -1 or nextX == level.width are only ever compared,
-    never dereferenced. Vertically the ring is exactly one cell in from
-    the array bounds (nextY <= 0 / nextY >= height - 1).
+    player to the neighboring location on the same floor. That ring sits
+    a full cell beyond the map's actual array bounds in both directions
+    (nextX < 0 / nextX >= level.width, nextY < 0 / nextY >= level.height),
+    so the player can walk onto column 0, column width - 1, row 0, and
+    row height - 1 before crossing over. This never touches array bounds
+    itself: every branch below returns before nextX/nextY is used as an
+    index, so nextX == -1, nextX == level.width, nextY == -1, and
+    nextY == level.height are only ever compared, never dereferenced.
     If there isn't a neighboring location loaded, movement is simply
     blocked at the edge (nothing to fall through to below either way,
     since border cells are never walkable, so there's no separate wall
     check needed for them).
     */
-    if (nextX < 0)                 { if (enterLevel(gCurrentCoord.floor, gCurrentCoord.x - 1, gCurrentCoord.y, LevelEntry{LevelEntry::Kind::EdgeEast,  gPlayerPosY})) { gGameMessage = ""; } return; }
-    if (nextX >= level.width)      { if (enterLevel(gCurrentCoord.floor, gCurrentCoord.x + 1, gCurrentCoord.y, LevelEntry{LevelEntry::Kind::EdgeWest,  gPlayerPosY})) { gGameMessage = ""; } return; }
-    if (nextY <= 0)                { if (enterLevel(gCurrentCoord.floor, gCurrentCoord.x, gCurrentCoord.y - 1, LevelEntry{LevelEntry::Kind::EdgeSouth, gPlayerPosX})) { gGameMessage = ""; } return; }
-    if (nextY >= level.height - 1) { if (enterLevel(gCurrentCoord.floor, gCurrentCoord.x, gCurrentCoord.y + 1, LevelEntry{LevelEntry::Kind::EdgeNorth, gPlayerPosX})) { gGameMessage = ""; } return; }
+    if (nextX < 0)              { if (enterLevel(gCurrentCoord.floor, gCurrentCoord.x - 1, gCurrentCoord.y, LevelEntry{LevelEntry::Kind::EdgeEast,  gPlayerPosY})) { gGameMessage = ""; } return; }
+    if (nextX >= level.width)   { if (enterLevel(gCurrentCoord.floor, gCurrentCoord.x + 1, gCurrentCoord.y, LevelEntry{LevelEntry::Kind::EdgeWest,  gPlayerPosY})) { gGameMessage = ""; } return; }
+    if (nextY < 0)              { if (enterLevel(gCurrentCoord.floor, gCurrentCoord.x, gCurrentCoord.y - 1, LevelEntry{LevelEntry::Kind::EdgeSouth, gPlayerPosX})) { gGameMessage = ""; } return; }
+    if (nextY >= level.height)  { if (enterLevel(gCurrentCoord.floor, gCurrentCoord.x, gCurrentCoord.y + 1, LevelEntry{LevelEntry::Kind::EdgeNorth, gPlayerPosX})) { gGameMessage = ""; } return; }
 
     /*
     A cell blocks movement if it carries a collision marker, OR if a

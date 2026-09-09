@@ -108,7 +108,8 @@ void stampLight(const LightSource& src, int mapW, int mapH,
 
 } // namespace
 
-void buildLightMask(const Level& level, int playerX, int playerY, uint8_t* outPixels) {
+void buildLightMask(const TileID lightMarkerMap[MAX_HEIGHT][MAX_WIDTH], int width, int height,
+                     int playerX, int playerY, uint8_t* outPixels) {
     const int mapW = MAP_PIXEL_W;
     const int mapH = MAP_PIXEL_H;
 
@@ -130,9 +131,9 @@ void buildLightMask(const Level& level, int playerX, int playerY, uint8_t* outPi
     };
     stampLight(player, mapW, mapH, outPixels, bestT);
 
-    for (int y = 0; y < level.height; ++y) {
-        for (int x = 0; x < level.width; ++x) {
-            if (level.lightMarkerMap[y][x] != LIGHT_MARKER) continue;
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            if (lightMarkerMap[y][x] != LIGHT_MARKER) continue;
 
             LightSource marker{
                 x * CELL_SIZE + CELL_SIZE / 2,

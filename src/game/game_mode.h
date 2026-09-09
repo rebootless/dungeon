@@ -21,6 +21,7 @@ public:
     void onEnter() override;
     void onEvent(const SDL_Event& e) override;
     void onRender() override;
+    LightMapToggleResult toggleLightMapPreview() override;
 
     /*
     Teleports to the world location at (floor, x, y), entering at its

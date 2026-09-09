@@ -21,4 +21,5 @@ public:
     void onEnter() override;
     void onEvent(const SDL_Event& e) override;
     void onRender() override;
+    LightMapToggleResult toggleLightMapPreview() override;
 };

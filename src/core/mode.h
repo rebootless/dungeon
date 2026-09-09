@@ -44,6 +44,22 @@ public:
     */
     virtual void onRender() = 0;
 
+    /*
+    Result of a console /lightMap command (core/app.cpp), which just
+    delegates straight here — each mode decides for itself what "toggle
+    the lighting preview" even means: GameMode flips the loaded
+    location's own authored Level::lightMap flag, while a mode with no
+    single "current level" to persist a flag on (EditorMode,
+    FragmentEditorMode, GeneratorMode) keeps its own ephemeral,
+    always-false-on-entry preview flag instead, purely so an author can
+    eyeball a light layout without leaving the editor.
+    */
+    enum class LightMapToggleResult { Unsupported, NoLocation, TurnedOn, TurnedOff };
+
+    // Default: unsupported, for any mode that doesn't implement lighting
+    // at all (e.g. SettingsMode, HelpMode).
+    virtual LightMapToggleResult toggleLightMapPreview() { return LightMapToggleResult::Unsupported; }
+
     // Called by App right after construction, before onEnter().
     void setContext(AppContext ctx) { context_ = std::move(ctx); }
 

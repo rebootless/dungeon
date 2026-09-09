@@ -68,6 +68,7 @@ void App::registerConsoleCommands() {
         { "exit", {}, nullptr },
         { "borderMap", {}, nullptr },
         { "lightMap", {}, nullptr },
+        { "debugGrid", {}, nullptr },
     };
 
     console_.setSubmitHandler([this](const std::string& line) { dispatchCommand(line); });
@@ -94,6 +95,33 @@ void App::dispatchCommand(const std::string& line) {
     }
 
     /*
+    Delegates to whichever mode is currently active — see mode.h's
+    IMode::toggleLightMapPreview() for why each mode handles this
+    differently (GameMode flips the loaded location's own authored flag;
+    the editor/generator modes keep their own ephemeral preview flag).
+    */
+    if (tokens[0] == "/lightMap") {
+        if (!mode_) return;
+        switch (mode_->toggleLightMapPreview()) {
+            case IMode::LightMapToggleResult::Unsupported:
+                console_.setStatusLine(" Light map preview isn't available in this mode", kErr);
+                return;
+            case IMode::LightMapToggleResult::NoLocation:
+                console_.setStatusLine(" No location loaded", kErr);
+                return;
+            case IMode::LightMapToggleResult::TurnedOn:
+                needsRender_ = true;
+                console_.setStatusLine(" Light map ON", kOk);
+                return;
+            case IMode::LightMapToggleResult::TurnedOff:
+                needsRender_ = true;
+                console_.setStatusLine(" Light map OFF", kOk);
+                return;
+        }
+        return;
+    }
+
+    /*
     Replaces the old G-key global toggle — same effect (FrameBuilder::draw()
     in core/renderer.cpp is what actually honors bordersVisible), just
     reachable from the console instead of a dedicated key so G is free for
@@ -107,20 +135,15 @@ void App::dispatchCommand(const std::string& line) {
     }
 
     /*
-    Toggles the CURRENT location's lighting on/off live, purely visual —
-    it flips gCurrentLevel->lightMap directly rather than the saved copy
-    on disk, so it's a quick way to compare a location lit vs. unlit
-    without going into the editor. F5 in the editor would persist it as a
-    genuine authoring change; this command never touches world/ itself.
+    Small x/y coordinate label over every map cell, for lining up
+    markers/tiles precisely — a single global flag (like bordersVisible)
+    honored identically by EditorMode, FragmentEditorMode, GameMode, and
+    GeneratorMode's render calls (see core/renderer.cpp's drawDebugGrid()).
     */
-    if (tokens[0] == "/lightMap") {
-        if (!gCurrentLevel) {
-            console_.setStatusLine(" No location loaded", kErr);
-            return;
-        }
-        gCurrentLevel->lightMap = !gCurrentLevel->lightMap;
+    if (tokens[0] == "/debugGrid") {
+        toggleDebugGridVisible();
         needsRender_ = true;
-        console_.setStatusLine(std::string(" Light map ") + (gCurrentLevel->lightMap ? "ON" : "OFF"), kOk);
+        console_.setStatusLine(std::string(" Debug grid ") + (isDebugGridVisible() ? "ON" : "OFF"), kOk);
         return;
     }
 

@@ -383,7 +383,7 @@ void GameMode::render() {
         */
         if (level.lightMap) {
             static uint8_t lightMaskPixels[MAP_PIXEL_W * MAP_PIXEL_H * 4];
-            buildLightMask(level, gPlayerPosX, gPlayerPosY, lightMaskPixels);
+            buildLightMask(level.lightMarkerMap, level.width, level.height, gPlayerPosX, gPlayerPosY, lightMaskPixels);
             drawLightMask(lightMaskPixels);
         }
 
@@ -398,6 +398,11 @@ void GameMode::render() {
         facingCell(fx, fy);
         if (fx >= 0 && fx < level.width && fy >= 0 && fy < level.height)
             drawMapChar(FACING_INDICATOR, fx, fy);
+
+        // Debug grid (console's /debugGrid — core/app.cpp) — drawn last,
+        // on top of everything including the facing cursor, since it's a
+        // diagnostic overlay rather than part of the game view itself.
+        drawDebugGrid(mapOriginX, level.width, level.height);
     }
 
     setMapClip(false);
@@ -479,6 +484,21 @@ if nothing is loaded at that coordinate.
 */
 bool GameMode::travelTo(int floor, int x, int y) {
     return enterLevel(floor, x, y, LevelEntry{});
+}
+
+/*
+Console's /lightMap command (core/app.cpp) delegates straight here —
+flips the CURRENT location's lightMap flag in memory, purely visual;
+F5 in the editor would persist it as a genuine authoring change, this
+never touches world/ itself. worldLevels.clear()s and reloads from disk
+every time GameMode is (re)entered (see onEnter() above), so leaving and
+coming back to the same location already resets this to its authored
+on-disk value without any extra bookkeeping here.
+*/
+IMode::LightMapToggleResult GameMode::toggleLightMapPreview() {
+    if (!gCurrentLevel) return LightMapToggleResult::NoLocation;
+    gCurrentLevel->lightMap = !gCurrentLevel->lightMap;
+    return gCurrentLevel->lightMap ? LightMapToggleResult::TurnedOn : LightMapToggleResult::TurnedOff;
 }
 
 void GameMode::onRender() {

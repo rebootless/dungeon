@@ -3,6 +3,7 @@
 #include "../core/display.h"
 #include "../core/layout.h"
 #include "../core/level.h"
+#include "../core/lighting.h"
 #include "../core/renderer.h"
 #include "../core/tiles.h"
 #include "../help/help_mode.h"
@@ -16,6 +17,14 @@ namespace {
 // whatever's in here, exactly like GameMode draws gCurrentLevel's layers.
 GeneratedDungeon dungeon_;
 bool             hasDungeon_ = false;
+
+/*
+Ephemeral light-map preview toggle — see mode.h's IMode::LightMapToggleResult
+for why this mode keeps its own flag instead of an authored Level::lightMap.
+Reset to false in onEnter() below so leaving and coming back to this mode
+never carries a stale ON state into a freshly-generated dungeon.
+*/
+bool lightPreviewOn_ = false;
 
 void generate() {
     hasDungeon_ = generateDungeon(dungeon_);
@@ -32,6 +41,13 @@ from disk.
 void GeneratorMode::onEnter() {
     initFragments();
     generate();
+    lightPreviewOn_ = false;
+}
+
+// Console's /lightMap command (core/app.cpp) delegates straight here.
+IMode::LightMapToggleResult GeneratorMode::toggleLightMapPreview() {
+    lightPreviewOn_ = !lightPreviewOn_;
+    return lightPreviewOn_ ? LightMapToggleResult::TurnedOn : LightMapToggleResult::TurnedOff;
 }
 
 void GeneratorMode::onEvent(const SDL_Event& e) {
@@ -114,7 +130,25 @@ void GeneratorMode::onRender() {
             for (int x = 0; x < MAX_WIDTH; ++x)
                 if (dungeon_.entityMap[y][x] != EMPTY_ID)
                     drawMapChar(dungeon_.entityMap[y][x], x, y);
+
+        /*
+        Light mask preview (console's /lightMap — core/app.cpp)
+        No player to center the "player's own light" on (see
+        core/lighting.h), so the canvas's own center stands in for it —
+        good enough to eyeball how a fragment's LIGHT_MARKER cells will
+        actually look once a real player walks through them in GameMode.
+        setMapOrigin() above already applies to drawLightMask() too, since
+        it's the same file-static renderer.cpp reads for both.
+        */
+        if (lightPreviewOn_) {
+            static uint8_t lightMaskPixels[MAP_PIXEL_W * MAP_PIXEL_H * 4];
+            buildLightMask(dungeon_.lightMarkerMap, MAX_WIDTH, MAX_HEIGHT,
+                           MAX_WIDTH / 2, MAX_HEIGHT / 2, lightMaskPixels);
+            drawLightMask(lightMaskPixels);
+        }
     }
+
+    drawDebugGrid(mapOriginX, MAX_WIDTH, MAX_HEIGHT);
 
     setMapClip(false);
 
