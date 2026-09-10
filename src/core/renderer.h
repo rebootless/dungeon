@@ -214,10 +214,14 @@ bool isDebugGridVisible();
 Draws the cell's x coordinate over the y coordinate, in a tiny font, over
 every cell of a `width` x `height` grid anchored at pixel (mapOriginX,
 MAP_ORIGIN_Y) — i.e. exactly the cells drawMapChar(c, x, y) for x in
-[0, width) and y in [0, height) would land on. No-op unless
-isDebugGridVisible(), so callers can call this unconditionally at the end
-of their own render(). Shared by EditorMode, FragmentEditorMode, GameMode,
-and GeneratorMode so all four modes' grids read identically.
+[0, width) and y in [0, height) would land on, at whatever zoom/camera
+GameMode's setZoom()/setMapCamera() last set (same transform as
+drawMapChar/drawLightMask, so the labels track the tiles under them at
+any zoom level; a no-op distinction in the other three modes, which never
+touch zoom). No-op unless isDebugGridVisible(), so callers can call this
+unconditionally at the end of their own render(). Shared by EditorMode,
+FragmentEditorMode, GameMode, and GeneratorMode so all four modes' grids
+read identically.
 */
 void drawDebugGrid(int mapOriginX, int width, int height);
 

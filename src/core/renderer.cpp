@@ -552,17 +552,18 @@ static bool debugGridVisible = false;
 void toggleDebugGridVisible() { debugGridVisible = !debugGridVisible; }
 bool isDebugGridVisible() { return debugGridVisible; }
 
-// Renders `str` with debugGridFont at pixel position (px, py) — same
-// shape as drawStringPx, just against the small grid-label font instead
-// of the main UI one.
-static void drawDebugGridStringPx(const std::string& str, int px, int py, SDL_Color color) {
+// Renders `str` with debugGridFont at pixel position (px, py), scaled up
+// by `scale` — same shape as drawStringPx, just against the small
+// grid-label font instead of the main UI one, and stretched to match
+// whatever zoom level the caller is drawing the grid at.
+static void drawDebugGridStringPx(const std::string& str, int px, int py, SDL_Color color, int scale) {
     if (str.empty() || !debugGridFont) return;
     SDL_Surface* surf = TTF_RenderUTF8_Solid(debugGridFont, str.c_str(), color);
     if (!surf) return;
 
     SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surf);
     if (tex) {
-        SDL_Rect dst = { px, py, surf->w, surf->h };
+        SDL_Rect dst = { px, py, surf->w * scale, surf->h * scale };
         SDL_RenderCopy(renderer, tex, nullptr, &dst);
         SDL_DestroyTexture(tex);
     }
@@ -575,19 +576,39 @@ void drawDebugGrid(int mapOriginX, int width, int height) {
     const SDL_Color kLabelColor = {255, 255, 0, 220};
 
     /*
-    TTF_FontLineSkip, not a hardcoded half-CELL_SIZE, spaces the "X" line
-    from the "Y" line beneath it — debugGridFont's actual line height at
+    TTF_FontLineSkip, not a hardcoded half-CELL_SIZE, spaces the top
+    number from the bottom one — debugGridFont's actual line height at
     whatever point size it was opened with (renderer.cpp's initSDL), so
     the two lines stay readable even if that point size ever changes.
+    Scaled by zoomLevel below along with everything else.
     */
     int lineSkip = debugGridFont ? TTF_FontLineSkip(debugGridFont) : CELL_SIZE / 2;
 
+    /*
+    Same screen transform drawMapChar/drawLightMask use, applied per cell
+    here instead of per tile/once for the whole mask: at zoom 1 the grid
+    lines up with (mapOriginX, MAP_ORIGIN_Y) directly; at higher zoom
+    each cell (and its labels) is both repositioned around the camera AND
+    stretched by zoomLevel, exactly like the tile underneath it, so the
+    numbers never drift off their own cell as the player zooms/pans.
+    Only GameMode ever leaves zoomLevel above 1 (see setZoom() below) —
+    the editor/generator modes always render this at the zoom-1 branch.
+    */
+    int camPx = camX * CELL_SIZE + CELL_SIZE / 2;
+    int camPy = camY * CELL_SIZE + CELL_SIZE / 2;
+
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
-            int px = mapOriginX + x * CELL_SIZE;
-            int py = MAP_ORIGIN_Y + y * CELL_SIZE;
-            drawDebugGridStringPx(std::to_string(x), px, py, kLabelColor);
-            drawDebugGridStringPx(std::to_string(y), px, py + lineSkip, kLabelColor);
+            int px, py;
+            if (zoomLevel == 1) {
+                px = mapOriginX + x * CELL_SIZE;
+                py = MAP_ORIGIN_Y + y * CELL_SIZE;
+            } else {
+                px = mapOriginX + (x * CELL_SIZE - camPx) * zoomLevel + MAP_PIXEL_W / 2;
+                py = MAP_ORIGIN_Y + (y * CELL_SIZE - camPy) * zoomLevel + MAP_PIXEL_H / 2;
+            }
+            drawDebugGridStringPx(std::to_string(x), px, py, kLabelColor, zoomLevel);
+            drawDebugGridStringPx(std::to_string(y), px, py + lineSkip * zoomLevel, kLabelColor, zoomLevel);
         }
     }
 }
