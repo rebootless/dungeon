@@ -2563,5 +2563,37 @@
     "cellH": 2,
     "frameCount": 6,
     "frameDurationMs": 150
+  },
+  {
+    "id": "1Z",
+    "file": "wooden_support.png",
+    "layer": "objects",
+    "mode": "manual",
+    "cellW": 3,
+    "cellH": 3
+  },
+  {
+    "id": "20",
+    "file": "stone_arch.png",
+    "layer": "objects",
+    "mode": "manual",
+    "cellW": 3,
+    "cellH": 3
+  },
+  {
+    "id": "27",
+    "file": "stone_arch_ruins.png",
+    "layer": "objects",
+    "mode": "manual",
+    "cellW": 3,
+    "cellH": 3
+  },
+  {
+    "id": "28",
+    "file": "crypt_entrance.png",
+    "layer": "objects",
+    "mode": "manual",
+    "cellW": 5,
+    "cellH": 5
   }
 ]
