@@ -1887,7 +1887,7 @@
   {
     "id": "6I",
     "file": "brick_wall.png",
-    "layer": "ground",
+    "layer": "objects",
     "mode": "manual",
     "cellH": 2,
     "col": 1
@@ -1902,7 +1902,7 @@
   {
     "id": "6K",
     "file": "cobblestone_wall.png",
-    "layer": "ground",
+    "layer": "objects",
     "mode": "manual",
     "cellH": 2,
     "col": 1

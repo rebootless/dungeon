@@ -351,23 +351,14 @@ void GameMode::render() {
                     drawMapChar(gEntityLayer[y][x], x, y);
 
         /*
-        Ground + Object cells redrawn over the Entities layer (in that
-        same order, so Objects still sits above Ground like normal),
-        wherever an entity (the player) happens to be standing on a cell
-        the editor marked as an occlusion zone (see editor_state.h's
-        OCCLUSION layer / tiles.h's OCCLUSION_MARKER) — makes walking
-        into a doorway (or any other marked archway) read as passing
-        UNDER/THROUGH it instead of standing in front of it, regardless
-        of which layer the archway's sprite actually lives on (some
-        "door frame" wall sprites are Ground, not Objects — see
-        tiles.cpp's registry). Purely data-driven: no door-specific tile
-        IDs are checked here at all — whatever the level author marked
-        is what occludes.
+        Object cells redrawn over the Entities layer wherever an entity
+        stands on an occlusion-marked cell. Ground is intentionally left
+        underneath the entity so the character still stands on the floor;
+        only higher layers occlude. Purely data-driven via OCCLUSION_MARKER.
         */
         for (int y = 0; y < level.height; y++)
             for (int x = 0; x < level.width; x++) {
                 if (gEntityLayer[y][x] == EMPTY_ID || gOcclusionMap[y][x] != OCCLUSION_MARKER) continue;
-                drawMapChar(gTileLayer[y][x], x, y);
                 drawMapChar(gObjectLayer[y][x], x, y);
             }
 
