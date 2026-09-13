@@ -60,7 +60,7 @@ The asset page states that the pack is licensed under CC0 1.0 Universal and may 
 * Archived: 2026-09-08
 * Archive: https://web.archive.org/web/20260908074116/https://hexany-ives.itch.io/hexanys-roguelike-tiles
 
-The asset page states that the tileset is licensed under CC0 1.0 Universal and may be used for commercial and non-commercial projects. Attribution is not required.
+The asset page states that the pack is licensed under CC0 1.0 Universal and may be used for commercial and non-commercial projects. Attribution is not required.
 
 ## Hexany's 1-bit UI Panels
 

@@ -42,7 +42,7 @@ See the project build scripts and repository documentation for platform-specific
 
 ## Third-Party
 
-Information about third-party assets and their licenses can be found in [THIRD-PARTY-LICENSES.md](THIRD-PARTY-LICENSES.md).
+Information about third-party assets and their licenses can be found in [THIRD-PARTY-LICENSES](THIRD-PARTY-LICENSES.md)
 
 ## License
 
