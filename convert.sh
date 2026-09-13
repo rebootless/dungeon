@@ -1,7 +1,7 @@
 #!/bin/bash
 
-SRC="/assets/legacy"
-DST="/assets/tiles"
+SRC="assets/legacy"
+DST="assets/tiles"
 
 show_help() {
     cat <<EOF

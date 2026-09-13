@@ -13,8 +13,8 @@ namespace {
 /*
 tiles.json entry, exactly as authored — see assets/tiles/tiles.json's own
 field-by-field usage for what each mode actually needs. Defaults here
-match the generator's: cellW/cellH/tier default to 1, col/row default to
-0, paletteVisible defaults true.
+match the generator's: cellW/cellH/tier/frameCount default to 1, col/row/
+frameDurationMs default to 0, paletteVisible defaults true.
 */
 struct RawEntry {
     TileID      id = EMPTY_ID;
@@ -28,6 +28,8 @@ struct RawEntry {
     int         tier = 1;
     std::string role;
     bool        paletteVisible = true;
+    int         frameCount      = 1;
+    int         frameDurationMs = 0;
 };
 
 std::vector<RawEntry> g_entries;
@@ -96,6 +98,7 @@ TileMode parseMode(const std::string& s) {
     if (s == "random")          return TileMode::Random;
     if (s == "interactive")     return TileMode::Interactive;
     if (s == "autotile_blend")  return TileMode::AutotileBlend;
+    if (s == "animated")        return TileMode::Animated;
     fail("unknown mode \"" + s + "\"");
 }
 
@@ -138,6 +141,8 @@ const char* parseEntry(const char* p, RawEntry& e) {
         else if (strcmp(key, "tier")            == 0) { p = jInt(p, &v); e.tier = (int)v; }
         else if (strcmp(key, "role")            == 0) { p = jString(p, strBuf, sizeof(strBuf)); e.role = strBuf; }
         else if (strcmp(key, "paletteVisible")  == 0) { p = jBool(p, &e.paletteVisible); }
+        else if (strcmp(key, "frameCount")      == 0) { p = jInt(p, &v); e.frameCount = (int)v; }
+        else if (strcmp(key, "frameDurationMs") == 0) { p = jInt(p, &v); e.frameDurationMs = (int)v; }
         else                                            { p = jSkipValue(p); } // forward-compatible: ignore unknown keys
 
         p = jSkip(p);
@@ -154,6 +159,10 @@ const char* parseEntry(const char* p, RawEntry& e) {
     e.id    = parseId(idStr);
     e.layer = parseLayer(layerStr);
     e.mode  = parseMode(modeStr);
+
+    if (e.mode == TileMode::Animated && (e.frameCount < 2 || e.frameDurationMs <= 0))
+        fail("entry \"" + idStr + "\" is animated but has no frameCount >= 2 and frameDurationMs > 0");
+
     return p;
 }
 
@@ -166,6 +175,13 @@ TileMetadata metaFor(const RawEntry& e) {
     m.srcCellX       = e.col * e.cellW;
     m.srcCellY       = e.row * e.cellH;
     m.paletteVisible = e.paletteVisible;
+
+    if (e.mode == TileMode::Animated) {
+        m.animated        = true;
+        m.frameCount       = (uint8_t)e.frameCount;
+        m.frameDurationMs = e.frameDurationMs;
+        m.frameStride     = (uint8_t)e.cellW;
+    }
     return m;
 }
 
@@ -194,6 +210,13 @@ void synthesizeSubTiles(const RawEntry& e) {
             m.srcCellX       = e.col * e.cellW + dx;
             m.srcCellY       = e.row * e.cellH + dy;
             m.paletteVisible = false;
+
+            if (e.mode == TileMode::Animated) {
+                m.animated        = true;
+                m.frameCount       = (uint8_t)e.frameCount;
+                m.frameDurationMs = e.frameDurationMs;
+                m.frameStride     = (uint8_t)e.cellW;
+            }
             g_meta[subId] = m;
             g_subIds[subKey(e.id, dx, dy)] = subId;
             g_anchorOf[subId] = { e.id, dx, dy };
@@ -264,7 +287,8 @@ void loadTileRegistry() {
         }
 
         if (e.paletteVisible) {
-            if (e.mode == TileMode::Manual || e.mode == TileMode::Random || e.mode == TileMode::Interactive)
+            if (e.mode == TileMode::Manual || e.mode == TileMode::Random ||
+                e.mode == TileMode::Interactive || e.mode == TileMode::Animated)
                 g_paletteTiles.push_back(e.id);
             else if (e.mode == TileMode::AutotileBlend)
                 g_autotilePaletteTiles.push_back(e.id);

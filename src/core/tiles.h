@@ -113,6 +113,7 @@ enum class TileMode : uint8_t {
     Random,         // one of a group's members, picked uniformly at paint time
     Interactive,    // frame 0 of an object/tier's animation is the only one paletteVisible
     AutotileBlend,  // one piece of a 3x3-plus-corners floor material blend
+    Animated,       // cycles through its frames on its own while placed on the map
 };
 
 /*
@@ -131,6 +132,20 @@ struct TileMetadata {
     std::string file;                       // filename under assets/tiles/, "" if not a real sprite
     int         srcCellX = 0, srcCellY = 0; // top-left of this tile's art within `file`, in CELL_SIZE units
     bool        paletteVisible = false;
+
+    /*
+    TileMode::Animated only: successive frames sit side by side in `file`,
+    each `frameStride` cells to the right of the previous one, looping
+    every `frameCount` frames at `frameDurationMs` per frame. A synthesized
+    sub-cell of a multi-cell animated entry carries the same three fields
+    as its anchor so every cell of the sprite advances frames in lockstep
+    (see core/renderer.cpp's resolveTile, the only place that reads them).
+    Meaningless (and left at these defaults) for every other TileMode.
+    */
+    bool        animated       = false;
+    uint8_t     frameCount     = 1;
+    int         frameDurationMs = 0;
+    uint8_t     frameStride    = 1;
 };
 
 TileMetadata getTileMeta(TileID id);

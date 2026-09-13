@@ -150,6 +150,11 @@ static int zoomLevel = 1;
 static int camX      = 0;
 static int camY      = 0;
 
+// Forward declaration — defined alongside the rest of the debug-grid
+// label cache further down, but cleanupSDL() (right below) needs to free
+// it at shutdown.
+static void clearDebugGridLabelCache();
+
 // initSDL
 void initSDL() {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -239,6 +244,7 @@ void cleanupSDL() {
     if (logicalTarget) { SDL_DestroyTexture(logicalTarget); logicalTarget = nullptr; }
     if (font)     { TTF_CloseFont(font);            font     = nullptr; }
     if (debugGridFont) { TTF_CloseFont(debugGridFont); debugGridFont = nullptr; }
+    clearDebugGridLabelCache();
     for (auto& [file, tex] : tileTextureCache) if (tex) SDL_DestroyTexture(tex);
     tileTextureCache.clear();
     if (playerTex)       { SDL_DestroyTexture(playerTex);       playerTex       = nullptr; }
@@ -300,6 +306,13 @@ aware). Handles the five hardcoded special sprites before ever consulting
 the tiles.json-backed registry, and returns false for EMPTY_ID, a
 sentinel, or any id the registry doesn't recognize — callers treat that
 as "draw nothing", exactly like the old atlas system's EMPTY_ID check.
+
+For a TileMode::Animated id (or one of its synthesized sub-cells), the
+reported source column also advances on its own, driven by SDL_GetTicks()
+rather than anything about the map cell itself — every placed instance of
+the same tile is in phase with every other, and drawTilePreview's palette
+icon (which reads tiles.json metadata directly, never through here) stays
+on frame 0.
 */
 namespace {
 struct ResolvedTile { SDL_Texture* tex; int srcCellX, srcCellY, cellW, cellH; };
@@ -316,7 +329,13 @@ bool resolveTile(TileID c, ResolvedTile& out) {
     SDL_Texture* tex = getTileTexture(meta.file);
     if (!tex) return false;
 
-    out = { tex, meta.srcCellX, meta.srcCellY, meta.w, meta.h };
+    int srcCellX = meta.srcCellX;
+    if (meta.animated) {
+        int frameIndex = (int)((SDL_GetTicks() / (Uint32)meta.frameDurationMs) % meta.frameCount);
+        srcCellX += frameIndex * meta.frameStride;
+    }
+
+    out = { tex, srcCellX, meta.srcCellY, meta.w, meta.h };
     return true;
 }
 } // namespace
@@ -552,28 +571,85 @@ static bool debugGridVisible = false;
 void toggleDebugGridVisible() { debugGridVisible = !debugGridVisible; }
 bool isDebugGridVisible() { return debugGridVisible; }
 
+/*
+Debug-grid label texture cache
+drawDebugGrid draws two coordinate labels per cell of the whole map, every
+single frame it's visible. There are only ever as many distinct label
+textures as there are distinct (string, color) pairs — at most a few
+hundred, one per coordinate value in each of the two label colors — so
+rendering a fresh SDL_Surface/SDL_Texture for every one of those calls
+instead of reusing them here means creating and destroying thousands of
+GPU textures a frame for no reason: exactly the kind of texture-churn
+pattern that pegs a GPU's driver thread on alloc/free synchronization
+rather than actual drawing. Keyed by the label string with an "R"/"Y"
+suffix for which of the two colors it was rendered in, since the same
+number appears in both.
+*/
+static std::unordered_map<std::string, SDL_Texture*> debugGridLabelCache;
+
+static SDL_Texture* getDebugGridLabelTexture(const std::string& str, SDL_Color color, int& outW, int& outH) {
+    bool isAnchorColor = (color.r == 255 && color.g == 0 && color.b == 0);
+    std::string key = str + (isAnchorColor ? "R" : "Y");
+
+    auto it = debugGridLabelCache.find(key);
+    if (it != debugGridLabelCache.end()) {
+        SDL_Texture* tex = it->second;
+        if (tex) SDL_QueryTexture(tex, nullptr, nullptr, &outW, &outH);
+        return tex;
+    }
+
+    SDL_Texture* tex = nullptr;
+    SDL_Surface* surf = debugGridFont ? TTF_RenderUTF8_Solid(debugGridFont, str.c_str(), color) : nullptr;
+    if (surf) {
+        tex = SDL_CreateTextureFromSurface(renderer, surf);
+        outW = surf->w;
+        outH = surf->h;
+        SDL_FreeSurface(surf);
+    }
+
+    debugGridLabelCache[key] = tex;
+    return tex;
+}
+
+static void clearDebugGridLabelCache() {
+    for (auto& [key, tex] : debugGridLabelCache) if (tex) SDL_DestroyTexture(tex);
+    debugGridLabelCache.clear();
+}
+
 // Renders `str` with debugGridFont at pixel position (px, py), scaled up
 // by `scale` — same shape as drawStringPx, just against the small
 // grid-label font instead of the main UI one, and stretched to match
-// whatever zoom level the caller is drawing the grid at.
+// whatever zoom level the caller is drawing the grid at. Reuses a cached
+// texture per (str, color) pair instead of rendering a new one on every
+// call — see getDebugGridLabelTexture above.
 static void drawDebugGridStringPx(const std::string& str, int px, int py, SDL_Color color, int scale) {
     if (str.empty() || !debugGridFont) return;
-    SDL_Surface* surf = TTF_RenderUTF8_Solid(debugGridFont, str.c_str(), color);
-    if (!surf) return;
 
-    SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surf);
-    if (tex) {
-        SDL_Rect dst = { px, py, surf->w * scale, surf->h * scale };
-        SDL_RenderCopy(renderer, tex, nullptr, &dst);
-        SDL_DestroyTexture(tex);
-    }
-    SDL_FreeSurface(surf);
+    int w = 0, h = 0;
+    SDL_Texture* tex = getDebugGridLabelTexture(str, color, w, h);
+    if (!tex) return;
+
+    SDL_Rect dst = { px, py, w * scale, h * scale };
+    SDL_RenderCopy(renderer, tex, nullptr, &dst);
 }
 
 void drawDebugGrid(int mapOriginX, int width, int height) {
     if (!debugGridVisible) return;
 
-    const SDL_Color kLabelColor = {255, 255, 0, 220};
+    const SDL_Color kLabelColor  = {255, 255, 0, 220};
+    const SDL_Color kAnchorColor = {255, 0, 0, 220};
+
+    /*
+    The 9 landmark cells of the width x height grid — its 4 corners, the
+    midpoint of each of its 4 edges, and its own center — get labeled in
+    kAnchorColor instead of kLabelColor, purely to give a glance-able
+    frame of reference when reading off coordinates against a level's
+    actual size. cx/cy land on the same cell integer division always
+    would for any width/height, so this stays correct however oddly
+    either dimension is sized.
+    */
+    int cx = width / 2;
+    int cy = height / 2;
 
     /*
     TTF_FontLineSkip, not a hardcoded half-CELL_SIZE, spaces the top
@@ -607,8 +683,13 @@ void drawDebugGrid(int mapOriginX, int width, int height) {
                 px = mapOriginX + (x * CELL_SIZE - camPx) * zoomLevel + MAP_PIXEL_W / 2;
                 py = MAP_ORIGIN_Y + (y * CELL_SIZE - camPy) * zoomLevel + MAP_PIXEL_H / 2;
             }
-            drawDebugGridStringPx(std::to_string(x), px, py, kLabelColor, zoomLevel);
-            drawDebugGridStringPx(std::to_string(y), px, py + lineSkip * zoomLevel, kLabelColor, zoomLevel);
+
+            bool isAnchor = (x == 0 || x == cx || x == width - 1) &&
+                             (y == 0 || y == cy || y == height - 1);
+            const SDL_Color& color = isAnchor ? kAnchorColor : kLabelColor;
+
+            drawDebugGridStringPx(std::to_string(x), px, py, color, zoomLevel);
+            drawDebugGridStringPx(std::to_string(y), px, py + lineSkip * zoomLevel, color, zoomLevel);
         }
     }
 }

@@ -324,6 +324,15 @@ void App::run() {
     }
     switchMode(std::make_unique<SettingsMode>());
 
+    /*
+    How often the loop wakes up and redraws on its own when no input
+    event has arrived — see the SDL_WaitEventTimeout comment in run()
+    below for why this exists at all. 30Hz is plenty smooth for anything
+    on the timescale of TileMode::Animated's frameDurationMs (the torch
+    ships at 150ms/frame) while staying cheap during an idle window.
+    */
+    constexpr int kIdleRenderIntervalMs = 33;
+
     while (running_) {
         if (needsRender_) {
             /*
@@ -338,9 +347,21 @@ void App::run() {
             needsRender_ = false;
         }
 
+        /*
+        SDL_WaitEventTimeout, not a bare SDL_WaitEvent: anything whose
+        look changes on its own over time (TileMode::Animated tiles like
+        the torch — core/renderer.cpp's resolveTile reads SDL_GetTicks()
+        directly, with no per-cell state of its own) would otherwise only
+        ever get redrawn as a side effect of some unrelated input event
+        marking needsRender_ dirty, so it visibly animates only while the
+        player happens to be moving the mouse. On a timeout (no event
+        arrived within kIdleRenderIntervalMs) there's nothing for
+        handleEvent() to process, but the frame is marked dirty anyway so
+        animated tiles keep advancing while the player is simply idle.
+        */
         SDL_Event e;
-        if (!SDL_WaitEvent(&e)) continue;
-        handleEvent(e);
+        if (SDL_WaitEventTimeout(&e, kIdleRenderIntervalMs)) handleEvent(e);
+        else                                                 needsRender_ = true;
     }
 
     if (mode_) mode_->onExit();

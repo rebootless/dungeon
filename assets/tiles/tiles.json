@@ -2554,5 +2554,14 @@
     "object": "door",
     "tier": 3,
     "paletteVisible": false
+  },
+  {
+    "id": "8L",
+    "file": "torch_animated.png",
+    "layer": "objects",
+    "mode": "animated",
+    "cellH": 2,
+    "frameCount": 6,
+    "frameDurationMs": 150
   }
 ]
