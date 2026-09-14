@@ -8,6 +8,7 @@
 #include "../core/tiles.h"
 #include "../help/help_mode.h"
 #include "../settings/settings_mode.h"
+#include "../ui/ui_panels.h"
 #include "fragment_editor_state.h"
 
 // Same paint-time autotiling as editor/editor_controls.cpp — see its
@@ -63,6 +64,12 @@ void frPlaceTile(int gx, int gy) {
 
     if (frActiveLayer == FragmentEditLayer::LIGHT) {
         frLightMarkerMap[gy][gx] = LIGHT_MARKER;
+        return;
+    }
+
+    if (frActiveLayer == FragmentEditLayer::ENTITIES) {
+        // Single-cell, same behavior as the other marker layers above.
+        frEntityMap[gy][gx] = PLAYER;
         return;
     }
 
@@ -123,6 +130,11 @@ void frEraseTile(int gx, int gy) {
 
     if (frActiveLayer == FragmentEditLayer::LIGHT) {
         frLightMarkerMap[gy][gx] = EMPTY_ID;
+        return;
+    }
+
+    if (frActiveLayer == FragmentEditLayer::ENTITIES) {
+        frEntityMap[gy][gx] = EMPTY_ID;
         return;
     }
 
@@ -244,32 +256,32 @@ void FragmentEditorMode::onEvent(const SDL_Event& e) {
             case SDL_SCANCODE_1:
                 frActiveLayer         = FragmentEditLayer::COLLISION;
                 frActiveCollisionTool = FragmentCollisionTool::BLOCK;
-                frEditorStatus        = " Placing: Collision marker";
+                frEditorStatus        = FragmentEditorPanel::STATUS_PLACING_COLLISION;
                 frEditorStatusTTL     = 90;
                 break;
 
             case SDL_SCANCODE_2:
                 frActiveLayer         = FragmentEditLayer::COLLISION;
                 frActiveCollisionTool = FragmentCollisionTool::STAIRS_DOWN;
-                frEditorStatus        = " Placing: Stairs DOWN marker";
+                frEditorStatus        = FragmentEditorPanel::STATUS_PLACING_STAIRS_DOWN;
                 frEditorStatusTTL     = 90;
                 break;
             case SDL_SCANCODE_3:
                 frActiveLayer         = FragmentEditLayer::COLLISION;
                 frActiveCollisionTool = FragmentCollisionTool::STAIRS_UP;
-                frEditorStatus        = " Placing: Stairs UP marker";
+                frEditorStatus        = FragmentEditorPanel::STATUS_PLACING_STAIRS_UP;
                 frEditorStatusTTL     = 90;
                 break;
 
             case SDL_SCANCODE_4:
                 frActiveLayer     = FragmentEditLayer::OCCLUSION;
-                frEditorStatus    = " Placing: Occlusion marker";
+                frEditorStatus    = FragmentEditorPanel::STATUS_PLACING_OCCLUSION;
                 frEditorStatusTTL = 90;
                 break;
 
             case SDL_SCANCODE_5:
                 frActiveLayer     = FragmentEditLayer::LIGHT;
-                frEditorStatus    = " Placing: Light marker";
+                frEditorStatus    = FragmentEditorPanel::STATUS_PLACING_LIGHT;
                 frEditorStatusTTL = 90;
                 break;
 
@@ -280,7 +292,20 @@ void FragmentEditorMode::onEvent(const SDL_Event& e) {
             */
             case SDL_SCANCODE_0:
                 frActiveLayer     = FragmentEditLayer::CONNECTOR;
-                frEditorStatus    = " Placing: Connector marker";
+                frEditorStatus    = FragmentEditorPanel::STATUS_PLACING_CONNECTOR;
+                frEditorStatusTTL = 90;
+                break;
+
+            /*
+            Entities layer — same idea as 1-5/0: pick the tool, then
+            left-click paints one PLAYER cell (right-click erases it).
+            Meaningful the same way it is for a regular level — a
+            generated dungeon that stitches this fragment in as its entry
+            point can use it as where the player lands.
+            */
+            case SDL_SCANCODE_6:
+                frActiveLayer     = FragmentEditLayer::ENTITIES;
+                frEditorStatus    = FragmentEditorPanel::STATUS_PLACING_SPAWN;
                 frEditorStatusTTL = 90;
                 break;
 

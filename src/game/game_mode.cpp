@@ -11,7 +11,7 @@
 #include "../core/lighting.h"
 #include "../core/renderer.h"
 #include "../core/tiles.h"
-#include "game_panel.h"
+#include "../ui/ui_panels.h"
 #include "game_state.h"
 #include "interactions.h"
 
@@ -294,15 +294,15 @@ void GameMode::render() {
     */
     {
         std::vector<std::string> statLines = {
-            GamePanel::buildStatLine(GamePanel::ICON_HP,  "HP ", "[hp] "),
-            GamePanel::buildStatLine(GamePanel::ICON_STA, "STA", "[sta]"),
-            GamePanel::buildStatLine(GamePanel::ICON_MP,  "MP ", "[mp] "),
-            GamePanel::buildStatLine(GamePanel::ICON_ATK, "ATK", "[atk]"),
-            GamePanel::buildStatLine(GamePanel::ICON_DEF, "DEF", "[def]"),
-            GamePanel::buildStatLine(GamePanel::ICON_DEX, "DEX", "[dex]"),
-            GamePanel::buildStatLine(GamePanel::ICON_INT, "INT", "[int]"),
-            GamePanel::buildStatLine(GamePanel::ICON_CHA, "CHA", "[cha]"),
-            GamePanel::buildStatLine(GamePanel::ICON_LCK, "LCK", "[lck]"),
+            GamePanel::buildStatLine(GamePanel::ICON_HP,  "HP ", GamePanel::STAT_VALUE_HP),
+            GamePanel::buildStatLine(GamePanel::ICON_STA, "STA", GamePanel::STAT_VALUE_STA),
+            GamePanel::buildStatLine(GamePanel::ICON_MP,  "MP ", GamePanel::STAT_VALUE_MP),
+            GamePanel::buildStatLine(GamePanel::ICON_ATK, "ATK", GamePanel::STAT_VALUE_ATK),
+            GamePanel::buildStatLine(GamePanel::ICON_DEF, "DEF", GamePanel::STAT_VALUE_DEF),
+            GamePanel::buildStatLine(GamePanel::ICON_DEX, "DEX", GamePanel::STAT_VALUE_DEX),
+            GamePanel::buildStatLine(GamePanel::ICON_INT, "INT", GamePanel::STAT_VALUE_INT),
+            GamePanel::buildStatLine(GamePanel::ICON_CHA, "CHA", GamePanel::STAT_VALUE_CHA),
+            GamePanel::buildStatLine(GamePanel::ICON_LCK, "LCK", GamePanel::STAT_VALUE_LCK),
         };
         std::vector<std::string> leftLines = GamePanel::buildLeftPanelLines(
             gLevelName, statLines,

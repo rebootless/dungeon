@@ -13,7 +13,7 @@
 #include "../core/renderer.h"
 #include "../core/tiles.h"
 #include "fragment.h"
-#include "fragment_editor_panel.h"
+#include "../ui/ui_panels.h"
 #include "fragment_editor_state.h"
 
 /*
@@ -197,7 +197,7 @@ void loadFragmentIntoEditor(int id) {
         clearFragmentEditorMaps();
         fragmentWidth  = 1;
         fragmentHeight = 1;
-        frEditorStatus    = "No saved fragment at this id \u2014 empty canvas";
+        frEditorStatus    = FragmentEditorPanel::STATUS_EMPTY_CANVAS;
         frEditorStatusTTL = 150;
         return;
     }
@@ -217,7 +217,7 @@ void loadFragmentIntoEditor(int id) {
     fragmentHeight = std::min(fragment->height, MAX_HEIGHT);
     rebuildFragmentMultiTileOccupancy();
 
-    frEditorStatus    = std::string("Loaded \"") + fragment->name + "\"";
+    frEditorStatus    = FragmentEditorPanel::STATUS_LOADED_PREFIX + fragment->name + FragmentEditorPanel::STATUS_LOADED_SUFFIX;
     frEditorStatusTTL = 150;
 }
 
@@ -248,8 +248,8 @@ void saveFragmentEditorTo(int id) {
 
     bool ok = saveFragmentToFile(fragment, fragmentFileName(id).c_str());
 
-    frEditorStatus    = ok ? (std::string(" Saved \"") + fragment.name + "\" to " + fragmentFileName(id))
-                            : "Save FAILED \u2014 check fragments/ is writable";
+    frEditorStatus    = ok ? (FragmentEditorPanel::STATUS_SAVED_PREFIX + fragment.name + FragmentEditorPanel::STATUS_SAVED_MID + fragmentFileName(id))
+                            : FragmentEditorPanel::STATUS_SAVE_FAILED;
     frEditorStatusTTL = 150;
 }
 
@@ -406,7 +406,10 @@ void FragmentEditorMode::onRender() {
         }
     }
 
-    // Map layers (Ground → Objects → Entities, matches game render order)
+    // Map layers (Ground → Objects → Entities, matches game render order).
+    // A PLAYER cell in frEntityMap is skipped here and drawn as a marker
+    // icon in the Spawn overlay below instead — same reasoning as
+    // EditorMode's world editor (editor_mode.cpp).
     for (int y = 0; y < MAX_HEIGHT; ++y) {
         for (int x = 0; x < MAX_WIDTH; ++x) {
             int px = mapOriginX + x * CELL_SIZE;
@@ -414,7 +417,8 @@ void FragmentEditorMode::onRender() {
 
             drawTileRect(frGroundMap[y][x], SDL_Rect{px, py, CELL_SIZE, CELL_SIZE});
             drawTileRect(frObjectMap[y][x], SDL_Rect{px, py, CELL_SIZE, CELL_SIZE});
-            drawTileRect(frEntityMap[y][x], SDL_Rect{px, py, CELL_SIZE, CELL_SIZE});
+            if (frEntityMap[y][x] != PLAYER)
+                drawTileRect(frEntityMap[y][x], SDL_Rect{px, py, CELL_SIZE, CELL_SIZE});
         }
     }
 
@@ -482,6 +486,21 @@ void FragmentEditorMode::onRender() {
         for (int x = 0; x < MAX_WIDTH; ++x) {
             if (frLightMarkerMap[y][x] != LIGHT_MARKER) continue;
             drawMarkerIcon(MarkerIcon::Light, mapOriginX + x * CELL_SIZE, MAP_ORIGIN_Y + y * CELL_SIZE);
+        }
+    }
+
+    /*
+    Spawn overlay
+    Same reasoning as EditorMode's world editor (editor_mode.cpp): PLAYER
+    is also GameMode's actual on-screen character sprite, so it's drawn
+    here as a dedicated marker icon instead of that sprite, standing in
+    for wherever a generated dungeon that stitches this fragment in as
+    its entry point will land the player.
+    */
+    for (int y = 0; y < MAX_HEIGHT; ++y) {
+        for (int x = 0; x < MAX_WIDTH; ++x) {
+            if (frEntityMap[y][x] != PLAYER) continue;
+            drawMarkerIcon(MarkerIcon::Spawn, mapOriginX + x * CELL_SIZE, MAP_ORIGIN_Y + y * CELL_SIZE);
         }
     }
 

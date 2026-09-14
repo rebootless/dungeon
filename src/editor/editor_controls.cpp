@@ -8,6 +8,7 @@
 #include "../core/tiles.h"
 #include "../help/help_mode.h"
 #include "../settings/settings_mode.h"
+#include "../ui/ui_panels.h"
 #include "editor_state.h"
 
 /*
@@ -69,6 +70,18 @@ void placeTile(int gx, int gy) {
     if (activeLayer == EditLayer::LIGHT) {
         // Single-cell, same behavior as the other marker layers above.
         edLightMarkerMap[gy][gx] = LIGHT_MARKER;
+        return;
+    }
+
+    if (activeLayer == EditLayer::ENTITIES) {
+        /*
+        Single-cell, same behavior as the other marker layers above.
+        GameMode's initMap scans entityMap for PLAYER and takes the last
+        one it finds (see game/game_mode.cpp) — nothing here stops a
+        second spawn point from being placed, it would just mean the
+        first one is never actually used.
+        */
+        edEntityMap[gy][gx] = PLAYER;
         return;
     }
 
@@ -136,6 +149,11 @@ void eraseTile(int gx, int gy) {
 
     if (activeLayer == EditLayer::LIGHT) {
         edLightMarkerMap[gy][gx] = EMPTY_ID;
+        return;
+    }
+
+    if (activeLayer == EditLayer::ENTITIES) {
+        edEntityMap[gy][gx] = EMPTY_ID;
         return;
     }
 
@@ -280,21 +298,23 @@ void EditorMode::onEvent(const SDL_Event& e) {
                 return;
 
             /*
-            Ground/Objects/Entities are not manually selectable —
-            activeLayer always follows whichever palette tile is selected
-            (see handlePointerAction's click-to-select-layer branch), so
-            it's never possible to paint a tile onto the "wrong" layer.
-            The four marker tools (Collision, Stairs down/up, Occlusion)
-            have no palette tile of their own, so 1-4 are their dedicated
-            keys — each also toggles that layer's overlay implicitly,
-            since the overlay is only ever drawn for markers that exist
-            regardless of activeLayer, and this is the only key that lets
-            you ADD to that layer in the first place.
+            Ground/Objects are not manually selectable — activeLayer
+            follows whichever palette tile is selected for those two (see
+            handlePointerAction's click-to-select-layer branch), so it's
+            never possible to paint a tile onto the "wrong" layer there.
+            Entities and the three true marker layers (Collision — with
+            its Block/Stairs-down/Stairs-up tools spread across 1-3 —
+            Occlusion, and Light) have no palette tile of their own, so
+            1-6 are their dedicated keys instead — each also toggles that
+            layer's overlay implicitly, since the overlay is only ever
+            drawn for markers that exist regardless of activeLayer, and
+            this is the only key that lets you ADD to that layer in the
+            first place.
             */
             case SDL_SCANCODE_1:
                 activeLayer         = EditLayer::COLLISION;
                 activeCollisionTool = CollisionTool::BLOCK;
-                editorStatus        = " Placing: Collision marker";
+                editorStatus        = EditorPanel::STATUS_PLACING_COLLISION;
                 editorStatusTTL     = 90;
                 break;
 
@@ -303,13 +323,13 @@ void EditorMode::onEvent(const SDL_Event& e) {
             case SDL_SCANCODE_2:
                 activeLayer         = EditLayer::COLLISION;
                 activeCollisionTool = CollisionTool::STAIRS_DOWN;
-                editorStatus        = " Placing: Stairs DOWN marker";
+                editorStatus        = EditorPanel::STATUS_PLACING_STAIRS_DOWN;
                 editorStatusTTL     = 90;
                 break;
             case SDL_SCANCODE_3:
                 activeLayer         = EditLayer::COLLISION;
                 activeCollisionTool = CollisionTool::STAIRS_UP;
-                editorStatus        = " Placing: Stairs UP marker";
+                editorStatus        = EditorPanel::STATUS_PLACING_STAIRS_UP;
                 editorStatusTTL     = 90;
                 break;
 
@@ -321,7 +341,7 @@ void EditorMode::onEvent(const SDL_Event& e) {
             */
             case SDL_SCANCODE_4:
                 activeLayer      = EditLayer::OCCLUSION;
-                editorStatus     = " Placing: Occlusion marker";
+                editorStatus     = EditorPanel::STATUS_PLACING_OCCLUSION;
                 editorStatusTTL  = 90;
                 break;
 
@@ -332,7 +352,20 @@ void EditorMode::onEvent(const SDL_Event& e) {
             */
             case SDL_SCANCODE_5:
                 activeLayer      = EditLayer::LIGHT;
-                editorStatus     = " Placing: Light marker";
+                editorStatus     = EditorPanel::STATUS_PLACING_LIGHT;
+                editorStatusTTL  = 90;
+                break;
+
+            /*
+            Entities layer — same idea as 1-5: pick the tool, then
+            left-click paints one PLAYER cell (right-click erases it).
+            Read by game/game_mode.cpp's initMap to place the player when
+            a level is entered with no more specific entry point (stairs,
+            map edge) to land on instead.
+            */
+            case SDL_SCANCODE_6:
+                activeLayer      = EditLayer::ENTITIES;
+                editorStatus     = EditorPanel::STATUS_PLACING_SPAWN;
                 editorStatusTTL  = 90;
                 break;
 

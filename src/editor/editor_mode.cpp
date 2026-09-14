@@ -12,7 +12,7 @@
 #include "../core/lighting.h"
 #include "../core/renderer.h"
 #include "../core/tiles.h"
-#include "editor_panel.h"
+#include "../ui/ui_panels.h"
 #include "editor_state.h"
 
 /*
@@ -206,7 +206,7 @@ void loadLocationIntoEditor(const LevelCoord& coord) {
     Level* level = findLevel(coord.floor, coord.x, coord.y);
     if (!level) {
         clearEditorMaps();
-        editorStatus    = "No saved map at this location \u2014 empty canvas";
+        editorStatus    = EditorPanel::STATUS_EMPTY_CANVAS;
         editorStatusTTL = 150;
         return;
     }
@@ -223,7 +223,7 @@ void loadLocationIntoEditor(const LevelCoord& coord) {
     }
     rebuildMultiTileOccupancy();
 
-    editorStatus    = std::string("Loaded \"") + level->name + "\"";
+    editorStatus    = EditorPanel::STATUS_LOADED_PREFIX + level->name + EditorPanel::STATUS_LOADED_SUFFIX;
     editorStatusTTL = 150;
 }
 
@@ -257,8 +257,8 @@ void saveEditorToLocation(const LevelCoord& coord) {
 
     bool ok = saveLevelToFile(level, levelFileName(coord.floor, coord.x, coord.y).c_str());
 
-    editorStatus    = ok ? (std::string(" Saved \"") + level.name + "\" to " + levelFileName(coord.floor, coord.x, coord.y))
-                          : "Save FAILED \u2014 check world/ is writable";
+    editorStatus    = ok ? (EditorPanel::STATUS_SAVED_PREFIX + level.name + EditorPanel::STATUS_SAVED_MID + levelFileName(coord.floor, coord.x, coord.y))
+                          : EditorPanel::STATUS_SAVE_FAILED;
     editorStatusTTL = 150;
 }
 
@@ -457,7 +457,12 @@ void EditorMode::onRender() {
         }
     }
 
-    // Map layers (Ground → Objects → Entities, matches game render order)
+    // Map layers (Ground → Objects → Entities, matches game render order).
+    // A PLAYER cell in edEntityMap is skipped here and drawn as a marker
+    // icon in the Spawn overlay below instead of via its real GameMode
+    // sprite (see MarkerIcon's class comment) — every other Entities
+    // content, if any is ever added, still goes through drawTileRect
+    // like Ground/Objects.
     for (int y = 0; y < MAX_HEIGHT; ++y) {
         for (int x = 0; x < MAX_WIDTH; ++x) {
             int px = mapOriginX + x * CELL_SIZE;
@@ -465,7 +470,8 @@ void EditorMode::onRender() {
 
             drawTileRect(edGroundMap[y][x], SDL_Rect{px, py, CELL_SIZE, CELL_SIZE});
             drawTileRect(edObjectMap[y][x], SDL_Rect{px, py, CELL_SIZE, CELL_SIZE});
-            drawTileRect(edEntityMap[y][x], SDL_Rect{px, py, CELL_SIZE, CELL_SIZE});
+            if (edEntityMap[y][x] != PLAYER)
+                drawTileRect(edEntityMap[y][x], SDL_Rect{px, py, CELL_SIZE, CELL_SIZE});
         }
     }
 
@@ -513,6 +519,22 @@ void EditorMode::onRender() {
         for (int x = 0; x < MAX_WIDTH; ++x) {
             if (edLightMarkerMap[y][x] != LIGHT_MARKER) continue;
             drawMarkerIcon(MarkerIcon::Light, mapOriginX + x * CELL_SIZE, MAP_ORIGIN_Y + y * CELL_SIZE);
+        }
+    }
+
+    /*
+    Spawn overlay
+    entityMap's PLAYER sentinel is also what GameMode draws the actual
+    on-screen character with (core/renderer.cpp's resolveTile special
+    sprites), which here would look like a static character standing on
+    the tile rather than a spawn point being authored — drawn as a
+    dedicated marker icon instead, same idea as the marker layers above
+    (6 key — see editor_controls.cpp).
+    */
+    for (int y = 0; y < MAX_HEIGHT; ++y) {
+        for (int x = 0; x < MAX_WIDTH; ++x) {
+            if (edEntityMap[y][x] != PLAYER) continue;
+            drawMarkerIcon(MarkerIcon::Spawn, mapOriginX + x * CELL_SIZE, MAP_ORIGIN_Y + y * CELL_SIZE);
         }
     }
 

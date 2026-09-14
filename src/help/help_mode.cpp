@@ -10,7 +10,7 @@
 #include "../generator/fragment_editor_mode.h"
 #include "../generator/generator_mode.h"
 #include "../settings/settings_mode.h"
-#include "help_panel.h"
+#include "../ui/ui_panels.h"
 
 namespace {
 

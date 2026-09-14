@@ -46,7 +46,7 @@ icons is fixed and small. Not palette-recolored, same as the panel theme
 texture — these are already-colored icons under assets/markers/, not one
 of the gray-shade tile assets core/palette.h's LUT knows how to remap.
 */
-static SDL_Texture* markerTex[7] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
+static SDL_Texture* markerTex[8] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
 
 /*
 Panel theme texture
@@ -441,7 +441,7 @@ void drawRectOutline(int px, int py, int pw, int ph, SDL_Color color) {
 
 // File under assets/markers/ for each MarkerIcon value — index matches
 // the enum's declaration order in renderer.h.
-static const char* kMarkerFile[7] = {
+static const char* kMarkerFile[8] = {
     "collision_marker.png",
     "stairs_up_marker.png",
     "stairs_down_marker.png",
@@ -449,6 +449,7 @@ static const char* kMarkerFile[7] = {
     "light_marker.png",
     "connector_marker.png",
     "border_marker.png",
+    "spawn_marker.png",
 };
 
 static SDL_Texture* getMarkerTexture(MarkerIcon icon) {

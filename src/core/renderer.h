@@ -109,10 +109,15 @@ void drawRectOutline(int px, int py, int pw, int ph, SDL_Color color);
 Logical-layer marker icons
 One CELL_SIZE icon per logical marker sentinel (tiles.h's COLLISION_MARKER,
 STAIRS_UP_MARKER, STAIRS_DOWN_MARKER, OCCLUSION_MARKER, LIGHT_MARKER,
-CONNECTOR_MARKER) plus the fragment editor's derived footprint border, each
-loaded from its own file under assets/markers/. Used by EditorMode and
-FragmentEditorMode to show where a logical marker sits on the map, since
-none of these are ever rendered as an actual tile sprite.
+CONNECTOR_MARKER) plus the entityMap's PLAYER spawn point and the fragment
+editor's derived footprint border, each loaded from its own file under
+assets/markers/. Used by EditorMode and FragmentEditorMode to show where a
+logical marker sits on the map, since none of these are ever rendered as
+an actual tile sprite in the editor (PLAYER, unlike the true markers, IS a
+real sprite too — see resolveTile's special sprites — but GameMode is the
+only place that ever draws it that way; the editor shows the spawn point
+itself as a marker icon so it never looks like a character is standing
+there).
 */
 enum class MarkerIcon {
     Collision,
@@ -122,6 +127,7 @@ enum class MarkerIcon {
     Light,
     Connector,
     Border,
+    Spawn,
 };
 
 // Blits the CELL_SIZE icon for `icon` at pixel position (px, py).

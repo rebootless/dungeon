@@ -224,11 +224,11 @@ void GameMode::onEvent(const SDL_Event& e) {
         */
         if (gCollisionLayer[gPlayerPosY][gPlayerPosX] == STAIRS_DOWN_MARKER) {
             if (!enterLevel(gCurrentCoord.floor - 1, gCurrentCoord.x, gCurrentCoord.y, LevelEntry{LevelEntry::Kind::FromAbove, 0}))
-                gGameMessage = " The way down hasn't been built yet.";
+                gGameMessage = "The way down hasn't been built yet.";
         }
         else if (gCollisionLayer[gPlayerPosY][gPlayerPosX] == STAIRS_UP_MARKER) {
             if (!enterLevel(gCurrentCoord.floor + 1, gCurrentCoord.x, gCurrentCoord.y, LevelEntry{LevelEntry::Kind::FromBelow, 0}))
-                gGameMessage = " The way up hasn't been built yet.";
+                gGameMessage = "The way up hasn't been built yet.";
         }
 
         /*

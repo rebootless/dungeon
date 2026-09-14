@@ -18,21 +18,17 @@ add_executable(dungeon
     src/core/settings_store.cpp
     src/game/game_mode.cpp
     src/game/game_controls.cpp
-    src/game/game_panel.cpp
     src/game/interactions.cpp
     src/editor/editor_mode.cpp
     src/editor/editor_controls.cpp
-    src/editor/editor_panel.cpp
     src/generator/fragment.cpp
     src/generator/fragment_editor_mode.cpp
     src/generator/fragment_editor_controls.cpp
-    src/generator/fragment_editor_panel.cpp
     src/generator/dungeon_generator.cpp
     src/generator/generator_mode.cpp
     src/settings/settings_mode.cpp
-    src/settings/settings_panel.cpp
     src/help/help_mode.cpp
-    src/help/help_panel.cpp
+    src/ui/ui_panels.cpp
 )
 
 target_include_directories(dungeon PRIVATE src)

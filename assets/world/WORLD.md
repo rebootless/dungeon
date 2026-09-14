@@ -4,7 +4,7 @@ This folder contains location maps for the game world.
 
 Each map is stored using the following naming format:
 
-`LEVEL_XX_XX_XX`
+`LEVEL_XX_YY_ZZ`
 
 The three coordinates represent the map's position in the world. Negative coordinates are prefixed with `-`, while positive coordinates have no prefix. `00` represents the origin.
 From `-99` to `99`

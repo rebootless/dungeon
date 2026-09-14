@@ -13,7 +13,7 @@
 #include "../game/game_mode.h"
 #include "../generator/fragment_editor_mode.h"
 #include "../help/help_mode.h"
-#include "settings_panel.h"
+#include "../ui/ui_panels.h"
 
 namespace {
 
