@@ -1,31 +1,5 @@
 #!/bin/bash
-
 TILES_JSON="assets/tiles/tiles.json"
-
-show_help() {
-    cat <<EOF
-Usage: $(basename "$0") [OPTIONS]
-
-Show every 2-character tiles.json id ([0-9A-Z][0-9A-Z]) not already used,
-sorted and packed into a matrix that fills the terminal width.
-
-The registry is read from:
-  $TILES_JSON
-
-Options:
-  -h, --help    Show this help message
-
-Example:
-  $(basename "$0")
-EOF
-}
-
-case "$1" in
-    -h|--help)
-        show_help
-        exit 0
-        ;;
-esac
 
 if [[ ! -f "$TILES_JSON" ]]; then
     echo "Error: file not found: $TILES_JSON"
