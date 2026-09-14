@@ -2596,4 +2596,10 @@
     "cellW": 5,
     "cellH": 5
   }
+  {
+    "id": "2S",
+    "file": "stone_floor.png",
+    "layer": "ground",
+    "mode": "manual"
+  }
 ]
