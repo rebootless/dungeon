@@ -373,10 +373,11 @@ void SettingsMode::onRender() {
                      (SettingsPanel::ROW_LIST_START + (int)i) * CELL_SIZE, color);
     }
 
-    // Status line
+    // Status line — fixed row (SettingsPanel::ROW_STATUS), not computed
+    // from the category/option list length, so it never drifts depending
+    // on how many entries either column happens to have.
     if (statusTTL_ > 0) {
-        int statusRow = SettingsPanel::ROW_LIST_START + (int)std::max(kCategories.size(), options.size()) + 2;
-        drawStringPx(statusText_, SettingsPanel::COL_LEFT * CELL_SIZE, statusRow * CELL_SIZE,
+        drawStringPx(statusText_, SettingsPanel::COL_LEFT * CELL_SIZE, SettingsPanel::ROW_STATUS * CELL_SIZE,
                      SDL_Color{130, 230, 130, 255});
         --statusTTL_;
     }

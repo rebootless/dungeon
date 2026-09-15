@@ -2595,11 +2595,24 @@
     "mode": "manual",
     "cellW": 5,
     "cellH": 5
-  }
+  },
   {
     "id": "2S",
     "file": "stone_floor.png",
     "layer": "ground",
     "mode": "manual"
+  },
+  {
+    "id": "2T",
+    "file": "bookcase_narrow_back.png",
+    "layer": "objects",
+    "mode": "manual"
+  },
+  {
+    "id": "2U",
+    "file": "bookcase_back.png",
+    "layer": "objects",
+    "mode": "manual",
+    "cellW": 2
   }
 ]

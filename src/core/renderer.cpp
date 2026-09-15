@@ -173,8 +173,10 @@ void initSDL() {
     /*
     Nearest-neighbor filtering — required to keep the pixel-art canvas
     crisp when it's scaled into the real window in endFrame(). The scale
-    is a float (not integer-only), so this matters for keeping edges
-    clean at non-integer factors.
+    itself is always a whole number now (core/display.h's
+    displayComputeScale), so this isn't compensating for uneven pixel
+    blocks any more — it's just the correct filter for pixel art at any
+    integer scale, versus the blur GPUs default to.
     */
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
 

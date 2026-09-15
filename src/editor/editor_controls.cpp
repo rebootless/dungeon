@@ -195,7 +195,7 @@ static void handlePointerAction(int mx, int my, int panelContentW, int mapOrigin
                                  int mapRightEdgeX, int rightPanelX) {
     if (mx >= rightPanelX) {
         /*
-        Right panel: click a row to select that location as the F5/F6
+        Right panel: click a row to select that location as the F5/F9
         target. Header row (coordinate + name) occupies the first cell,
         same PALETTE_MARGIN-relative layout as the palette panel — see
         EditorMode::onRender()'s "Right panel" block for the matching
@@ -371,7 +371,7 @@ void EditorMode::onEvent(const SDL_Event& e) {
 
             /*
             World location selection
-            Steps selectedCoord — the F5/F6 target — one at a time. Works
+            Steps selectedCoord — the F5/F9 target — one at a time. Works
             whether or not that coordinate has a saved file yet, which is
             how new locations get created: step to an unused spot, draw,
             F5. Clicking a row in the right-panel list jumps here too.

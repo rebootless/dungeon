@@ -344,9 +344,13 @@ namespace HelpPanel {
         { "H",                "Help" },
     };
 
+    /*
+    GeneratorMode really is R/Q/H-only by design (see its own class
+    comment in generator/generator_mode.h) — no ESC/Settings binding, so
+    that entry doesn't belong here the way it does for every other mode.
+    */
     const std::vector<HelpControl> GENERATOR_CONTROLS = {
         { "R",                "Regenerate" },
-        { "ESC",              "Toggle Settings" },
         { "Q",                "Quit" },
         { "H",                "Help" },
     };
@@ -360,14 +364,20 @@ namespace HelpPanel {
         { "H",                "Help" },
     };
 
+    /*
+    Console::onEvent (core/console.cpp) consumes every SDL_KEYDOWN
+    unconditionally while open — it's a free-text input field, not a mode
+    with shortcut keys — so Q/H do NOT quit/open Help while typing, they
+    just type "q"/"h"; ESC closes the console itself, not Settings. Those
+    three don't belong in this list the way they do for every other mode.
+    */
     const std::vector<HelpControl> CONSOLE_CONTROLS = {
         { "~",                "Toggle Console" },
         { "ENTER",            "Submit" },
+        { "BACKSPACE",        "Delete Character" },
         { "UP / DOWN",        "Scroll History" },
         { "TAB",              "Autocomplete" },
-        { "ESC",              "Toggle Settings" },
-        { "Q",                "Quit" },
-        { "H",                "Help" },
+        { "ESC",              "Close Console" },
     };
 
     const std::vector<std::string> CONSOLE_COMMANDS = {
@@ -378,7 +388,7 @@ namespace HelpPanel {
         "/mode settings",
         "/mode help",
         "/zoom <1-4>",
-        "/load <level_xx_yy_zz>",
+        "/load <floor>-<x>-<y>",
         "/borderMap",
         "/lightMap",
         "/debugGrid",

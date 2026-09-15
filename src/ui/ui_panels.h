@@ -128,7 +128,7 @@ row; UI_BOX_ROWS (core/layout.h) is 13, so row indices here must stay
 within [0, 11] to leave the box's last row as a clean bottom margin — 12
 rows is the hard ceiling.
 
-The STATUS_* strings are the transient F5/F6/tool-selection messages
+The STATUS_* strings are the transient F5/F9/tool-selection messages
 editor_controls.cpp/editor_mode.cpp assign into editorStatus — the
 wording lives here, the live assembly (which one, plus a level name or
 filename) still happens at the call site, since only that file has the
@@ -137,7 +137,7 @@ data at the moment it's needed.
 namespace EditorPanel {
 
     // Info box rows
-    constexpr int ROW_STATUS = 2; // transient F5/F6 save-load status
+    constexpr int ROW_STATUS = 0; // transient F5/F9 save-load status — fixed to the box's first row, same as GamePanel's live message
 
     // Right panel (world location list) rows
     constexpr int ROW_WORLD_HEADER = 1; // " Floor N (x, y) [new]"
@@ -187,7 +187,7 @@ info box below the map. Row 0 is the panel's own top row; UI_BOX_ROWS
 namespace FragmentEditorPanel {
 
     // Info box rows
-    constexpr int ROW_STATUS = 2; // transient F5/F9 save-load status
+    constexpr int ROW_STATUS = 0; // transient F5/F9 save-load status — fixed to the box's first row, same as GamePanel's live message
 
     // Right panel (fragment list) rows
     constexpr int ROW_FRAGMENT_HEADER = 1; // " Fragment N (WxH) [new]"
@@ -233,6 +233,7 @@ are just "where things go" rather than a hard row budget.
 namespace SettingsPanel {
 
     constexpr int ROW_TITLE       = 1;
+    constexpr int ROW_STATUS      = 2; // transient status message — fixed row, same idea as GamePanel/EditorPanel/FragmentEditorPanel's info box message (see their class comments), not computed from the category/option list length
     constexpr int ROW_HEADERS     = 3;
     constexpr int ROW_LIST_START  = 4;
 

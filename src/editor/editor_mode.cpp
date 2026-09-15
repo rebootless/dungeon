@@ -396,7 +396,7 @@ void EditorMode::onRender() {
 
     /*
     Right panel: world location list
-    The F5/F6 target (selectedCoord) plus every location already saved to
+    The F5/F9 target (selectedCoord) plus every location already saved to
     world/, so it doubles as both a picker (click a row, or arrow keys /
     PageUp/PageDown to reach a coordinate that isn't saved yet) and a
     status readout of what's on disk right now.
@@ -477,10 +477,10 @@ void EditorMode::onRender() {
 
     /*
     Collision overlay
-    Three distinct marker icons: a block for a blocking wall (TAB), an
-    up arrow for stairs up (5), a down arrow for stairs down (6) —
-    matches whichever tool is currently active, so what you're about to
-    place is always visible.
+    Three distinct marker icons: a block for a blocking wall (1), an up
+    arrow for stairs up (3), a down arrow for stairs down (2) — matches
+    whichever tool is currently active, so what you're about to place is
+    always visible.
     */
     for (int y = 0; y < MAX_HEIGHT; ++y) {
         for (int x = 0; x < MAX_WIDTH; ++x) {

@@ -125,7 +125,7 @@ void eraseTile(int gx, int gy);
 
 /*
 Persistence
-F5/F6 — implemented in editor_mode.cpp (alongside clearEditorMaps/
+F5/F9 — implemented in editor_mode.cpp (alongside clearEditorMaps/
 rebuildMultiTileOccupancy, which they share with onEnter()'s startup
 load), called from editor_controls.cpp's onEvent().
 */

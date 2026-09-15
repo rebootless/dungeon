@@ -11,15 +11,27 @@ Window resolution & scale
 The game always renders a fixed CANVAS_W x CANVAS_H logical frame (see
 layout.h) — this module's only job is figuring out how to blit that one
 finished frame into whatever the real SDL_Window size is, without ever
-stretching it or changing its aspect ratio:
+stretching it, changing its aspect ratio, or scaling any of its pixels
+unevenly:
 
-  scale = min(windowW / CANVAS_W, windowH / CANVAS_H)
+  scale = max(1, min(windowW / CANVAS_W, windowH / CANVAS_H))  // integer division
 
-scale is a plain float, not an integer, so the canvas is scaled by that
-single factor and centered; any leftover space on the other axis is
-letterboxed (top/bottom or left/right bars) in the same background color
-the canvas itself clears to, so it reads as part of the interface, not a
-bug.
+scale is a plain int, never a fraction — every logical pixel always
+becomes exactly the same scale x scale block of real pixels, which is
+what makes this pixel-perfect rather than merely "fits the window": a
+fractional scale (say 1.4x) would map some source pixels to a 1-pixel-
+wide block and others to a 2-pixel-wide block on screen, a visible wobble
+pixel art can't hide. Any leftover space on either axis, from the scaled
+canvas not filling the window exactly, is letterboxed (top/bottom or
+left/right bars) in the same background color the canvas itself clears
+to, so it reads as part of the interface, not a bug.
+
+The max(1, ...) floor means the one supported resolution narrower than
+the canvas (MIN_WINDOW_W is 16px less than CANVAS_W) still renders at a
+clean 1x rather than blurring down below it — the canvas is centered and
+simply crops evenly off both left/right edges instead. Every other
+supported resolution is at least CANVAS_W x CANVAS_H, so this only ever
+bites at that one floor case.
 
 This module does no SDL_Window calls itself — it only computes numbers.
 core/app.cpp calls SDL_SetWindowSize when the resolution changes, and
@@ -70,17 +82,20 @@ than ever being "too small to fit".
 bool displayFitsMinimum(int windowW, int windowH);
 
 /*
-The (possibly fractional) scale factor that fits the fixed CANVAS_W x
-CANVAS_H canvas inside windowW x windowH while preserving aspect ratio.
-Purely a function of the current window size — always "auto".
+The integer scale factor that fits the fixed CANVAS_W x CANVAS_H canvas
+inside windowW x windowH as many whole times as possible on the tighter
+axis, never fractional — see this file's class comment for why. Purely a
+function of the current window size — always "auto".
 */
-float displayComputeScale(int windowW, int windowH);
+int displayComputeScale(int windowW, int windowH);
 
 /*
 Where to blit the CANVAS_W x CANVAS_H logical canvas inside the window:
 scaled by displayComputeScale and centered, with letterbox/pillarbox bars
-filling whatever's left over on the other axis. Rounded down so the
-destination rect never exceeds the window on either axis.
+filling whatever's left over on the other axis. At the one resolution
+narrower than the canvas (see this file's class comment), the
+destination rect's x can go negative — that's deliberate, an even
+crop off both edges rather than a fractional-scale blur.
 */
 SDL_Rect displayComputeDestRect(int windowW, int windowH);
 

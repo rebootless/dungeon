@@ -1,7 +1,6 @@
 #include "display.h"
 
 #include <algorithm>
-#include <cmath>
 
 const std::vector<Resolution>& displayResolutionPresets() {
     /*
@@ -55,37 +54,30 @@ bool displayFitsMinimum(int windowW, int windowH) {
     return windowW >= MIN_WINDOW_W && windowH >= MIN_WINDOW_H;
 }
 
-float displayComputeScale(int windowW, int windowH) {
-    float scaleW = static_cast<float>(windowW) / static_cast<float>(CANVAS_W);
-    float scaleH = static_cast<float>(windowH) / static_cast<float>(CANVAS_H);
-    float scale  = std::min(scaleW, scaleH);
+int displayComputeScale(int windowW, int windowH) {
     /*
-    Defensive floor only — in practice windowW/H never reach zero, but a
-    degenerate window should still produce a valid (if tiny) rect rather
-    than a negative-size one.
+    Plain integer division — this floors both ratios for free, giving the
+    largest whole number of times the canvas fits each axis. The
+    max(..., 1) floor keeps the one narrower-than-canvas resolution (see
+    this file's class comment) at a clean 1x instead of falling through
+    to 0.
     */
-    return std::max(scale, 0.001f);
+    int scaleW = windowW / CANVAS_W;
+    int scaleH = windowH / CANVAS_H;
+    int scale  = std::min(scaleW, scaleH);
+    return std::max(scale, 1);
 }
 
 SDL_Rect displayComputeDestRect(int windowW, int windowH) {
-    float scale = displayComputeScale(windowW, windowH);
+    int scale = displayComputeScale(windowW, windowH);
 
-    /*
-    Rounded DOWN (not to nearest) so the destination rect can never end
-    up even one pixel larger than the window on either axis — floor is
-    the only rounding mode that preserves that guarantee for both axes
-    simultaneously, since scale itself is exactly the tighter of the two
-    window/canvas ratios.
-    */
-    int dstW = static_cast<int>(std::floor(CANVAS_W * scale));
-    int dstH = static_cast<int>(std::floor(CANVAS_H * scale));
-    dstW = std::max(dstW, 1);
-    dstH = std::max(dstH, 1);
+    int dstW = CANVAS_W * scale;
+    int dstH = CANVAS_H * scale;
 
     SDL_Rect r;
     r.w = dstW;
     r.h = dstH;
-    r.x = (windowW - dstW) / 2;
+    r.x = (windowW - dstW) / 2; // negative at the one narrower-than-canvas resolution — an even crop, not a bug
     r.y = (windowH - dstH) / 2;
     return r;
 }
@@ -95,21 +87,18 @@ bool displayWindowToLogical(int windowX, int windowY, int windowW, int windowH,
     SDL_Rect dst = displayComputeDestRect(windowW, windowH);
     if (windowX < dst.x || windowY < dst.y ||
         windowX >= dst.x + dst.w || windowY >= dst.y + dst.h) {
-        return false; // click landed in the letterbox border
+        return false; // click landed in the letterbox border (or the cropped-off edge)
     }
 
     /*
-    Inverse of the forward transform, using the ACTUAL blitted rect size
-    (not the raw float scale) so this is an exact round-trip of
-    displayComputeDestRect regardless of the floor-rounding above.
+    scale is always the same whole number on both axes here (see
+    displayComputeScale), so integer division is an exact inverse — no
+    float round-trip drift to worry about the way a fractional scale
+    would have needed.
     */
-    float scaleX = static_cast<float>(dst.w) / static_cast<float>(CANVAS_W);
-    float scaleY = static_cast<float>(dst.h) / static_cast<float>(CANVAS_H);
+    int scale = displayComputeScale(windowW, windowH);
 
-    int lx = static_cast<int>((windowX - dst.x) / scaleX);
-    int ly = static_cast<int>((windowY - dst.y) / scaleY);
-
-    outX = std::clamp(lx, 0, CANVAS_W - 1);
-    outY = std::clamp(ly, 0, CANVAS_H - 1);
+    outX = std::clamp((windowX - dst.x) / scale, 0, CANVAS_W - 1);
+    outY = std::clamp((windowY - dst.y) / scale, 0, CANVAS_H - 1);
     return true;
 }
